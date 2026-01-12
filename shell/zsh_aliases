@@ -1,0 +1,248 @@
+# ============================================================================
+# Matt's Shell Aliases - ProudexOS & Development Workflow
+# Location: ~/.zsh_aliases (source this from ~/.zshrc)
+# Last updated: 15 December 2025
+# ============================================================================
+
+# ────────────────────────────────────────────────────────────────────────────
+# PROUDEXOS PROJECT
+# ────────────────────────────────────────────────────────────────────────────
+
+# Navigation - Get to ProudexOS quickly from anywhere
+alias cdp='cd ~/Dev/proudexos'                    # Jump to ProudexOS root
+alias cddev='cd ~/Dev'                            # Jump to Dev directory
+
+# Development workflow - Start dev server with one command
+alias pdev='cd ~/Dev/proudexos && npm run dev'    # Start Next.js dev server
+alias pbuild='cd ~/Dev/proudexos && npm run build' # Production build
+alias plint='cd ~/Dev/proudexos && npm run lint'  # Run ESLint checks
+alias pinstall='cd ~/Dev/proudexos && npm install' # Install dependencies
+
+# Git operations - ProudexOS specific (already in correct directory)
+alias pst='cd ~/Dev/proudexos && git status'      # Quick status check
+alias plog='cd ~/Dev/proudexos && git log --oneline -10' # Recent commits
+alias pdiff='cd ~/Dev/proudexos && git diff'      # See unstaged changes
+alias ppush='cd ~/Dev/proudexos && git push'      # Push to remote
+alias ppull='cd ~/Dev/proudexos && git pull'      # Pull latest changes
+alias pbranch='cd ~/Dev/proudexos && git branch'  # List branches
+
+# Claude integration - Open Claude in ProudexOS context
+alias pc='cd ~/Dev/proudexos && claude'           # Start Claude session
+alias ppm='cd ~/Dev/proudexos && claude -c "/pm"' # Quick Linear PM workflow
+
+# ────────────────────────────────────────────────────────────────────────────
+# GIT WORKFLOW (General - works in any repo)
+# ────────────────────────────────────────────────────────────────────────────
+
+# Status and information
+alias gs='git status'                             # Check working tree status
+alias gl='git log --oneline -20'                  # Show recent commits (20)
+alias gll='git log --oneline --graph --all -20'   # Visual branch history
+alias gd='git diff'                               # Show unstaged changes
+alias gds='git diff --staged'                     # Show staged changes
+
+# Basic operations
+alias ga='git add'                                # Stage files (ga .)
+alias gaa='git add --all'                         # Stage all changes
+alias gc='git commit -m'                          # Commit with message
+alias gca='git commit --amend'                    # Amend last commit
+alias gp='git push'                               # Push to remote
+alias gpl='git pull'                              # Pull from remote
+
+# Branch management
+alias gb='git branch'                             # List local branches
+alias gba='git branch -a'                         # List all branches (including remote)
+alias gco='git checkout'                          # Switch branches
+alias gcb='git checkout -b'                       # Create and switch to new branch
+alias gmain='git checkout main && git pull'       # Switch to main and update
+alias gclean='git checkout main && git pull && git branch --merged | grep -v "\\*\\|main" | xargs -n 1 git branch -d' # Clean merged branches
+
+# Stashing - Temporary storage for uncommitted changes
+alias gst='git stash'                             # Stash current changes
+alias gstp='git stash pop'                        # Apply and remove latest stash
+alias gstl='git stash list'                       # List all stashes
+
+# ────────────────────────────────────────────────────────────────────────────
+# LINEAR INTEGRATION
+# ────────────────────────────────────────────────────────────────────────────
+
+# Project management workflow
+alias lin='cd ~/Dev/proudexos && claude -c "/pm"'        # Open Linear PM flow
+alias lintriage='cd ~/Dev/proudexos && claude -c "/pm triage"' # Quick triage
+
+# ────────────────────────────────────────────────────────────────────────────
+# SUPABASE
+# ────────────────────────────────────────────────────────────────────────────
+
+# Supabase CLI shortcuts
+alias supa='npx supabase'                         # Supabase CLI
+alias supastart='npx supabase start'              # Start local Supabase
+alias supastop='npx supabase stop'                # Stop local Supabase
+alias supastatus='npx supabase status'            # Check Supabase status
+
+# Type generation - Keep TypeScript types in sync with database
+alias supagen='cd ~/Dev/proudexos && npx supabase gen types typescript --project-id rewcvqhjaeccevhtimvs > src/lib/types/database.ts'
+
+# ────────────────────────────────────────────────────────────────────────────
+# DIRECTORY NAVIGATION
+# ────────────────────────────────────────────────────────────────────────────
+
+# Quick parent directory navigation
+alias ..='cd ..'                                  # Go up one level
+alias ...='cd ../..'                              # Go up two levels
+alias ....='cd ../../..'                          # Go up three levels
+alias .....='cd ../../../..'                      # Go up four levels
+
+# Common locations
+alias ~='cd ~'                                    # Home directory
+alias downloads='cd ~/Downloads'                  # Downloads folder
+alias documents='cd ~/Documents'                  # Documents folder
+alias desktop='cd ~/Desktop'                      # Desktop folder
+
+# ────────────────────────────────────────────────────────────────────────────
+# FILE OPERATIONS
+# ────────────────────────────────────────────────────────────────────────────
+
+# Enhanced ls - Better file listing
+alias ls='ls -G'                                  # Enable colourisation
+alias ll='ls -lah'                                # Long format, all files, human-readable sizes
+alias la='ls -A'                                  # List all except . and ..
+alias l='ls -CF'                                  # Columnar format with type indicators
+alias lt='ls -lth'                                # Sort by modification time, newest first
+alias lsize='ls -lSh'                             # Sort by size, largest first
+
+# Tree views - Visualise directory structure (requires: brew install tree)
+alias tree='tree -C'                              # Colourised tree output
+alias tree1='tree -L 1'                           # Show 1 level deep
+alias tree2='tree -L 2'                           # Show 2 levels deep
+alias tree3='tree -L 3'                           # Show 3 levels deep
+
+# Safe operations - Confirm before destructive actions
+alias rm='rm -i'                                  # Prompt before removing files
+alias cp='cp -i'                                  # Prompt before overwriting
+alias mv='mv -i'                                  # Prompt before overwriting
+
+# Quick file operations
+alias mkdir='mkdir -p'                            # Create parent directories as needed
+
+# ────────────────────────────────────────────────────────────────────────────
+# SYSTEM UTILITIES
+# ────────────────────────────────────────────────────────────────────────────
+
+# Configuration editing - Quick access to dotfiles
+alias zshconfig='${EDITOR:-nano} ~/.zshrc'        # Edit zsh config
+alias zshreload='source ~/.zshrc'                 # Reload zsh config
+alias aliasconfig='${EDITOR:-nano} ~/.zsh_aliases' # Edit this file
+alias claudeconfig='${EDITOR:-nano} ~/.claude/CLAUDE.md' # Edit Claude config
+
+# System information
+alias myip='curl -s https://api.ipify.org && echo' # Show public IP
+alias localip='ipconfig getifaddr en0'            # Show local IP (Wi-Fi)
+alias ports='lsof -i -P | grep LISTEN'            # Show listening ports
+alias meminfo='top -l 1 -s 0 | grep PhysMem'      # Quick memory usage
+
+# Process management
+alias psg='ps aux | grep -v grep | grep -i -e VSZ -e' # Search running processes
+alias cpu='top -o cpu'                            # Show processes by CPU usage
+alias mem='top -o mem'                            # Show processes by memory usage
+
+# Disk usage
+alias diskspace='df -h'                           # Human-readable disk free space
+alias folders='du -h -d 1'                        # Size of folders in current directory
+alias foldersize='du -sh'                         # Total size of current folder
+
+# ────────────────────────────────────────────────────────────────────────────
+# DEVELOPMENT TOOLS
+# ────────────────────────────────────────────────────────────────────────────
+
+# Node/npm shortcuts
+alias ni='npm install'                            # Install dependencies
+alias nid='npm install --save-dev'                # Install dev dependencies
+alias nig='npm install -g'                        # Install globally
+alias nr='npm run'                                # Run npm script
+alias nrs='npm run start'                         # Start script
+alias nrd='npm run dev'                           # Dev script
+alias nrb='npm run build'                         # Build script
+alias nrt='npm run test'                          # Test script
+alias nls='npm list --depth=0'                    # List installed packages
+
+# Package management
+alias npmclean='rm -rf node_modules package-lock.json && npm install' # Fresh install
+alias npmupdateall='npm update'                   # Update all packages
+
+# ────────────────────────────────────────────────────────────────────────────
+# CLAUDE CODE
+# ────────────────────────────────────────────────────────────────────────────
+
+# Quick Claude workflows
+alias cl='claude'                                 # Start Claude in current directory
+alias clhelp='claude --help'                      # Show Claude help
+alias clhistory='cat ~/.claude/history.jsonl | tail -20' # Recent Claude history
+
+# ────────────────────────────────────────────────────────────────────────────
+# PRODUCTIVITY
+# ────────────────────────────────────────────────────────────────────────────
+
+# Quick commands
+alias c='clear'                                   # Clear terminal
+alias h='history'                                 # Show command history
+alias hgrep='history | grep'                      # Search command history
+alias path='echo $PATH | tr ":" "\n"'             # Show PATH entries one per line
+
+# Clipboard (macOS)
+alias pbcopy='pbcopy'                             # Copy to clipboard (built-in)
+alias pbpaste='pbpaste'                           # Paste from clipboard (built-in)
+
+# Quick edits
+alias hosts='sudo ${EDITOR:-nano} /etc/hosts'     # Edit hosts file (requires sudo)
+
+# ────────────────────────────────────────────────────────────────────────────
+# CUSTOM FUNCTIONS (not aliases, but useful)
+# ────────────────────────────────────────────────────────────────────────────
+
+# Create directory and cd into it
+mkcd() {
+  mkdir -p "$1" && cd "$1"
+}
+
+# Extract any archive type
+extract() {
+  if [ -f "$1" ]; then
+    case "$1" in
+      *.tar.bz2)   tar xjf "$1"     ;;
+      *.tar.gz)    tar xzf "$1"     ;;
+      *.bz2)       bunzip2 "$1"     ;;
+      *.rar)       unrar x "$1"     ;;
+      *.gz)        gunzip "$1"      ;;
+      *.tar)       tar xf "$1"      ;;
+      *.tbz2)      tar xjf "$1"     ;;
+      *.tgz)       tar xzf "$1"     ;;
+      *.zip)       unzip "$1"       ;;
+      *.Z)         uncompress "$1"  ;;
+      *.7z)        7z x "$1"        ;;
+      *)           echo "'$1' cannot be extracted via extract()" ;;
+    esac
+  else
+    echo "'$1' is not a valid file"
+  fi
+}
+
+# Quick git commit with current timestamp
+gcnow() {
+  git add --all && git commit -m "Update: $(date '+%Y-%m-%d %H:%M:%S')"
+}
+
+# Create new ProudexOS feature branch following naming convention
+pnewbranch() {
+  if [ -z "$1" ] || [ -z "$2" ]; then
+    echo "Usage: pnewbranch <type> <PRO-XX-description>"
+    echo "Example: pnewbranch feature PRO-15-add-dashboard"
+    echo "Types: feature, fix, chore, docs, refactor"
+    return 1
+  fi
+  cd ~/Dev/proudexos && git checkout -b "$1/$2"
+}
+
+# ============================================================================
+# END OF ALIASES
+# ============================================================================

@@ -1,0 +1,5 @@
+# Never commit these - they contain secrets or machine-specific data
+.DS_Store
+
+# If you add Hammerspoon or other app configs later, exclude secrets:
+# hammerspoon/secrets.lua
