@@ -53,3 +53,5 @@ logs/
 .cache/
 .tmp/
 .temp/
+
+**/.claude/settings.local.json
