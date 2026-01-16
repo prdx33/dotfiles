@@ -66,6 +66,42 @@ fi
 echo ""
 
 # ────────────────────────────────────────────────────────────────────────────
+# Scripts (~/.local/bin)
+# ────────────────────────────────────────────────────────────────────────────
+echo "Scripts:"
+mkdir -p "$HOME/.local/bin"
+for script in "$DOTFILES_DIR"/scripts/*; do
+    if [ -f "$script" ]; then
+        script_name=$(basename "$script")
+        link_file "$script" "$HOME/.local/bin/$script_name"
+    fi
+done
+echo ""
+
+# ────────────────────────────────────────────────────────────────────────────
+# Launch Agents (~/Library/LaunchAgents)
+# ────────────────────────────────────────────────────────────────────────────
+echo "Launch Agents:"
+mkdir -p "$HOME/Library/LaunchAgents"
+mkdir -p "$HOME/.local/log"
+for plist in "$DOTFILES_DIR"/launchagents/*.plist; do
+    if [ -f "$plist" ]; then
+        plist_name=$(basename "$plist")
+        label="${plist_name%.plist}"
+
+        # Unload if currently loaded
+        launchctl list | grep -q "$label" && launchctl unload "$HOME/Library/LaunchAgents/$plist_name" 2>/dev/null || true
+
+        link_file "$plist" "$HOME/Library/LaunchAgents/$plist_name"
+
+        # Load the agent
+        launchctl load "$HOME/Library/LaunchAgents/$plist_name"
+        echo "    → Loaded $label"
+    fi
+done
+echo ""
+
+# ────────────────────────────────────────────────────────────────────────────
 # Summary
 # ────────────────────────────────────────────────────────────────────────────
 echo "✅ Dotfiles installed successfully!"
