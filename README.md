@@ -7,14 +7,23 @@ Personal dotfiles for macOS development environment.
 ```
 dotfiles/
 ├── .config/
-│   └── git/
-│       ├── config      # Git configuration (XDG-compliant)
-│       └── ignore      # Global gitignore
+│   ├── git/
+│   │   ├── config      # Git configuration (XDG-compliant)
+│   │   └── ignore      # Global gitignore
+│   └── aerospace/
+│       └── aerospace.toml  # AeroSpace window manager
+├── hammerspoon/
+│   ├── init.lua        # Main config
+│   ├── windowManager.lua   # Window tiling/management
+│   ├── layerIndicator.lua  # ZMK keyboard layer indicator
+│   └── finder_to_bloom.lua # Finder dock redirect
 ├── shell/
 │   ├── zshrc           # Main shell config
 │   ├── zsh_aliases     # Custom aliases
 │   ├── zsh_plugins.txt # Antidote plugin list
 │   └── p10k.zsh        # Powerlevel10k theme
+├── scripts/            # Utility scripts (~/.local/bin)
+├── launchagents/       # Launch agents
 ├── install.sh          # Symlink installer
 └── README.md
 ```
