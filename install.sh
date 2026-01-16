@@ -48,6 +48,13 @@ echo "Git configs:"
 mkdir -p "$HOME/.config/git"
 link_file "$DOTFILES_DIR/.config/git/config" "$HOME/.config/git/config"
 link_file "$DOTFILES_DIR/.config/git/ignore" "$HOME/.config/git/ignore"
+echo ""
+
+# ────────────────────────────────────────────────────────────────────────────
+# AeroSpace Configuration
+# ────────────────────────────────────────────────────────────────────────────
+echo "AeroSpace config:"
+link_file "$DOTFILES_DIR/.config/aerospace/aerospace.toml" "$HOME/.aerospace.toml"
 
 # Remove old ~/.gitconfig if it exists and point to new location
 if [ -f "$HOME/.gitconfig" ] && [ ! -L "$HOME/.gitconfig" ]; then
