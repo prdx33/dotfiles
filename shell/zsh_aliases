@@ -189,9 +189,7 @@ alias h='history'                                 # Show command history
 alias hgrep='history | grep'                      # Search command history
 alias path='echo $PATH | tr ":" "\n"'             # Show PATH entries one per line
 
-# Clipboard (macOS)
-alias pbcopy='pbcopy'                             # Copy to clipboard (built-in)
-alias pbpaste='pbpaste'                           # Paste from clipboard (built-in)
+# Clipboard - pbcopy and pbpaste are built into macOS, no aliases needed
 
 # Quick edits
 alias hosts='sudo ${EDITOR:-nano} /etc/hosts'     # Edit hosts file (requires sudo)
