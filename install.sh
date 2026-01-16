@@ -51,10 +51,11 @@ link_file "$DOTFILES_DIR/.config/git/ignore" "$HOME/.config/git/ignore"
 echo ""
 
 # ────────────────────────────────────────────────────────────────────────────
-# AeroSpace Configuration
+# AeroSpace Configuration (XDG path)
 # ────────────────────────────────────────────────────────────────────────────
 echo "AeroSpace config:"
-link_file "$DOTFILES_DIR/.config/aerospace/aerospace.toml" "$HOME/.aerospace.toml"
+mkdir -p "$HOME/.config/aerospace"
+link_file "$DOTFILES_DIR/.config/aerospace/aerospace.toml" "$HOME/.config/aerospace/aerospace.toml"
 
 # Remove old ~/.gitconfig if it exists and point to new location
 if [ -f "$HOME/.gitconfig" ] && [ ! -L "$HOME/.gitconfig" ]; then
