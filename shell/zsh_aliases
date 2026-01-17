@@ -180,6 +180,20 @@ alias clhelp='claude --help'                      # Show Claude help
 alias clhistory='cat ~/.claude/history.jsonl | tail -20' # Recent Claude history
 
 # ────────────────────────────────────────────────────────────────────────────
+# PROJECT LAUNCHER (themed Ghostty terminals)
+# ────────────────────────────────────────────────────────────────────────────
+
+# Open themed terminal window for a project (opens new Ghostty with colours)
+# Usage: proj <project> [--claude]
+# Examples: proj proudex, proj origin-a --claude
+alias projlist='proj --list'                      # Show available projects
+
+# Quick aliases for projects + Claude (opens new themed Ghostty window)
+alias pxc='proj proudex --claude'                 # Proudex + Claude (amber theme)
+alias oac='proj origin-a --claude'                # Origin-A + Claude (blue theme)
+alias msc='proj mushrum --claude'                 # Mushrum + Claude (green theme)
+
+# ────────────────────────────────────────────────────────────────────────────
 # PRODUCTIVITY
 # ────────────────────────────────────────────────────────────────────────────
 

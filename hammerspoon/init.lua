@@ -270,6 +270,18 @@ end)
   end, cleanup)
 
 ------------------------------------------------------------
+-- Pin Window on Top (alt+shift+esc)
+------------------------------------------------------------
+hs.hotkey.bind({"alt", "shift"}, "escape", function()
+    local win = hs.window.focusedWindow()
+    if win then
+        local isOnTop = win:isTopMost()
+        win:setTopMost(not isOnTop)
+        hs.alert.show(isOnTop and "Unpinned" or "Pinned on top")
+    end
+end)
+
+------------------------------------------------------------
 -- Finder to Bloom redirect
 ------------------------------------------------------------
 require("finder_to_bloom")

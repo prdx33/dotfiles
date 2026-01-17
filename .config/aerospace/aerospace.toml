@@ -86,33 +86,24 @@ alt-shift-p = 'move-node-to-workspace 0 --focus-follows-window'
 # ----------------------------------------------------------------------------
 # MONITORS
 # ----------------------------------------------------------------------------
-alt-b = ['move-node-to-monitor --wrap-around next', 'focus-monitor --wrap-around next']
-alt-shift-b = ['move-workspace-to-monitor --wrap-around next', 'focus-monitor --wrap-around next']
-
-# Monitor focus/move (g = go to monitor)
-alt-g = 'focus-monitor --wrap-around next'
-alt-shift-g = 'move-node-to-monitor --wrap-around next'
+alt-b = 'focus-monitor --wrap-around next'
+alt-g = ['move-node-to-monitor --wrap-around next', 'focus-monitor --wrap-around next']
+alt-shift-g = ['move-workspace-to-monitor --wrap-around next', 'focus-monitor --wrap-around next', 'focus-back-and-forth', 'focus-back-and-forth']
 
 # ----------------------------------------------------------------------------
-# LAYOUT TOGGLES (alt + zxcv)
+# WINDOW MANAGEMENT (alt + zxcv) - left hand cluster
 # ----------------------------------------------------------------------------
-alt-z = 'flatten-workspace-tree'                    # (z)ero/reset layout
-alt-x = 'balance-sizes'                             # e(x)act/equalise sizes
-alt-c = 'layout tiles accordion'                    # (c)ollapse/accordion toggle
-alt-v = 'layout tiles horizontal vertical'          # (v)ertical/horizontal toggle
+alt-z = 'fullscreen'                                # (z) zoom fullscreen
+alt-x = 'flatten-workspace-tree'                    # flatten/reset
+alt-c = 'layout tiles accordion'                    # accordion toggle
+alt-v = 'focus-back-and-forth'                      # (v) focus back
+alt-esc = 'layout floating tiling'                  # toggle floating
 
-# ----------------------------------------------------------------------------
-# ADDITIONAL FUNCTIONS (alt + nm,./)
-# ----------------------------------------------------------------------------
-alt-n = 'focus-back-and-forth'                      # (n)avigate back
-alt-m = 'layout floating tiling'                    # (m)ode float/tile toggle
-alt-comma = 'resize smart -50'                      # shrink
-alt-period = 'resize smart +50'                     # grow
-alt-slash = 'fullscreen'                            # fullscreen toggle
-
-# Larger resize steps with shift
-alt-shift-comma = 'resize smart -100'
-alt-shift-period = 'resize smart +100'
+# Layout operations (alt + shift + zxcv)
+alt-shift-z = 'balance-sizes'                       # balance sizes
+alt-shift-x = 'resize smart -100'                   # shrink
+alt-shift-c = 'resize smart +100'                   # grow
+alt-shift-v = 'layout tiles horizontal vertical'    # vertical/horizontal toggle
 
 # ----------------------------------------------------------------------------
 # WORKSPACE NAVIGATION
