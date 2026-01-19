@@ -1,287 +1,231 @@
 ------------------------------------------------------------
+-- Alert Style
+------------------------------------------------------------
+hs.alert.defaultStyle.strokeColor = { white = 0, alpha = 0 }
+hs.alert.defaultStyle.fillColor = { white = 0.1, alpha = 0.75 }
+hs.alert.defaultStyle.textColor = { white = 0.9, alpha = 1 }
+hs.alert.defaultStyle.textFont = "JetBrains Mono"
+hs.alert.defaultStyle.textSize = 14
+hs.alert.defaultStyle.radius = 6
+hs.alert.defaultStyle.fadeInDuration = 0.05
+hs.alert.defaultStyle.fadeOutDuration = 0.1
+hs.alert.defaultStyle.duration = 0.15
+
+------------------------------------------------------------
 -- Minimise / Restore
 ------------------------------------------------------------
 local wm = require("windowManager")
 
 ------------------------------------------------------------
--- ZMK Layer Indicator
+-- Toggle Menu Bar (Hyper + ')
 ------------------------------------------------------------
-local layerIndicator = require("layerIndicator")
-layerIndicator.start()
+local hyper = {"cmd", "alt", "ctrl", "shift"}
+
+hs.hotkey.bind(hyper, "'", function()
+  hs.applescript([[
+    tell application "System Events"
+      tell dock preferences
+        set autohide menu bar to not autohide menu bar
+      end tell
+    end tell
+  ]])
+  hs.alert.show("Toggled Menu Bar", nil, nil, 0.3)
+end)
 
 -- ⌘M → minimise toggle
 hs.hotkey.bind({"cmd"}, "m", wm.toggleMinimize)
 
 ------------------------------------------------------------
--- Show / Hide Menu Bar
-------------------------------------------------------------
--- Toggle macOS menu bar visibility
-hs.hotkey.bind(
-    {"ctrl", "alt"},
-    "M",
-    function()
-        local current = hs.execute("defaults read NSGlobalDomain _HIHideMenuBar"):gsub("\n", "")
-        if current == "1" then
-            hs.execute("defaults write NSGlobalDomain _HIHideMenuBar -bool false")
-        else
-            hs.execute("defaults write NSGlobalDomain _HIHideMenuBar -bool true")
-        end
-        hs.execute("killall SystemUIServer")
-        hs.alert.show("Toggled Menu Bar")
-    end
-)
-
-------------------------------------------------------------
--- Tap Tab Hold Hyper
+-- ⌘Q Hold-to-Quit HUD (Terminal Style)
 ------------------------------------------------------------
 
--- ~/.hammerspoon/init.lua
-local hyper = {"cmd", "alt", "ctrl", "shift"}
+-- Timing
+local holdThreshold = 0.5
 
--- Map Caps Lock (via Karabiner) → F18
--- Then in Hammerspoon:
-hs.hotkey.bind(
-    {},
-    "F18",
-    function()
-        -- Tap behaviour
-    end
-)
+-- HUD sizing
+local hudWidth = 220
+local hudHeight = 60
+local barHeight = 4
+local barPadding = 16
 
-hs.hotkey.bind(
-    hyper,
-    "H",
-    function()
-        hs.alert.show("Hyper-H triggered!")
-    end
-)
+-- State
+local indicator, progTimer = nil, nil
+local holding, quitTriggered = false, false
+local elapsed, lastTime = 0, nil
+local appName = "App"
+local currentKey = nil
 
--- F20 → toggle layer indicator (for testing)
-hs.hotkey.bind({}, "f20", function()
-    layerIndicator.toggle()
-end)
+-- Terminal style (matches alert style)
+local termStyle = {
+  bg    = { white = 0.1, alpha = 0.85 },
+  text  = { white = 0.9, alpha = 1 },
+  bar   = { white = 0.4, alpha = 0.5 },
+  fill  = { white = 0.9, alpha = 1 },
+  amber = { red = 1, green = 0.75, blue = 0.3, alpha = 1 },
+}
 
-  ------------------------------------------------------------
-  -- ⌘Q/⌘W Hold-to-Quit/Close HUD (Dark Glass + Smooth Ghost Expand, FAST MODE)
-  ------------------------------------------------------------
+------------------------------------------------------------
+-- HELPERS
+------------------------------------------------------------
+local function safeDelete()
+  hs.timer.doAfter(0.01, function()
+    if indicator then indicator:delete() end
+    indicator = nil
+  end)
+end
 
-  -- ⏩ Timing: everything runs 2× faster
-  local holdThreshold        = 0.5   -- was 1.0
-  local ghostExpandDuration  = 0.175 -- was 0.35
-  local totalDuration        = 0.7   -- overall fade cleanup window
+local function cleanup(keepWaiting)
+  if progTimer then progTimer:stop(); progTimer = nil end
+  holding = false
+  if not keepWaiting then quitTriggered = false end
+  lastTime, elapsed = nil, 0
+  currentKey = nil
+  safeDelete()
+end
 
-  -- HUD sizing
-  local frameSize, pad, circleYOff = 200, 30, -14
-  local ghostMaxScale = 1.6
+local function activeScreenFrame()
+  local win = hs.window.frontmostWindow()
+  local scr = (win and win:screen()) or hs.mouse.getCurrentScreen() or hs.screen.mainScreen()
+  return scr:fullFrame()
+end
 
-  -- State
-  local indicator, progTimer = nil, nil
-  local holding, quitTriggered, ghostActive = false, false, false
-  local startTime, elapsed, lastTime = 0, 0, nil
-  local appName = "App"
-  local currentKey = nil  -- "q" or "w"
-  local waitingForRelease = false  -- prevents re-trigger while held
+------------------------------------------------------------
+-- BUILD HUD
+------------------------------------------------------------
+local function buildHUD()
+  local sf = activeScreenFrame()
+  local x = sf.x + (sf.w - hudWidth) / 2
+  local y = sf.y + (sf.h - hudHeight) / 2
+  appName = (hs.application.frontmostApplication() and hs.application.frontmostApplication():name()) or "App"
 
-  ------------------------------------------------------------
-  -- STYLE
-  ------------------------------------------------------------
-  local glass = {
-    bg     = { white = 0, alpha = 0.35 },
-    border = { white = 1, alpha = 0.5 },
-    text   = { white = 1, alpha = 0.9 },
+  indicator = hs.canvas.new({ x = x, y = y, w = hudWidth, h = hudHeight }):show()
+  indicator:behavior(hs.canvas.windowBehaviors.canJoinAllSpaces)
+  indicator:level(hs.canvas.windowLevels.cursor)
+
+  local barWidth = hudWidth - (barPadding * 2)
+  local barY = hudHeight - barPadding - barHeight
+
+  -- Background
+  indicator[1] = {
+    type = "rectangle", action = "fill",
+    roundedRectRadii = { xRadius = 6, yRadius = 6 },
+    fillColor = termStyle.bg
   }
 
-  ------------------------------------------------------------
-  -- EASING
-  ------------------------------------------------------------
-  local function easeInOutCirc(t)
-    t = math.min(math.max(t, 0), 1)
-    if t < 0.5 then
-      return (1 - math.sqrt(1 - (2 * t) ^ 2)) / 2
-    else
-      return (math.sqrt(1 - (-2 * t + 2) ^ 2) + 1) / 2
-    end
-  end
+  -- App name
+  indicator[2] = {
+    type = "text",
+    text = "Quitting " .. appName,
+    textFont = "JetBrains Mono",
+    textSize = 14,
+    textColor = termStyle.text,
+    frame = { x = barPadding, y = 12, w = barWidth, h = 24 },
+    textAlignment = "left"
+  }
 
-  local function easeOutExpo(t) return (t == 1) and 1 or (1 - 2 ^ (-10 * t)) end
+  -- Progress bar background
+  indicator[3] = {
+    type = "rectangle", action = "fill",
+    frame = { x = barPadding, y = barY, w = barWidth, h = barHeight },
+    roundedRectRadii = { xRadius = 2, yRadius = 2 },
+    fillColor = termStyle.bar
+  }
 
-  ------------------------------------------------------------
-  -- HELPERS
-  ------------------------------------------------------------
-  local function safeDelete()
-    hs.timer.doAfter(0.01, function()
-      if indicator then indicator:delete() end
-      indicator = nil
+  -- Progress bar fill (starts at 0 width)
+  indicator[4] = {
+    type = "rectangle", action = "fill",
+    frame = { x = barPadding, y = barY, w = 0, h = barHeight },
+    roundedRectRadii = { xRadius = 2, yRadius = 2 },
+    fillColor = termStyle.fill
+  }
+end
+
+------------------------------------------------------------
+-- UPDATE LOOP (60 Hz)
+------------------------------------------------------------
+local function update()
+  if not indicator then return end
+  local now = hs.timer.absoluteTime() / 1e9
+  if not lastTime then lastTime = now end
+  local delta = now - lastTime
+  lastTime = now
+  elapsed = elapsed + delta
+
+  local pct = math.min(elapsed / holdThreshold, 1)
+  local barWidth = hudWidth - (barPadding * 2)
+
+  -- Linear fill (no easing)
+  indicator[4].frame.w = barWidth * pct
+
+  if pct >= 1 and not quitTriggered then
+    quitTriggered = true
+    -- Turn bar amber
+    indicator[4].fillColor = termStyle.amber
+    -- Stop the update timer
+    if progTimer then progTimer:stop(); progTimer = nil end
+    -- Quit the app directly (avoids keystroke loop issues)
+    local app = hs.application.frontmostApplication()
+    if app then app:kill() end
+    -- Keep HUD visible, then fade out
+    hs.timer.doAfter(0.5, function()
+      if not indicator then return end
+      -- Fast fadeout over 0.15s
+      local fadeStart = hs.timer.absoluteTime() / 1e9
+      local fadeDuration = 0.15
+      local fadeTimer
+      fadeTimer = hs.timer.doEvery(1/60, function()
+        if not indicator then
+          if fadeTimer then fadeTimer:stop() end
+          return
+        end
+        local elapsed = (hs.timer.absoluteTime() / 1e9) - fadeStart
+        local alpha = 1 - (elapsed / fadeDuration)
+        if alpha <= 0 then
+          fadeTimer:stop()
+          cleanup(true)
+        else
+          indicator:alpha(alpha)
+        end
+      end)
     end)
   end
+end
 
-  local function cleanup()
-    if progTimer then progTimer:stop(); progTimer = nil end
-    holding, quitTriggered, ghostActive = false, false, false
-    lastTime, elapsed = nil, 0
-    currentKey = nil
-    safeDelete()
-  end
+------------------------------------------------------------
+-- EVENT WATCHER
+------------------------------------------------------------
+local tap = hs.eventtap.new(
+  { hs.eventtap.event.types.keyDown, hs.eventtap.event.types.keyUp },
+  function(e)
+    local code, flags = e:getKeyCode(), e:getFlags()
+    local pureCmd = flags.cmd and not flags.shift and not flags.alt and not flags.ctrl
 
-  local function activeScreenFrame()
-    local win = hs.window.frontmostWindow()
-    local scr = (win and win:screen()) or hs.mouse.getCurrentScreen() or hs.screen.mainScreen()
-    return scr:fullFrame()
-  end
+    local keyName = nil
+    if code == hs.keycodes.map.q and pureCmd then keyName = "q" end
 
-  ------------------------------------------------------------
-  -- BUILD HUD
-  ------------------------------------------------------------
-  local function buildHUD()
-    local sf = activeScreenFrame()
-    local x = sf.x + (sf.w - frameSize) / 2
-    local y = sf.y + (sf.h - frameSize) / 2
-    appName = (hs.application.frontmostApplication() and hs.application.frontmostApplication():name()) or "App"
+    if not keyName then return false end
 
-    local hudText = (currentKey == "q") and ("Quitting " .. appName) or "Closing"
-
-    indicator = hs.canvas.new({ x = x, y = y, w = frameSize, h = frameSize }):show()
-    indicator:behavior(hs.canvas.windowBehaviors.canJoinAllSpaces)
-    indicator:level(hs.canvas.windowLevels.cursor)
-
-    local cx, cy = frameSize / 2, frameSize / 2
-    local radius = (frameSize - pad * 2) / 3
-    local rRadii = { xRadius = frameSize / 4, yRadius = frameSize / 4 }
-
-    indicator[1] = { type = "rectangle", action = "fill",
-      roundedRectRadii = rRadii, fillColor = glass.bg }
-
-    indicator[2] = { type = "rectangle", action = "stroke",
-      roundedRectRadii = rRadii, strokeColor = glass.border, strokeWidth = 1.2 }
-
-    indicator[3] = { type = "arc", action = "fill",
-      startAngle = -90, endAngle = -90,
-      center = { x = cx, y = cy + circleYOff },
-      radius = radius, fillColor = { white = 1, alpha = 0.95 } }
-
-    indicator[4] = { type = "circle", action = "fill",
-      center = { x = cx, y = cy + circleYOff },
-      radius = radius, fillColor = { white = 1, alpha = 0 } }
-
-    indicator[5] = { type = "text", text = hudText,
-      textFont = "SF Pro Display Semibold", textSize = 16,
-      textColor = glass.text,
-      frame = { x = 0, y = cy + radius + circleYOff + 20,
-                w = frameSize, h = 34 }, textAlignment = "center" }
-  end
-
-  ------------------------------------------------------------
-  -- UPDATE LOOP (240 Hz)
-  ------------------------------------------------------------
-  local function update()
-    if not indicator then return end
-    local now = hs.timer.absoluteTime() / 1e9
-    if not lastTime then lastTime = now end
-    local delta = now - lastTime
-    lastTime = now
-    elapsed = elapsed + delta
-    local phaseTime = elapsed
-
-    if not quitTriggered then
-      local pct = math.min(phaseTime / holdThreshold, 1)
-      local eased = easeInOutCirc(pct)
-      indicator[3].endAngle = -90 + (eased * 360)
-
-      if pct >= 1 then
-        quitTriggered = true
-        waitingForRelease = true  -- prevent re-trigger until key released
-        hs.timer.doAfter(0, function() hs.eventtap.keyStroke({ "cmd" }, currentKey, 0) end)
-        indicator[3].fillColor.alpha = 0
-        indicator[5].textColor.alpha = 0
-        startTime, elapsed, ghostActive = now, 0, true
-      end
-
-    elseif ghostActive then
-      local gt = math.min(phaseTime / ghostExpandDuration, 1)
-      local eased = easeOutExpo(gt)
-      local cx, cy = frameSize / 2, frameSize / 2
-      local baseRadius = (frameSize - pad * 2) / 3
-      local scale = 1 + (ghostMaxScale - 1) * eased
-      local fade = 1 - eased
-
-      indicator[4].radius = baseRadius * scale
-      indicator[4].fillColor.alpha = fade * 0.8
-      indicator[1].fillColor.alpha = glass.bg.alpha * fade
-      indicator[2].strokeColor.alpha = glass.border.alpha * fade
-
-      if gt >= 1 then cleanup() end
-    end
-  end
-
-  ------------------------------------------------------------
-  -- EVENT WATCHER
-  ------------------------------------------------------------
-  local tap = hs.eventtap.new(
-    { hs.eventtap.event.types.keyDown, hs.eventtap.event.types.keyUp },
-    function(e)
-      local code, flags = e:getKeyCode(), e:getFlags()
-      local pureCmd = flags.cmd and not flags.shift and not flags.alt and not flags.ctrl
-
-      local keyName = nil
-      if code == hs.keycodes.map.q and pureCmd then keyName = "q"
-      elseif code == hs.keycodes.map.w and pureCmd then keyName = "w"
-      end
-
-      if not keyName then return false end
-
-      if e:getType() == hs.eventtap.event.types.keyDown then
-        -- Block if waiting for release
-        if waitingForRelease then
-          return true
-        end
-
-        if not holding then
-          holding = true
-          currentKey = keyName
-          buildHUD()
-          startTime = hs.timer.absoluteTime() / 1e9
-          elapsed, lastTime = 0, nil
-          progTimer = hs.timer.doEvery(1 / 240, update)
-        end
-        return true
-      else
-        -- keyUp
-        if waitingForRelease then
-          waitingForRelease = false
-        end
-        if holding and not quitTriggered then cleanup() end
-        holding = false
+    if e:getType() == hs.eventtap.event.types.keyDown then
+      -- Block if already triggered (waiting for release)
+      if quitTriggered then
         return true
       end
+
+      if not holding then
+        holding = true
+        currentKey = keyName
+        buildHUD()
+        elapsed, lastTime = 0, nil
+        progTimer = hs.timer.doEvery(1 / 60, update)
+      end
+      return true
+    else
+      -- keyUp: reset everything
+      if holding and not quitTriggered then cleanup() end
+      quitTriggered = false
+      holding = false
+      return true
     end
-  )
-  tap:start()
-
-  ------------------------------------------------------------
-  -- TEST KEY (F19)
-  ------------------------------------------------------------
-  hs.hotkey.bind({}, "f19", function()
-    if indicator then cleanup() end
-    currentKey = "q"
-    buildHUD()
-    startTime = hs.timer.absoluteTime() / 1e9
-    elapsed, quitTriggered, holding, lastTime, ghostActive = 0, false, true, nil, false
-    progTimer = hs.timer.doEvery(1 / 240, update)
-  end, cleanup)
-
-------------------------------------------------------------
--- Pin Window on Top (alt+shift+esc)
-------------------------------------------------------------
-hs.hotkey.bind({"alt", "shift"}, "escape", function()
-    local win = hs.window.focusedWindow()
-    if win then
-        local isOnTop = win:isTopMost()
-        win:setTopMost(not isOnTop)
-        hs.alert.show(isOnTop and "Unpinned" or "Pinned on top")
-    end
-end)
-
-------------------------------------------------------------
--- Finder to Bloom redirect
-------------------------------------------------------------
-require("finder_to_bloom")
+  end
+)
+tap:start()
