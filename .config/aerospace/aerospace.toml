@@ -1,6 +1,6 @@
 # AeroSpace Configuration
-# Optimised for Corne keyboard with left-hand modifier focus
-# Navigation: alt + asdf | Movement: alt + hjkl | Workspaces: alt + qwertyuiop (shown as 1-0)
+# Optimised for Corne keyboard - horizontal workflow
+# Focus: alt + af | Move: alt + sd | Workspaces: alt + qwertyuiop (1-0)
 
 # Start AeroSpace at login
 start-at-login = true
@@ -34,86 +34,52 @@ outer.top = 10
 outer.right = 10
 
 # ============================================================================
-# MAIN BINDINGS
+# MAIN BINDINGS (Hyper = cmd+alt+ctrl+shift)
 # ============================================================================
 [mode.main.binding]
 
 # ----------------------------------------------------------------------------
-# FOCUS NAVIGATION (alt + asdf)
+# FOCUS & MOVE (horizontal workflow, full wrap-around)
 # ----------------------------------------------------------------------------
-alt-a = 'focus left'
-alt-s = 'focus down'
-alt-d = 'focus up'
-alt-f = 'focus right'
+cmd-alt-ctrl-shift-a = 'focus --boundaries all-monitors-outer-frame --boundaries-action wrap-around-all-monitors left'
+cmd-alt-ctrl-shift-f = 'focus --boundaries all-monitors-outer-frame --boundaries-action wrap-around-all-monitors right'
+cmd-alt-ctrl-shift-s = 'move --boundaries all-monitors-outer-frame left'
+cmd-alt-ctrl-shift-d = 'move --boundaries all-monitors-outer-frame right'
 
 # ----------------------------------------------------------------------------
-# WINDOW MOVEMENT (alt + shift + asdf)
+# WORKSPACES — SUMMON (hyper + qwert)
 # ----------------------------------------------------------------------------
-alt-shift-a = 'move left'
-alt-shift-s = 'move down'
-alt-shift-d = 'move up'
-alt-shift-f = 'move right'
+cmd-alt-ctrl-shift-q = 'summon-workspace 1'
+cmd-alt-ctrl-shift-w = 'summon-workspace 2'
+cmd-alt-ctrl-shift-e = 'summon-workspace 3'
+cmd-alt-ctrl-shift-r = 'summon-workspace 4'
+cmd-alt-ctrl-shift-t = 'summon-workspace 5'
 
 # ----------------------------------------------------------------------------
-# WORKSPACES (alt + qwertyuiop → 1234567890)
-# summon-workspace brings the workspace to the current monitor
+# WORKSPACES — SEND WINDOW (hyper + 12345)
 # ----------------------------------------------------------------------------
-alt-q = 'summon-workspace 1'
-alt-w = 'summon-workspace 2'
-alt-e = 'summon-workspace 3'
-alt-r = 'summon-workspace 4'
-alt-t = 'summon-workspace 5'
-alt-y = 'summon-workspace 6'
-alt-u = 'summon-workspace 7'
-alt-i = 'summon-workspace 8'
-alt-o = 'summon-workspace 9'
-alt-p = 'summon-workspace 0'
+cmd-alt-ctrl-shift-1 = 'move-node-to-workspace 1'
+cmd-alt-ctrl-shift-2 = 'move-node-to-workspace 2'
+cmd-alt-ctrl-shift-3 = 'move-node-to-workspace 3'
+cmd-alt-ctrl-shift-4 = 'move-node-to-workspace 4'
+cmd-alt-ctrl-shift-5 = 'move-node-to-workspace 5'
+
 
 # ----------------------------------------------------------------------------
-# SEND TO WORKSPACE (alt + shift + qwertyuiop)
+# WINDOW & LAYOUT
 # ----------------------------------------------------------------------------
-alt-shift-q = 'move-node-to-workspace 1 --focus-follows-window'
-alt-shift-w = 'move-node-to-workspace 2 --focus-follows-window'
-alt-shift-e = 'move-node-to-workspace 3 --focus-follows-window'
-alt-shift-r = 'move-node-to-workspace 4 --focus-follows-window'
-alt-shift-t = 'move-node-to-workspace 5 --focus-follows-window'
-alt-shift-y = 'move-node-to-workspace 6 --focus-follows-window'
-alt-shift-u = 'move-node-to-workspace 7 --focus-follows-window'
-alt-shift-i = 'move-node-to-workspace 8 --focus-follows-window'
-alt-shift-o = 'move-node-to-workspace 9 --focus-follows-window'
-alt-shift-p = 'move-node-to-workspace 0 --focus-follows-window'
+cmd-alt-ctrl-shift-b = 'layout floating tiling'
+cmd-alt-ctrl-shift-z = 'layout tiles accordion'
+cmd-alt-ctrl-shift-x = 'resize smart -100'
+cmd-alt-ctrl-shift-c = 'resize smart +100'
+cmd-alt-ctrl-shift-v = ['flatten-workspace-tree', 'layout h_tiles']
+cmd-alt-ctrl-shift-g = 'move-workspace-to-monitor --wrap-around next'
 
 # ----------------------------------------------------------------------------
-# MONITORS
+# NAVIGATION & MODES
 # ----------------------------------------------------------------------------
-alt-b = 'focus-monitor --wrap-around next'
-alt-g = ['move-node-to-monitor --wrap-around next', 'focus-monitor --wrap-around next']
-alt-shift-g = ['move-workspace-to-monitor --wrap-around next', 'focus-monitor --wrap-around next', 'focus-back-and-forth', 'focus-back-and-forth']
-
-# ----------------------------------------------------------------------------
-# WINDOW MANAGEMENT (alt + zxcv) - left hand cluster
-# ----------------------------------------------------------------------------
-alt-z = 'fullscreen'                                # (z) zoom fullscreen
-alt-x = 'flatten-workspace-tree'                    # flatten/reset
-alt-c = 'layout tiles accordion'                    # accordion toggle
-alt-v = 'focus-back-and-forth'                      # (v) focus back
-alt-esc = 'layout floating tiling'                  # toggle floating
-
-# Layout operations (alt + shift + zxcv)
-alt-shift-z = 'balance-sizes'                       # balance sizes
-alt-shift-x = 'resize smart -100'                   # shrink
-alt-shift-c = 'resize smart +100'                   # grow
-alt-shift-v = 'layout tiles horizontal vertical'    # vertical/horizontal toggle
-
-# ----------------------------------------------------------------------------
-# WORKSPACE NAVIGATION
-# ----------------------------------------------------------------------------
-alt-tab = 'workspace-back-and-forth'
-
-# ----------------------------------------------------------------------------
-# SERVICE MODE
-# ----------------------------------------------------------------------------
-alt-semicolon = 'mode service'
+cmd-alt-ctrl-shift-tab = 'workspace-back-and-forth'
+cmd-alt-ctrl-shift-semicolon = 'mode service'
 
 # ============================================================================
 # SERVICE MODE (minimal - for rare operations)
@@ -129,12 +95,6 @@ e = ['enable toggle', 'mode main']
 
 # Dangerous - intentionally buried
 q = ['close-all-windows-but-current', 'mode main']
-
-# Join windows (structural nesting)
-alt-shift-a = ['join-with left', 'mode main']
-alt-shift-s = ['join-with down', 'mode main']
-alt-shift-d = ['join-with up', 'mode main']
-alt-shift-f = ['join-with right', 'mode main']
 
 # ============================================================================
 # FLOATING WINDOW RULES
@@ -159,92 +119,4 @@ run = 'layout floating'
 if.app-name-regex-substring = 'quicktime'
 run = 'layout floating'
 
-# ============================================================================
-# AUTO-ASSIGN APPS TO WORKSPACES
-# ============================================================================
 
-# ── Workspace 2 ──
-[[on-window-detected]]
-if.app-id = 'com.mitchellh.ghostty'
-run = 'move-node-to-workspace 2'
-
-[[on-window-detected]]
-if.app-id = 'dev.warp.Warp-Stable'
-run = 'move-node-to-workspace 2'
-
-[[on-window-detected]]
-if.app-id = 'com.googlecode.iterm2'
-run = 'move-node-to-workspace 2'
-
-# ── Workspace 3 ──
-[[on-window-detected]]
-if.app-id = 'org.mozilla.firefox'
-run = 'move-node-to-workspace 3'
-
-[[on-window-detected]]
-if.app-id = 'com.brave.Browser'
-run = 'move-node-to-workspace 3'
-
-[[on-window-detected]]
-if.app-id = 'com.apple.Safari'
-run = 'move-node-to-workspace 3'
-
-# ── Workspace 4 ──
-[[on-window-detected]]
-if.app-id = 'com.microsoft.VSCode'
-run = 'move-node-to-workspace 4'
-
-# ── Workspace 5 ──
-[[on-window-detected]]
-if.app-id = 'com.anthropic.claudefordesktop'
-run = 'move-node-to-workspace 5'
-
-# ── Workspace 6 ──
-[[on-window-detected]]
-if.app-id = 'md.obsidian'
-run = 'move-node-to-workspace 6'
-
-# ── Workspace 7 ──
-[[on-window-detected]]
-if.app-id = 'com.readdle.SparkDesktop'
-run = 'move-node-to-workspace 7'
-
-[[on-window-detected]]
-if.app-id = 'com.microsoft.Outlook'
-run = 'move-node-to-workspace 7'
-
-[[on-window-detected]]
-if.app-id = 'ch.protonmail.desktop'
-run = 'move-node-to-workspace 7'
-
-# ── Workspace 8 ──
-[[on-window-detected]]
-if.app-id = 'com.tinyspeck.slackmacgap'
-run = 'move-node-to-workspace 8'
-
-# ── Workspace 9 ──
-[[on-window-detected]]
-if.app-id = 'com.github.GitHubClient'
-run = 'move-node-to-workspace 9'
-
-[[on-window-detected]]
-if.app-id = 'com.linear'
-run = 'move-node-to-workspace 9'
-
-# ── Workspace 0 ──
-[[on-window-detected]]
-if.app-id = 'com.spotify.client'
-run = 'move-node-to-workspace 0'
-
-# ── Bloom ──
-[[on-window-detected]]
-if.app-id = 'io.bloom.app'
-run = 'move-node-to-workspace 0'
-
-# ============================================================================
-# WORKSPACE TO MONITOR ASSIGNMENT (adjust to your setup)
-# ============================================================================
-# Uncomment and modify based on your monitor configuration
-# [workspace-to-monitor-force-assignment]
-# 1 = '^Built-in.*$'       # Workspace 1 on laptop
-# 2 = '^DELL U.*$'         # Workspace 2 on main monitor
