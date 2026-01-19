@@ -5,6 +5,9 @@
 # Start AeroSpace at login
 start-at-login = true
 
+# Default to workspace 2 on startup (avoid workspace 0)
+after-startup-command = ['workspace 2']
+
 # Normalizations
 enable-normalization-flatten-containers = true
 enable-normalization-opposite-orientation-for-nested-containers = true
@@ -26,12 +29,12 @@ preset = 'qwerty'
 
 # Gaps
 [gaps]
-inner.horizontal = 10
-inner.vertical = 10
-outer.left = 10
-outer.bottom = 10
-outer.top = 10
-outer.right = 10
+inner.horizontal = 20
+inner.vertical = 20
+outer.left = 20
+outer.bottom = 20
+outer.top = 20
+outer.right = 20
 
 # ============================================================================
 # MAIN BINDINGS (Hyper = cmd+alt+ctrl+shift)
@@ -39,46 +42,55 @@ outer.right = 10
 [mode.main.binding]
 
 # ----------------------------------------------------------------------------
-# FOCUS & MOVE (horizontal workflow, full wrap-around)
+# FOCUS & MOVE (horizontal + vertical)
 # ----------------------------------------------------------------------------
 cmd-alt-ctrl-shift-a = 'focus --boundaries all-monitors-outer-frame --boundaries-action wrap-around-all-monitors left'
 cmd-alt-ctrl-shift-f = 'focus --boundaries all-monitors-outer-frame --boundaries-action wrap-around-all-monitors right'
+cmd-alt-ctrl-shift-h = 'focus --boundaries all-monitors-outer-frame down'
+cmd-alt-ctrl-shift-l = 'focus --boundaries all-monitors-outer-frame up'
 cmd-alt-ctrl-shift-s = 'move --boundaries all-monitors-outer-frame left'
 cmd-alt-ctrl-shift-d = 'move --boundaries all-monitors-outer-frame right'
+cmd-alt-ctrl-shift-j = 'move --boundaries all-monitors-outer-frame down'
+cmd-alt-ctrl-shift-k = 'move --boundaries all-monitors-outer-frame up'
 
 # ----------------------------------------------------------------------------
-# WORKSPACES — SUMMON (hyper + qwert)
+# WORKSPACES — SUMMON (hyper + wertyuio → 2-9)
 # ----------------------------------------------------------------------------
-cmd-alt-ctrl-shift-q = 'summon-workspace 1'
 cmd-alt-ctrl-shift-w = 'summon-workspace 2'
 cmd-alt-ctrl-shift-e = 'summon-workspace 3'
 cmd-alt-ctrl-shift-r = 'summon-workspace 4'
 cmd-alt-ctrl-shift-t = 'summon-workspace 5'
+cmd-alt-ctrl-shift-y = 'summon-workspace 6'
+cmd-alt-ctrl-shift-u = 'summon-workspace 7'
+cmd-alt-ctrl-shift-i = 'summon-workspace 8'
+cmd-alt-ctrl-shift-o = 'summon-workspace 9'
 
 # ----------------------------------------------------------------------------
-# WORKSPACES — SEND WINDOW (hyper + 12345)
+# WORKSPACES — SEND WINDOW (hyper + 23456789)
 # ----------------------------------------------------------------------------
-cmd-alt-ctrl-shift-1 = 'move-node-to-workspace 1'
 cmd-alt-ctrl-shift-2 = 'move-node-to-workspace 2'
 cmd-alt-ctrl-shift-3 = 'move-node-to-workspace 3'
 cmd-alt-ctrl-shift-4 = 'move-node-to-workspace 4'
 cmd-alt-ctrl-shift-5 = 'move-node-to-workspace 5'
+cmd-alt-ctrl-shift-6 = 'move-node-to-workspace 6'
+cmd-alt-ctrl-shift-7 = 'move-node-to-workspace 7'
+cmd-alt-ctrl-shift-8 = 'move-node-to-workspace 8'
+cmd-alt-ctrl-shift-9 = 'move-node-to-workspace 9'
 
 
 # ----------------------------------------------------------------------------
 # WINDOW & LAYOUT
 # ----------------------------------------------------------------------------
 cmd-alt-ctrl-shift-b = 'layout floating tiling'
-cmd-alt-ctrl-shift-z = 'layout tiles accordion'
-cmd-alt-ctrl-shift-x = 'resize smart -100'
-cmd-alt-ctrl-shift-c = 'resize smart +100'
-cmd-alt-ctrl-shift-v = ['flatten-workspace-tree', 'layout h_tiles']
+cmd-alt-ctrl-shift-z = 'resize smart -100'
+cmd-alt-ctrl-shift-x = 'resize smart +100'
+cmd-alt-ctrl-shift-c = ['flatten-workspace-tree', 'layout h_tiles']
+cmd-alt-ctrl-shift-v = 'layout tiles accordion'
 cmd-alt-ctrl-shift-g = 'move-workspace-to-monitor --wrap-around next'
 
 # ----------------------------------------------------------------------------
-# NAVIGATION & MODES
+# MODES
 # ----------------------------------------------------------------------------
-cmd-alt-ctrl-shift-tab = 'workspace-back-and-forth'
 cmd-alt-ctrl-shift-semicolon = 'mode service'
 
 # ============================================================================
@@ -117,6 +129,30 @@ run = 'layout floating'
 
 [[on-window-detected]]
 if.app-name-regex-substring = 'quicktime'
+run = 'layout floating'
+
+[[on-window-detected]]
+if.app-name-regex-substring = 'activity monitor'
+run = 'layout floating'
+
+[[on-window-detected]]
+if.app-name-regex-substring = 'preview'
+run = 'layout floating'
+
+[[on-window-detected]]
+if.app-name-regex-substring = 'bettersnaptool'
+run = 'layout floating'
+
+[[on-window-detected]]
+if.app-name-regex-substring = 'docker'
+run = 'layout floating'
+
+[[on-window-detected]]
+if.app-name-regex-substring = 'whatsapp'
+run = 'layout floating'
+
+[[on-window-detected]]
+if.app-name-regex-substring = 'fontbase'
 run = 'layout floating'
 
 
