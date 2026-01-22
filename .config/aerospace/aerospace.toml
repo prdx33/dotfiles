@@ -1,27 +1,27 @@
 # AeroSpace Configuration
 # Optimised for Corne keyboard - horizontal workflow
-# Focus: alt + af | Move: alt + sd | Workspaces: alt + qwertyuiop (1-0)
+# Focus: hyper + ad | Move: hyper + sf | Workspaces: hyper + wertyuio (2-9)
 
 # Start AeroSpace at login
-start-at-login = true
+start-at-login = false
 
-# Default to workspace 2 on startup (avoid workspace 0)
-after-startup-command = ['workspace 2']
+# Default to workspace 1 on startup
+after-startup-command = ['workspace 1']
 
 # Normalizations
 enable-normalization-flatten-containers = true
 enable-normalization-opposite-orientation-for-nested-containers = true
 
 # Layouts
-accordion-padding = 30
+accordion-padding = 50
 default-root-container-layout = 'tiles'
-default-root-container-orientation = 'auto'
+default-root-container-orientation = 'horizontal'
 
-# Mouse follows focus when focused monitor changes
-on-focused-monitor-changed = ['move-mouse monitor-lazy-center']
+# Mouse follows focus 
+on-focus-changed = ['move-mouse monitor-lazy-center']
 
 # Disable macOS hide application (easy to hit accidentally)
-automatically-unhide-macos-hidden-apps = false
+automatically-unhide-macos-hidden-apps = true
 
 # Keyboard layout
 [key-mapping]
@@ -44,54 +44,56 @@ outer.right = 20
 # ----------------------------------------------------------------------------
 # FOCUS & MOVE (horizontal + vertical)
 # ----------------------------------------------------------------------------
-cmd-alt-ctrl-shift-a = 'focus --boundaries all-monitors-outer-frame --boundaries-action wrap-around-all-monitors left'
-cmd-alt-ctrl-shift-f = 'focus --boundaries all-monitors-outer-frame --boundaries-action wrap-around-all-monitors right'
-cmd-alt-ctrl-shift-h = 'focus --boundaries all-monitors-outer-frame down'
-cmd-alt-ctrl-shift-l = 'focus --boundaries all-monitors-outer-frame up'
-cmd-alt-ctrl-shift-s = 'move --boundaries all-monitors-outer-frame left'
-cmd-alt-ctrl-shift-d = 'move --boundaries all-monitors-outer-frame right'
-cmd-alt-ctrl-shift-j = 'move --boundaries all-monitors-outer-frame down'
-cmd-alt-ctrl-shift-k = 'move --boundaries all-monitors-outer-frame up'
+cmd-ctrl-alt-shift-a = 'focus --boundaries all-monitors-outer-frame --boundaries-action wrap-around-all-monitors left'
+cmd-ctrl-alt-shift-f = 'focus --boundaries all-monitors-outer-frame --boundaries-action wrap-around-all-monitors right'
+alt-ctrl-a = 'focus --boundaries all-monitors-outer-frame down'
+alt-ctrl-f = 'focus --boundaries all-monitors-outer-frame up'
+cmd-ctrl-alt-shift-s = 'move --boundaries all-monitors-outer-frame left'
+cmd-ctrl-alt-shift-d = 'move --boundaries all-monitors-outer-frame right'
+alt-ctrl-s = 'move --boundaries all-monitors-outer-frame down'
+alt-ctrl-d = 'move --boundaries all-monitors-outer-frame up'
 
 # ----------------------------------------------------------------------------
-# WORKSPACES — SUMMON (hyper + wertyuio → 2-9)
+# WORKSPACES — SUMMON (hyper + qwertyuio → 1-9)
 # ----------------------------------------------------------------------------
-cmd-alt-ctrl-shift-w = 'summon-workspace 2'
-cmd-alt-ctrl-shift-e = 'summon-workspace 3'
-cmd-alt-ctrl-shift-r = 'summon-workspace 4'
-cmd-alt-ctrl-shift-t = 'summon-workspace 5'
-cmd-alt-ctrl-shift-y = 'summon-workspace 6'
-cmd-alt-ctrl-shift-u = 'summon-workspace 7'
-cmd-alt-ctrl-shift-i = 'summon-workspace 8'
-cmd-alt-ctrl-shift-o = 'summon-workspace 9'
+cmd-ctrl-alt-shift-q = 'summon-workspace 1'
+cmd-ctrl-alt-shift-w = 'summon-workspace 2'
+cmd-ctrl-alt-shift-e = 'summon-workspace 3'
+cmd-ctrl-alt-shift-r = 'summon-workspace 4'
+cmd-ctrl-alt-shift-t = 'summon-workspace 5'
+cmd-ctrl-alt-shift-y = 'summon-workspace 6'
+cmd-ctrl-alt-shift-u = 'summon-workspace 7'
+cmd-ctrl-alt-shift-i = 'summon-workspace 8'
+cmd-ctrl-alt-shift-o = 'summon-workspace 9'
 
 # ----------------------------------------------------------------------------
-# WORKSPACES — SEND WINDOW (hyper + 23456789)
+# WORKSPACES — SEND WINDOW (alt-ctrl + qwertyuio → 1-9)
 # ----------------------------------------------------------------------------
-cmd-alt-ctrl-shift-2 = 'move-node-to-workspace 2'
-cmd-alt-ctrl-shift-3 = 'move-node-to-workspace 3'
-cmd-alt-ctrl-shift-4 = 'move-node-to-workspace 4'
-cmd-alt-ctrl-shift-5 = 'move-node-to-workspace 5'
-cmd-alt-ctrl-shift-6 = 'move-node-to-workspace 6'
-cmd-alt-ctrl-shift-7 = 'move-node-to-workspace 7'
-cmd-alt-ctrl-shift-8 = 'move-node-to-workspace 8'
-cmd-alt-ctrl-shift-9 = 'move-node-to-workspace 9'
-
+alt-ctrl-q = ['move-node-to-workspace 1', 'workspace 1']
+alt-ctrl-w = ['move-node-to-workspace 2', 'workspace 2']
+alt-ctrl-e = ['move-node-to-workspace 3', 'workspace 3']
+alt-ctrl-r = ['move-node-to-workspace 4', 'workspace 4']
+alt-ctrl-t = ['move-node-to-workspace 5', 'workspace 5']
+alt-ctrl-y = ['move-node-to-workspace 6', 'workspace 6']
+alt-ctrl-u = ['move-node-to-workspace 7', 'workspace 7']
+alt-ctrl-i = ['move-node-to-workspace 8', 'workspace 8']
+alt-ctrl-o = ['move-node-to-workspace 9', 'workspace 9']
 
 # ----------------------------------------------------------------------------
 # WINDOW & LAYOUT
 # ----------------------------------------------------------------------------
-cmd-alt-ctrl-shift-b = 'layout floating tiling'
-cmd-alt-ctrl-shift-z = 'resize smart -100'
-cmd-alt-ctrl-shift-x = 'resize smart +100'
-cmd-alt-ctrl-shift-c = ['flatten-workspace-tree', 'layout h_tiles']
-cmd-alt-ctrl-shift-v = 'layout tiles accordion'
-cmd-alt-ctrl-shift-g = 'move-workspace-to-monitor --wrap-around next'
+cmd-ctrl-alt-shift-g = ['move-node-to-monitor --wrap-around next', 'focus-monitor --wrap-around next']
+cmd-ctrl-alt-shift-x = 'resize smart -100'
+cmd-ctrl-alt-shift-c = 'resize smart +100'
+cmd-ctrl-alt-shift-b = 'layout floating tiling'
+cmd-ctrl-alt-shift-z = 'layout accordion tiles'
+alt-ctrl-g = 'move-workspace-to-monitor --wrap-around next'
+cmd-ctrl-alt-shift-v = 'layout tiles horizontal vertical'
 
 # ----------------------------------------------------------------------------
 # MODES
 # ----------------------------------------------------------------------------
-cmd-alt-ctrl-shift-semicolon = 'mode service'
+alt-ctrl-semicolon = 'mode service'
 
 # ============================================================================
 # SERVICE MODE (minimal - for rare operations)
@@ -103,7 +105,7 @@ esc = ['reload-config', 'mode main']
 r = ['reload-config', 'mode main']
 
 # Toggle AeroSpace on/off
-e = ['enable toggle', 'mode main']
+e = 'enable toggle'
 
 # Dangerous - intentionally buried
 q = ['close-all-windows-but-current', 'mode main']
@@ -155,4 +157,14 @@ run = 'layout floating'
 if.app-name-regex-substring = 'fontbase'
 run = 'layout floating'
 
+[[on-window-detected]]
+if.app-name-regex-substring = 'bloom'
+run = 'layout floating'
 
+[[on-window-detected]]
+if.app-name-regex-substring = 'karabiner-elements'
+run = 'layout floating'
+
+[[on-window-detected]]
+if.app-name-regex-substring = 'karabiner-eventviewer'
+run = 'layout floating'

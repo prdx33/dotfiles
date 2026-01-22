@@ -1,7 +1,7 @@
 # ============================================================================
 # Matt's Shell Aliases - ProudexOS & Development Workflow
 # Location: ~/.zsh_aliases (source this from ~/.zshrc)
-# Last updated: 15 December 2025
+# Last updated: 20 January 2026
 # ============================================================================
 
 # ────────────────────────────────────────────────────────────────────────────
@@ -28,7 +28,7 @@ alias pbranch='cd ~/Dev/proudexos && git branch'  # List branches
 
 # Claude integration - Open Claude in ProudexOS context
 alias pc='cd ~/Dev/proudexos && claude'           # Start Claude session
-alias ppm='cd ~/Dev/proudexos && claude -c "/pm"' # Quick Linear PM workflow
+alias ppm='cd ~/Dev/proudexos && claude -c "/pm"' # Quick PM workflow
 
 # ────────────────────────────────────────────────────────────────────────────
 # GIT WORKFLOW (General - works in any repo)
@@ -63,12 +63,21 @@ alias gstp='git stash pop'                        # Apply and remove latest stas
 alias gstl='git stash list'                       # List all stashes
 
 # ────────────────────────────────────────────────────────────────────────────
-# LINEAR INTEGRATION
+# GITHUB ISSUES (Task Management)
 # ────────────────────────────────────────────────────────────────────────────
 
-# Project management workflow
-alias lin='cd ~/Dev/proudexos && claude -c "/pm"'        # Open Linear PM flow
-alias lintriage='cd ~/Dev/proudexos && claude -c "/pm triage"' # Quick triage
+# Issue management - run from within any git repo
+alias issues='gh issue list --assignee @me --state open' # My open issues
+alias issuesa='gh issue list --state open'               # All open issues
+alias newissue='gh issue create'                         # Create new issue
+alias closeissue='gh issue close'                        # Close issue by number
+alias viewissue='gh issue view'                          # View issue details
+
+# Quick issue creation with defaults
+alias qi='gh issue create -a @me'                        # Quick issue (assigned to me)
+
+# ProudexOS specific
+alias pissues='cd ~/Dev/proudexos && gh issue list --assignee @me --state open'
 
 # ────────────────────────────────────────────────────────────────────────────
 # SUPABASE

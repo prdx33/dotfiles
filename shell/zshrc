@@ -30,3 +30,7 @@ compinit
 
 # Pocket 3 ingest shortcut
 alias p3="python3 /Users/n0id/Dev/Scripts/pocket3ingest.py"
+
+# Default to ~/Dev for new terminals
+[[ "$PWD" == "$HOME" ]] && cd ~/Dev
+export PATH="$HOME/.local/bin:$PATH"

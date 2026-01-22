@@ -120,4 +120,66 @@ M.maximize = function()
   if win then win:maximize() end
 end
 
+----------------------------------------------------
+-- Alt+Shift Click-Drag to Move Window
+----------------------------------------------------
+local dragging = false
+local dragWindow = nil
+local dragOffset = { x = 0, y = 0 }
+
+M.mouseDragWatcher = hs.eventtap.new(
+  { hs.eventtap.event.types.leftMouseDown,
+    hs.eventtap.event.types.leftMouseDragged,
+    hs.eventtap.event.types.leftMouseUp },
+  function(e)
+    local flags = e:getFlags()
+    local altShift = flags.alt and flags.shift and not flags.cmd and not flags.ctrl
+
+    if e:getType() == hs.eventtap.event.types.leftMouseDown then
+      if altShift then
+        local mousePos = hs.mouse.absolutePosition()
+        local win = hs.window.focusedWindow()
+        if not win then
+          -- Try to find window under mouse
+          local wins = hs.window.orderedWindows()
+          for _, w in ipairs(wins) do
+            local f = w:frame()
+            if mousePos.x >= f.x and mousePos.x <= f.x + f.w and
+               mousePos.y >= f.y and mousePos.y <= f.y + f.h then
+              win = w
+              break
+            end
+          end
+        end
+        if win then
+          dragging = true
+          dragWindow = win
+          local wf = win:frame()
+          dragOffset.x = mousePos.x - wf.x
+          dragOffset.y = mousePos.y - wf.y
+          return true
+        end
+      end
+    elseif e:getType() == hs.eventtap.event.types.leftMouseDragged then
+      if dragging and dragWindow then
+        local mousePos = hs.mouse.absolutePosition()
+        local wf = dragWindow:frame()
+        wf.x = mousePos.x - dragOffset.x
+        wf.y = mousePos.y - dragOffset.y
+        dragWindow:setFrame(wf, 0)
+        return true
+      end
+    elseif e:getType() == hs.eventtap.event.types.leftMouseUp then
+      if dragging then
+        dragging = false
+        dragWindow = nil
+        return true
+      end
+    end
+    return false
+  end
+)
+
+M.mouseDragWatcher:start()
+
 return M
