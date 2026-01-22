@@ -29,12 +29,12 @@ preset = 'qwerty'
 
 # Gaps
 [gaps]
-inner.horizontal = 20
-inner.vertical = 20
-outer.left = 20
-outer.bottom = 20
-outer.top = 20
-outer.right = 20
+inner.horizontal = 30
+inner.vertical = 30
+outer.left = 30
+outer.bottom = 30
+outer.top = 30
+outer.right = 30
 
 # ============================================================================
 # MAIN BINDINGS (Hyper = cmd+alt+ctrl+shift)
@@ -46,58 +46,59 @@ outer.right = 20
 # ----------------------------------------------------------------------------
 cmd-ctrl-alt-shift-a = 'focus --boundaries all-monitors-outer-frame --boundaries-action wrap-around-all-monitors left'
 cmd-ctrl-alt-shift-f = 'focus --boundaries all-monitors-outer-frame --boundaries-action wrap-around-all-monitors right'
-alt-ctrl-a = 'focus --boundaries all-monitors-outer-frame down'
-alt-ctrl-f = 'focus --boundaries all-monitors-outer-frame up'
+alt-ctrl-h = 'focus --boundaries all-monitors-outer-frame down'
+alt-ctrl-l = 'focus --boundaries all-monitors-outer-frame up'
 cmd-ctrl-alt-shift-s = 'move --boundaries all-monitors-outer-frame left'
 cmd-ctrl-alt-shift-d = 'move --boundaries all-monitors-outer-frame right'
-alt-ctrl-s = 'move --boundaries all-monitors-outer-frame down'
-alt-ctrl-d = 'move --boundaries all-monitors-outer-frame up'
+alt-ctrl-j = 'move --boundaries all-monitors-outer-frame down'
+alt-ctrl-k = 'move --boundaries all-monitors-outer-frame up'
 
 # ----------------------------------------------------------------------------
-# WORKSPACES — SUMMON (hyper + qwertyuio → 1-9)
+# WORKSPACES — SUMMON (hyper + qwertyuio → 1-9) 
 # ----------------------------------------------------------------------------
 cmd-ctrl-alt-shift-q = 'summon-workspace 1'
 cmd-ctrl-alt-shift-w = 'summon-workspace 2'
 cmd-ctrl-alt-shift-e = 'summon-workspace 3'
 cmd-ctrl-alt-shift-r = 'summon-workspace 4'
-cmd-ctrl-alt-shift-t = 'summon-workspace 5'
+cmd-ctrl-alt-shift-t = 'focus-monitor --wrap-around next'
 cmd-ctrl-alt-shift-y = 'summon-workspace 6'
 cmd-ctrl-alt-shift-u = 'summon-workspace 7'
 cmd-ctrl-alt-shift-i = 'summon-workspace 8'
 cmd-ctrl-alt-shift-o = 'summon-workspace 9'
 
 # ----------------------------------------------------------------------------
-# WORKSPACES — SEND WINDOW (alt-ctrl + qwertyuio → 1-9)
+# WORKSPACES — SEND WINDOW (alt-ctrl + qwertyuio → 1-9) NO FOLLOW
 # ----------------------------------------------------------------------------
-alt-ctrl-q = ['move-node-to-workspace 1', 'workspace 1']
-alt-ctrl-w = ['move-node-to-workspace 2', 'workspace 2']
-alt-ctrl-e = ['move-node-to-workspace 3', 'workspace 3']
-alt-ctrl-r = ['move-node-to-workspace 4', 'workspace 4']
-alt-ctrl-t = ['move-node-to-workspace 5', 'workspace 5']
-alt-ctrl-y = ['move-node-to-workspace 6', 'workspace 6']
-alt-ctrl-u = ['move-node-to-workspace 7', 'workspace 7']
-alt-ctrl-i = ['move-node-to-workspace 8', 'workspace 8']
-alt-ctrl-o = ['move-node-to-workspace 9', 'workspace 9']
+alt-ctrl-q = 'move-node-to-workspace 1'
+alt-ctrl-w = 'move-node-to-workspace 2'
+alt-ctrl-e = 'move-node-to-workspace 3'
+alt-ctrl-r = 'move-node-to-workspace 4'
+alt-ctrl-t = 'move-node-to-workspace 5' 
+alt-ctrl-y = 'move-node-to-workspace 6'
+alt-ctrl-u = 'move-node-to-workspace 7'
+alt-ctrl-i = 'move-node-to-workspace 8'
+alt-ctrl-o = 'move-node-to-workspace 9'
 
 # ----------------------------------------------------------------------------
 # WINDOW & LAYOUT
 # ----------------------------------------------------------------------------
 cmd-ctrl-alt-shift-g = ['move-node-to-monitor --wrap-around next', 'focus-monitor --wrap-around next']
+alt-ctrl-g = 'move-workspace-to-monitor --wrap-around next'
+
+alt-ctrl-s = 'layout tiles horizontal vertical'
+alt-ctrl-d = 'layout floating tiling'
+alt-ctrl-a = 'layout accordion tiles' 
+
 cmd-ctrl-alt-shift-x = 'resize smart -100'
 cmd-ctrl-alt-shift-c = 'resize smart +100'
-cmd-ctrl-alt-shift-b = 'layout floating tiling'
-cmd-ctrl-alt-shift-z = 'layout accordion tiles'
-alt-ctrl-g = 'move-workspace-to-monitor --wrap-around next'
-cmd-ctrl-alt-shift-v = 'layout tiles horizontal vertical'
 
-# ----------------------------------------------------------------------------
-# MODES
-# ----------------------------------------------------------------------------
-alt-ctrl-semicolon = 'mode service'
+alt-ctrl-f = 'focus-monitor --wrap-around next'
 
 # ============================================================================
 # SERVICE MODE (minimal - for rare operations)
 # ============================================================================
+cmd-ctrl-alt-shift-semicolon = 'mode service'
+
 [mode.service.binding]
 
 # Exit / reload
