@@ -1,7 +1,7 @@
 #!/bin/bash
 
-CUSTOM_ICONS="$HOME/.config/sketchybar/icons/24px"
-CUSTOM_ICONS_DIM="$HOME/.config/sketchybar/icons/24px/dim50"
+CUSTOM_ICONS="$HOME/.config/sketchybar/icons/tinyicon/24px"
+CUSTOM_ICONS_DIM="$HOME/.config/sketchybar/icons/tinyicon/24px/dim50"
 
 # Map bundle IDs to custom icon filename
 get_icon_name() {
