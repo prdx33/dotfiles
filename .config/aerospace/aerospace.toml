@@ -1,6 +1,7 @@
 # AeroSpace Configuration
 # Optimised for Corne keyboard - horizontal workflow
-# Focus: hyper + ad | Move: hyper + sf | Workspaces: hyper + wertyuio (2-9)
+# Focus: alt + af | Move: alt + sd | Workspaces: alt + qwertyuiop (1-9,0)
+# Send window: alt-shift + qwertyuiop
 
 # Start AeroSpace at login
 start-at-login = false
@@ -42,72 +43,71 @@ outer.top = 52
 outer.right = 12
 
 # ============================================================================
-# MAIN BINDINGS (Hyper = cmd+alt+ctrl+shift)
+# MAIN BINDINGS (alt = summon, alt-shift = send)
 # ============================================================================
 [mode.main.binding]
 
 # ----------------------------------------------------------------------------
 # FOCUS & MOVE (horizontal + vertical)
 # ----------------------------------------------------------------------------
-cmd-ctrl-alt-shift-a = 'focus --boundaries all-monitors-outer-frame --boundaries-action wrap-around-all-monitors left'
-cmd-ctrl-alt-shift-f = 'focus --boundaries all-monitors-outer-frame --boundaries-action wrap-around-all-monitors right'
-alt-ctrl-h = 'focus --boundaries all-monitors-outer-frame down'
-alt-ctrl-l = 'focus --boundaries all-monitors-outer-frame up'
-cmd-ctrl-alt-shift-s = 'move --boundaries all-monitors-outer-frame left'
-cmd-ctrl-alt-shift-d = 'move --boundaries all-monitors-outer-frame right'
-alt-ctrl-j = 'move --boundaries all-monitors-outer-frame down'
-alt-ctrl-k = 'move --boundaries all-monitors-outer-frame up'
+alt-a = 'focus --boundaries all-monitors-outer-frame --boundaries-action wrap-around-all-monitors left'
+alt-f = 'focus --boundaries all-monitors-outer-frame --boundaries-action wrap-around-all-monitors right'
+alt-shift-h = 'focus --boundaries all-monitors-outer-frame down'
+alt-shift-l = 'focus --boundaries all-monitors-outer-frame up'
+alt-s = 'move --boundaries all-monitors-outer-frame left'
+alt-d = 'move --boundaries all-monitors-outer-frame right'
+alt-shift-j = 'move --boundaries all-monitors-outer-frame down'
+alt-shift-k = 'move --boundaries all-monitors-outer-frame up'
 
 # ----------------------------------------------------------------------------
 # WORKSPACES — SUMMON (hyper + qwertyuio → 1-9) 
 # ----------------------------------------------------------------------------
-cmd-ctrl-alt-shift-q = 'summon-workspace 1'
-cmd-ctrl-alt-shift-w = 'summon-workspace 2'
-cmd-ctrl-alt-shift-e = 'summon-workspace 3'
-cmd-ctrl-alt-shift-r = 'summon-workspace 4'
-cmd-ctrl-alt-shift-t = 'focus-monitor --wrap-around next'
-cmd-ctrl-alt-shift-y = 'summon-workspace 6'
-cmd-ctrl-alt-shift-u = 'summon-workspace 7'
-cmd-ctrl-alt-shift-i = 'summon-workspace 8'
-cmd-ctrl-alt-shift-o = 'summon-workspace 9'
-cmd-ctrl-alt-shift-p = 'summon-workspace 0'
+alt-q = 'summon-workspace 1'
+alt-w = 'summon-workspace 2'
+alt-e = 'summon-workspace 3'
+alt-r = 'summon-workspace 4'
+alt-t = 'summon-workspace 5'
+alt-y = 'summon-workspace 6'
+alt-u = 'summon-workspace 7'
+alt-i = 'summon-workspace 8'
+alt-o = 'summon-workspace 9'
+alt-p = 'summon-workspace 0'
 
 # ----------------------------------------------------------------------------
 # WORKSPACES — SEND WINDOW (alt-ctrl + qwertyuiop → 1-9,0) NO FOLLOW
 # ----------------------------------------------------------------------------
-alt-ctrl-q = ['move-node-to-workspace 1', 'exec-and-forget sleep 0.1 && ~/.config/sketchybar/plugins/aerospace_refresh.sh && sketchybar --trigger front_app_switched']
-alt-ctrl-w = ['move-node-to-workspace 2', 'exec-and-forget sleep 0.1 && ~/.config/sketchybar/plugins/aerospace_refresh.sh && sketchybar --trigger front_app_switched']
-alt-ctrl-e = ['move-node-to-workspace 3', 'exec-and-forget sleep 0.1 && ~/.config/sketchybar/plugins/aerospace_refresh.sh && sketchybar --trigger front_app_switched']
-alt-ctrl-r = ['move-node-to-workspace 4', 'exec-and-forget sleep 0.1 && ~/.config/sketchybar/plugins/aerospace_refresh.sh && sketchybar --trigger front_app_switched']
-alt-ctrl-t = ['move-node-to-workspace 5', 'exec-and-forget sleep 0.1 && ~/.config/sketchybar/plugins/aerospace_refresh.sh && sketchybar --trigger front_app_switched']
-alt-ctrl-y = ['move-node-to-workspace 6', 'exec-and-forget sleep 0.1 && ~/.config/sketchybar/plugins/aerospace_refresh.sh && sketchybar --trigger front_app_switched']
-alt-ctrl-u = ['move-node-to-workspace 7', 'exec-and-forget sleep 0.1 && ~/.config/sketchybar/plugins/aerospace_refresh.sh && sketchybar --trigger front_app_switched']
-alt-ctrl-i = ['move-node-to-workspace 8', 'exec-and-forget sleep 0.1 && ~/.config/sketchybar/plugins/aerospace_refresh.sh && sketchybar --trigger front_app_switched']
-alt-ctrl-o = ['move-node-to-workspace 9', 'exec-and-forget sleep 0.1 && ~/.config/sketchybar/plugins/aerospace_refresh.sh && sketchybar --trigger front_app_switched']
-alt-ctrl-p = ['move-node-to-workspace 0', 'exec-and-forget sleep 0.1 && ~/.config/sketchybar/plugins/aerospace_refresh.sh && sketchybar --trigger front_app_switched']
+alt-shift-q = ['move-node-to-workspace 1', 'exec-and-forget sleep 0.1 && ~/.config/sketchybar/plugins/aerospace_refresh.sh && sketchybar --trigger front_app_switched']
+alt-shift-w = ['move-node-to-workspace 2', 'exec-and-forget sleep 0.1 && ~/.config/sketchybar/plugins/aerospace_refresh.sh && sketchybar --trigger front_app_switched']
+alt-shift-e = ['move-node-to-workspace 3', 'exec-and-forget sleep 0.1 && ~/.config/sketchybar/plugins/aerospace_refresh.sh && sketchybar --trigger front_app_switched']
+alt-shift-r = ['move-node-to-workspace 4', 'exec-and-forget sleep 0.1 && ~/.config/sketchybar/plugins/aerospace_refresh.sh && sketchybar --trigger front_app_switched']
+alt-shift-t = ['move-node-to-workspace 5', 'exec-and-forget sleep 0.1 && ~/.config/sketchybar/plugins/aerospace_refresh.sh && sketchybar --trigger front_app_switched']
+alt-shift-y = ['move-node-to-workspace 6', 'exec-and-forget sleep 0.1 && ~/.config/sketchybar/plugins/aerospace_refresh.sh && sketchybar --trigger front_app_switched']
+alt-shift-u = ['move-node-to-workspace 7', 'exec-and-forget sleep 0.1 && ~/.config/sketchybar/plugins/aerospace_refresh.sh && sketchybar --trigger front_app_switched']
+alt-shift-i = ['move-node-to-workspace 8', 'exec-and-forget sleep 0.1 && ~/.config/sketchybar/plugins/aerospace_refresh.sh && sketchybar --trigger front_app_switched']
+alt-shift-o = ['move-node-to-workspace 9', 'exec-and-forget sleep 0.1 && ~/.config/sketchybar/plugins/aerospace_refresh.sh && sketchybar --trigger front_app_switched']
+alt-shift-p = ['move-node-to-workspace 0', 'exec-and-forget sleep 0.1 && ~/.config/sketchybar/plugins/aerospace_refresh.sh && sketchybar --trigger front_app_switched']
 
 # ----------------------------------------------------------------------------
 # WINDOW & LAYOUT
 # ----------------------------------------------------------------------------
-cmd-ctrl-alt-shift-g = ['move-node-to-monitor --wrap-around next', 'focus-monitor --wrap-around next', 'exec-and-forget sleep 0.1 && ~/.config/sketchybar/plugins/aerospace_refresh.sh && sketchybar --trigger front_app_switched']
-alt-ctrl-g = ['move-workspace-to-monitor --wrap-around next', 'exec-and-forget sleep 0.1 && ~/.config/sketchybar/plugins/aerospace_refresh.sh && sketchybar --trigger front_app_switched']
+alt-g = ['move-node-to-monitor --wrap-around next', 'focus-monitor --wrap-around next', 'exec-and-forget sleep 0.1 && ~/.config/sketchybar/plugins/aerospace_refresh.sh && sketchybar --trigger front_app_switched']
+alt-shift-g = ['move-workspace-to-monitor --wrap-around next', 'exec-and-forget sleep 0.1 && ~/.config/sketchybar/plugins/aerospace_refresh.sh && sketchybar --trigger front_app_switched']
 
-alt-ctrl-s = 'layout tiles horizontal vertical'
-alt-ctrl-d = 'layout floating tiling'
-alt-ctrl-a = 'layout accordion tiles' 
+alt-shift-a = 'layout tiles horizontal vertical'
+alt-shift-f = 'layout floating tiling'
+alt-shift-s = 'layout accordion tiles' 
 
-cmd-ctrl-alt-shift-x = 'resize smart -100'
-cmd-ctrl-alt-shift-c = 'resize smart +100'
+alt-x = 'resize smart -100'
+alt-c = 'resize smart +100'
 
-alt-ctrl-f = 'focus-monitor --wrap-around next'
+alt-shift-d = 'focus-monitor --wrap-around next'
 
 # Toggle sketchybar (reveal menu bar)
 alt-shift-ctrl-quote = 'exec-and-forget sketchybar --bar hidden=toggle'
-
 # ============================================================================
 # SERVICE MODE (minimal - for rare operations)
 # ============================================================================
-cmd-ctrl-alt-shift-semicolon = 'mode service'
+alt-semicolon = 'mode service'
 
 [mode.service.binding]
 

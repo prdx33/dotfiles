@@ -1,0 +1,47 @@
+#!/bin/bash
+
+# SketchyBar - minimal floating pills, fixed widths
+source "$CONFIG_DIR/colours.sh"
+
+PLUGIN_DIR="$CONFIG_DIR/plugins"
+ITEM_DIR="$CONFIG_DIR/items"
+FONT="Iosevka Aile"
+
+export FONT PLUGIN_DIR
+
+# Bar - transparent container, displays on all monitors, TOP
+sketchybar --bar \
+    position=top \
+    height=40 \
+    color=0x03000000 \
+    blur_radius=50 \
+    margin=0 \
+    y_offset=0 \
+    padding_left=10 \
+    padding_right=10 \
+    notch_width=188 \
+    topmost=on \
+    display=all
+
+# Defaults
+sketchybar --default \
+    icon.font="$FONT:Bold:11.0" \
+    icon.color=0x99ffffff \
+    label.font="$FONT:Bold:11.0" \
+    label.color=$LABEL_COLOR \
+    padding_left=0 \
+    padding_right=0
+
+# === LEFT: Date/Time ===
+source "$ITEM_DIR/datetime.sh"
+
+# === CENTER: App (M1) | Workspaces | App (M2) ===
+source "$ITEM_DIR/spaces.sh"
+
+# === RIGHT: Stats ===
+source "$ITEM_DIR/system.sh"
+
+sketchybar --update
+
+# Force refresh all items after bar loads
+(sleep 1 && "$PLUGIN_DIR/aerospace_refresh.sh") &
