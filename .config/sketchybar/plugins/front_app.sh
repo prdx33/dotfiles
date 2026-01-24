@@ -35,3 +35,6 @@ fi
 # ALL CAPS
 app_upper=$(echo "$app" | tr '[:lower:]' '[:upper:]')
 sketchybar --set $NAME label="$app_upper"
+
+# Refresh workspace icons when front app changes
+~/.config/sketchybar/plugins/aerospace_refresh.sh &

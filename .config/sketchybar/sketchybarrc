@@ -13,7 +13,7 @@ export FONT PLUGIN_DIR
 sketchybar --bar \
     position=top \
     height=40 \
-    color=0x03000000 \
+    color=0x0d000000 \
     blur_radius=50 \
     margin=0 \
     y_offset=0 \

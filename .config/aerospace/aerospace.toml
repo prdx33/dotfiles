@@ -95,7 +95,10 @@ alt-shift-g = ['move-workspace-to-monitor --wrap-around next', 'exec-and-forget 
 
 alt-shift-a = 'layout tiles horizontal vertical'
 alt-shift-f = 'layout floating tiling'
-alt-shift-s = 'layout accordion tiles' 
+alt-shift-s = 'layout accordion tiles'
+
+# Float all windows on workspace
+cmd-ctrl-alt-shift-w = 'exec-and-forget ~/.config/aerospace/scripts/toggle-workspace-float.sh'
 
 alt-x = 'resize smart -100'
 alt-c = 'resize smart +100'
@@ -115,8 +118,8 @@ alt-semicolon = 'mode service'
 esc = ['reload-config', 'mode main']
 r = ['reload-config', 'mode main']
 
-# Toggle AeroSpace on/off
-e = 'enable toggle'
+# Float all windows on workspace (keeps aerospace running)
+e = ['exec-and-forget ~/.config/aerospace/scripts/toggle-workspace-float.sh', 'mode main']
 
 # Dangerous - intentionally buried
 q = ['close-all-windows-but-current', 'mode main']
