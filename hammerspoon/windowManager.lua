@@ -41,145 +41,143 @@ M.toggleMinimize = function()
 end
 
 ----------------------------------------------------
--- Maximize / Fullscreen
+-- Cmd+Option Hold-to-Move / Cmd+Option+Shift Hold-to-Resize
+-- Hold Cmd+Option to drag window under cursor
+-- Hold Cmd+Option+Shift to resize window
 ----------------------------------------------------
-M.toggleMaximize = function()
-  local win = hs.window.focusedWindow()
-  if not win then return end
+local holdState = {
+  mode = nil,  -- nil, "move", or "resize"
+  window = nil,
+  initialMousePos = nil,
+  initialFrame = nil,
+  lastUpdate = 0,
+}
 
-  if win:isFullScreen() then
-    win:setFullScreen(false)
-  else
-    win:setFullScreen(true)
-  end
-end
+-- Throttle interval in nanoseconds (~120fps)
+local THROTTLE_NS = 8000000  -- 8ms in nanoseconds
+local MIN_WINDOW_SIZE = 100  -- minimum width/height when resizing
 
-----------------------------------------------------
--- Center
-----------------------------------------------------
-M.centerWindow = function()
-  local win = hs.window.focusedWindow()
-  if not win then return end
-  win:centerOnScreen()
-end
+-- Cache frequently used functions
+local absoluteTime = hs.timer.absoluteTime
+local absolutePosition = hs.mouse.absolutePosition
+local orderedWindows = hs.window.orderedWindows
+local max = math.max
 
-----------------------------------------------------
--- Move to Next Screen
-----------------------------------------------------
-M.moveToNextScreen = function()
-  local win = hs.window.focusedWindow()
-  if not win then return end
-  win:moveToScreen(win:screen():next(), true, true, 0)
-end
-
-----------------------------------------------------
--- Tiling (Spectacle-style)
-----------------------------------------------------
-M.leftHalf = function()
-  local win = hs.window.focusedWindow()
-  if win then win:moveToUnit(hs.layout.left50) end
-end
-
-M.rightHalf = function()
-  local win = hs.window.focusedWindow()
-  if win then win:moveToUnit(hs.layout.right50) end
-end
-
-M.topHalf = function()
-  local win = hs.window.focusedWindow()
-  if win then win:moveToUnit(hs.layout.top50) end
-end
-
-M.bottomHalf = function()
-  local win = hs.window.focusedWindow()
-  if win then win:moveToUnit(hs.layout.bottom50) end
-end
-
-M.topLeft = function()
-  local win = hs.window.focusedWindow()
-  if win then win:moveToUnit({0,0,0.5,0.5}) end
-end
-
-M.topRight = function()
-  local win = hs.window.focusedWindow()
-  if win then win:moveToUnit({0.5,0,1,0.5}) end
-end
-
-M.bottomLeft = function()
-  local win = hs.window.focusedWindow()
-  if win then win:moveToUnit({0,0.5,0.5,1}) end
-end
-
-M.bottomRight = function()
-  local win = hs.window.focusedWindow()
-  if win then win:moveToUnit({0.5,0.5,1,1}) end
-end
-
-M.maximize = function()
-  local win = hs.window.focusedWindow()
-  if win then win:maximize() end
-end
-
-----------------------------------------------------
--- Alt+Shift Click-Drag to Move Window
-----------------------------------------------------
-local dragging = false
-local dragWindow = nil
-local dragOffset = { x = 0, y = 0 }
-
-M.mouseDragWatcher = hs.eventtap.new(
-  { hs.eventtap.event.types.leftMouseDown,
-    hs.eventtap.event.types.leftMouseDragged,
-    hs.eventtap.event.types.leftMouseUp },
-  function(e)
-    local flags = e:getFlags()
-    local altShift = flags.alt and flags.shift and not flags.cmd and not flags.ctrl
-
-    if e:getType() == hs.eventtap.event.types.leftMouseDown then
-      if altShift then
-        local mousePos = hs.mouse.absolutePosition()
-        local win = hs.window.focusedWindow()
-        if not win then
-          -- Try to find window under mouse
-          local wins = hs.window.orderedWindows()
-          for _, w in ipairs(wins) do
-            local f = w:frame()
-            if mousePos.x >= f.x and mousePos.x <= f.x + f.w and
-               mousePos.y >= f.y and mousePos.y <= f.y + f.h then
-              win = w
-              break
-            end
-          end
-        end
-        if win then
-          dragging = true
-          dragWindow = win
-          local wf = win:frame()
-          dragOffset.x = mousePos.x - wf.x
-          dragOffset.y = mousePos.y - wf.y
-          return true
-        end
-      end
-    elseif e:getType() == hs.eventtap.event.types.leftMouseDragged then
-      if dragging and dragWindow then
-        local mousePos = hs.mouse.absolutePosition()
-        local wf = dragWindow:frame()
-        wf.x = mousePos.x - dragOffset.x
-        wf.y = mousePos.y - dragOffset.y
-        dragWindow:setFrame(wf, 0)
-        return true
-      end
-    elseif e:getType() == hs.eventtap.event.types.leftMouseUp then
-      if dragging then
-        dragging = false
-        dragWindow = nil
-        return true
+-- Helper: find topmost window under cursor
+local function windowUnderCursor(mousePos)
+  local wins = orderedWindows()
+  for _, w in ipairs(wins) do
+    if w:isVisible() and w:isStandard() then
+      local f = w:frame()
+      if mousePos.x >= f.x and mousePos.x <= f.x + f.w and
+         mousePos.y >= f.y and mousePos.y <= f.y + f.h then
+        return w
       end
     end
+  end
+  return nil
+end
+
+-- Combined eventtap for both flags and mouse movement
+local holdMoveWatcher = hs.eventtap.new(
+  { hs.eventtap.event.types.flagsChanged, hs.eventtap.event.types.mouseMoved },
+  function(e)
+    local eventType = e:getType()
+    local flags = e:getFlags()
+
+    -- Detect modifier combinations
+    local cmdOpt = flags.cmd and flags.alt and not flags.shift and not flags.ctrl
+    local cmdOptShift = flags.cmd and flags.alt and flags.shift and not flags.ctrl
+
+    if eventType == hs.eventtap.event.types.flagsChanged then
+      -- Determine target mode based on modifiers
+      local targetMode = nil
+      if cmdOptShift then
+        targetMode = "resize"
+      elseif cmdOpt then
+        targetMode = "move"
+      end
+
+      if targetMode and not holdState.mode then
+        -- Activating: entering move or resize mode
+        local mousePos = absolutePosition()
+        local win = windowUnderCursor(mousePos)
+
+        if win then
+          local f = win:frame()
+          holdState.mode = targetMode
+          holdState.window = win
+          holdState.initialMousePos = { x = mousePos.x, y = mousePos.y }
+          holdState.initialFrame = { x = f.x, y = f.y, w = f.w, h = f.h }
+          holdState.lastUpdate = 0
+        end
+
+      elseif targetMode and holdState.mode and targetMode ~= holdState.mode then
+        -- Switching modes (e.g., added or released shift)
+        local mousePos = absolutePosition()
+        local f = holdState.window:frame()
+        holdState.mode = targetMode
+        holdState.initialMousePos = { x = mousePos.x, y = mousePos.y }
+        holdState.initialFrame = { x = f.x, y = f.y, w = f.w, h = f.h }
+
+      elseif not targetMode and holdState.mode then
+        -- Deactivating: modifiers released
+        holdState.mode = nil
+        holdState.window = nil
+        holdState.initialMousePos = nil
+        holdState.initialFrame = nil
+      end
+
+    elseif eventType == hs.eventtap.event.types.mouseMoved then
+      if holdState.mode and holdState.window then
+        -- Throttle updates for smoother movement (nanosecond precision)
+        local now = absoluteTime()
+        if now - holdState.lastUpdate < THROTTLE_NS then
+          return false
+        end
+        holdState.lastUpdate = now
+
+        local ok, _ = pcall(function()
+          local currentMouse = absolutePosition()
+          local deltaX = currentMouse.x - holdState.initialMousePos.x
+          local deltaY = currentMouse.y - holdState.initialMousePos.y
+          local init = holdState.initialFrame
+
+          if holdState.mode == "move" then
+            -- Move: shift position, keep size
+            holdState.window:setFrame({
+              x = init.x + deltaX,
+              y = init.y + deltaY,
+              w = init.w,
+              h = init.h
+            }, 0)
+
+          elseif holdState.mode == "resize" then
+            -- Resize: keep position, adjust size (with minimum)
+            local newW = max(MIN_WINDOW_SIZE, init.w + deltaX)
+            local newH = max(MIN_WINDOW_SIZE, init.h + deltaY)
+            holdState.window:setFrame({
+              x = init.x,
+              y = init.y,
+              w = newW,
+              h = newH
+            }, 0)
+          end
+        end)
+        if not ok then
+          -- Reset state on error
+          holdState.mode = nil
+          holdState.window = nil
+        end
+      end
+    end
+
     return false
   end
 )
 
-M.mouseDragWatcher:start()
+-- Keep reference to prevent garbage collection
+M.holdMoveWatcher = holdMoveWatcher
+holdMoveWatcher:start()
 
 return M

@@ -14,6 +14,7 @@ hs.alert.defaultStyle.duration = 0.15
 ------------------------------------------------------------
 -- Minimise / Restore
 ------------------------------------------------------------
+package.loaded["windowManager"] = nil  -- force reload on config reload
 local wm = require("windowManager")
 
 ------------------------------------------------------------
