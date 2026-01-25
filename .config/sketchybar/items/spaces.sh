@@ -6,9 +6,9 @@
 source "$CONFIG_DIR/colours.sh"
 
 MAX_ICONS=4
-FONT_SIZE=15.0
+FONT_SIZE=17.0
 WORKSPACE_GAP=14
-MONO_FONT="JetBrainsMono Nerd Font Mono"
+MONO_FONT="Iosevka"
 
 # Left app (monitor 1) - fixed width for centering balance
 sketchybar --add item app_m1 center \
@@ -35,7 +35,7 @@ for sid in $WORKSPACES; do
             icon.font="$MONO_FONT:Light:$FONT_SIZE" \
             icon.color=$WS_EMPTY \
             icon.padding_left=$WORKSPACE_GAP \
-            icon.padding_right=3 \
+            icon.padding_right=4 \
             label.drawing=off \
             background.drawing=off \
             click_script="aerospace workspace $sid"

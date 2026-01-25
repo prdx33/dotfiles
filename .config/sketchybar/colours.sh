@@ -17,6 +17,7 @@ export BG_COLOR=0xcc1a1a1a
 export WS_FOCUSED=0xffe8f0f8         # 100% - focused monitor
 export WS_UNFOCUSED=0x80e8f0f8       # 50% - unfocused monitor
 export WS_INACTIVE=0x33e8f0f8        # 20% - all other workspaces
+export WS_TILING=0xff6ee7b7          # mint green - tiling mode indicator
 
 # Stats
 export STAT_LABEL=0xccffffff         # Text with opacity

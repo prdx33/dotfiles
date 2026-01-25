@@ -9,7 +9,7 @@ ITEM_HEIGHT=32
 GRAPH_WIDTH=60
 
 # Ping with green dot
-sketchybar --add item ping right \
+sketchybar --add item ping left \
     --set ping \
         icon="●" \
         icon.font="$FONT:Bold:10.0" \
@@ -23,7 +23,7 @@ sketchybar --add item ping right \
         script="$PLUGIN_DIR/ping.sh"
 
 # Network down
-sketchybar --add item net_down right \
+sketchybar --add item net_down left \
     --set net_down \
         icon="D" \
         icon.font="$FONT:Bold:10.0" \
@@ -34,7 +34,7 @@ sketchybar --add item net_down right \
         background.drawing=off
 
 # Network up
-sketchybar --add item net_up right \
+sketchybar --add item net_up left \
     --set net_up \
         icon="U" \
         icon.font="$FONT:Bold:10.0" \
@@ -47,7 +47,7 @@ sketchybar --add item net_up right \
         script="$PLUGIN_DIR/network.sh"
 
 # Memory with graph
-sketchybar --add graph memory right $GRAPH_WIDTH \
+sketchybar --add graph memory left $GRAPH_WIDTH \
     --set memory \
         icon.drawing=off \
         label.font="$FONT:Bold:10.0" \
@@ -64,7 +64,7 @@ sketchybar --add graph memory right $GRAPH_WIDTH \
         script="$PLUGIN_DIR/memory.sh"
 
 # CPU with graph
-sketchybar --add graph cpu right $GRAPH_WIDTH \
+sketchybar --add graph cpu left $GRAPH_WIDTH \
     --set cpu \
         icon.drawing=off \
         label.font="$FONT:Bold:10.0" \
@@ -81,7 +81,7 @@ sketchybar --add graph cpu right $GRAPH_WIDTH \
         script="$PLUGIN_DIR/cpu.sh"
 
 # GPU with graph
-sketchybar --add graph gpu right $GRAPH_WIDTH \
+sketchybar --add graph gpu left $GRAPH_WIDTH \
     --set gpu \
         icon.drawing=off \
         label.font="$FONT:Bold:10.0" \
@@ -98,7 +98,7 @@ sketchybar --add graph gpu right $GRAPH_WIDTH \
         script="$PLUGIN_DIR/gpu.sh"
 
 # Disk read
-sketchybar --add item disk_read right \
+sketchybar --add item disk_read left \
     --set disk_read \
         icon="R" \
         icon.font="$FONT:Bold:10.0" \
@@ -109,7 +109,7 @@ sketchybar --add item disk_read right \
         background.drawing=off
 
 # Disk write
-sketchybar --add item disk_write right \
+sketchybar --add item disk_write left \
     --set disk_write \
         icon="W" \
         icon.font="$FONT:Bold:10.0" \

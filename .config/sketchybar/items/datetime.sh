@@ -1,10 +1,10 @@
 #!/bin/bash
 
-# Date/Time - far left
+# Date/Time - far right
 
 source "$CONFIG_DIR/colours.sh"
 
-sketchybar --add item datetime left \
+sketchybar --add item datetime right \
     --set datetime \
         icon.drawing=off \
         label.font="$FONT:Bold:11.0" \

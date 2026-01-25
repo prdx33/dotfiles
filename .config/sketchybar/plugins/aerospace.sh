@@ -6,9 +6,9 @@ source "$CONFIG_DIR/colours.sh"
 source "$CONFIG_DIR/plugins/app_icons.sh"
 
 FONT="Iosevka Aile"
-MONO_FONT="JetBrainsMono Nerd Font Mono"
+MONO_FONT="Iosevka"
 MAX_ICONS=4
-FONT_SIZE=15.0
+FONT_SIZE=17.0
 ICON_SCALE=0.38
 ICON_WIDTH=16
 WORKSPACE_GAP=14
@@ -30,16 +30,21 @@ num_apps=${#BUNDLES[@]}
 # Determine state - simplified to 3
 if [[ "$space_id" == "$focused_ws" ]]; then
     # Focused monitor - 100%
-    icon_font="$MONO_FONT:Bold:$FONT_SIZE"
+    icon_font="$MONO_FONT:Heavy:$FONT_SIZE"
     icon_color=$WS_FOCUSED
 elif [[ "$space_id" == "$m1_ws" || "$space_id" == "$m2_ws" ]]; then
     # Unfocused monitor - 50%
-    icon_font="$MONO_FONT:Bold:$FONT_SIZE"
+    icon_font="$MONO_FONT:Heavy:$FONT_SIZE"
     icon_color=$WS_UNFOCUSED
 else
     # All other workspaces - 20%
     icon_font="$MONO_FONT:Light:$FONT_SIZE"
     icon_color=$WS_INACTIVE
+fi
+
+# Tiling mode override - mint green (floating is default)
+if [[ -f "$HOME/.cache/aerospace/tiling-mode-$space_id" ]]; then
+    icon_color=$WS_TILING
 fi
 
 # Update workspace number

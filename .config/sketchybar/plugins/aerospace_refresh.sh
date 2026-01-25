@@ -13,9 +13,9 @@ source "$CONFIG_DIR/plugins/icon_map.sh"
 APP_FONT="sketchybar-app-font:Regular:14.0"
 
 FONT="Iosevka Aile"
-MONO_FONT="JetBrainsMono Nerd Font Mono"
+MONO_FONT="Iosevka"
 MAX_ICONS=4
-FONT_SIZE=15.0
+FONT_SIZE=17.0
 ICON_SCALE=0.5
 ICON_WIDTH=16
 ICON_GAP=3
@@ -41,7 +41,7 @@ for space_id in $WORKSPACES; do
     # Determine state - 2 states only
     if [[ "$space_id" == "$focused_ws" || "$space_id" == "$m1_ws" || "$space_id" == "$m2_ws" ]]; then
         # Active on any monitor - 100%
-        icon_font="$MONO_FONT:Bold:$FONT_SIZE"
+        icon_font="$MONO_FONT:Heavy:$FONT_SIZE"
         icon_color=$WS_FOCUSED
         icon_state="focused"
     else
@@ -49,6 +49,11 @@ for space_id in $WORKSPACES; do
         icon_font="$MONO_FONT:Light:$FONT_SIZE"
         icon_color=$WS_UNFOCUSED
         icon_state="unfocused"
+    fi
+
+    # Tiling mode override - mint green (floating is default)
+    if [[ -f "$HOME/.cache/aerospace/tiling-mode-$space_id" ]]; then
+        icon_color=$WS_TILING
     fi
 
     # Update workspace number - hide if empty and not active
