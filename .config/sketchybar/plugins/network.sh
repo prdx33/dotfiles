@@ -1,42 +1,27 @@
 #!/bin/bash
 
-# Network plugin - updates net_down and net_up items
+# Network plugin using ifstat
+# Fixed width format: "D XXX.XX MB" (11 chars total)
 
-CACHE="/tmp/sketchybar_net"
+# Get speeds in Kbps
+UPDOWN=$(ifstat -i en0 -b 0.1 1 2>/dev/null | tail -1)
+DOWN=$(echo "$UPDOWN" | awk '{print $1}' 2>/dev/null)
+UP=$(echo "$UPDOWN" | awk '{print $2}' 2>/dev/null)
 
-# Get current bytes
-for iface in en0 en1 en4; do
-    bytes=$(netstat -ib | awk -v iface="$iface" '$1==iface && $3~/Link/ {print $7, $10; exit}')
-    [[ -n "$bytes" ]] && break
-done
-read rx tx <<< "$bytes"
+# Default to 0 if empty or non-numeric
+[[ -z "$DOWN" || ! "$DOWN" =~ ^[0-9.]+$ ]] && DOWN="0"
+[[ -z "$UP" || ! "$UP" =~ ^[0-9.]+$ ]] && UP="0"
 
-if [[ -f "$CACHE" && -n "$rx" ]]; then
-    read prev_rx prev_tx prev_time < "$CACHE"
-    now=$(date +%s)
-    elapsed=$((now - prev_time))
-    [[ $elapsed -lt 1 ]] && elapsed=1
+# Convert Kbps to MB/s (divide by 8000)
+DOWN_MB=$(echo "scale=2; $DOWN / 8000" | bc 2>/dev/null) || DOWN_MB="0.00"
+UP_MB=$(echo "scale=2; $UP / 8000" | bc 2>/dev/null) || UP_MB="0.00"
 
-    rx_rate=$(( (rx - prev_rx) / elapsed / 1024 ))
-    tx_rate=$(( (tx - prev_tx) / elapsed / 1024 ))
-    [[ $rx_rate -lt 0 ]] && rx_rate=0
-    [[ $tx_rate -lt 0 ]] && tx_rate=0
+[[ -z "$DOWN_MB" ]] && DOWN_MB="0.00"
+[[ -z "$UP_MB" ]] && UP_MB="0.00"
 
-    # Format
-    if [[ $rx_rate -ge 1024 ]]; then
-        rx_fmt="$(echo "scale=1; $rx_rate/1024" | bc)M"
-    else
-        rx_fmt="${rx_rate}K"
-    fi
-    if [[ $tx_rate -ge 1024 ]]; then
-        tx_fmt="$(echo "scale=1; $tx_rate/1024" | bc)M"
-    else
-        tx_fmt="${tx_rate}K"
-    fi
+# Fixed width: "X NNN.NN MB" where X is glyph, number is 6 chars (padded)
+DOWN_FMT=$(printf "D %6.2f MB" "$DOWN_MB")
+UP_FMT=$(printf "U %6.2f MB" "$UP_MB")
 
-    sketchybar --set net_down label="$rx_fmt" --set net_up label="$tx_fmt"
-else
-    sketchybar --set net_down label="0K" --set net_up label="0K"
-fi
-
-[[ -n "$rx" ]] && echo "$rx $tx $(date +%s)" > "$CACHE"
+sketchybar --set net_down label="$DOWN_FMT" \
+           --set net_up label="$UP_FMT" 2>/dev/null

@@ -5,8 +5,8 @@
 source "$CONFIG_DIR/colours.sh"
 source "$CONFIG_DIR/plugins/app_icons.sh"
 
-FONT="Iosevka Aile"
-MONO_FONT="Iosevka"
+FONT="Iosevka Extended"
+MONO_FONT="Iosevka Extended"
 MAX_ICONS=4
 FONT_SIZE=17.0
 ICON_SCALE=0.38
@@ -27,18 +27,17 @@ bundle_ids=$(get_workspace_apps "$space_id")
 IFS=' ' read -ra BUNDLES <<< "$bundle_ids"
 num_apps=${#BUNDLES[@]}
 
-# Determine state - simplified to 3
+# Determine state - all use Bold, opacity varies
+icon_font="$MONO_FONT:Bold:$FONT_SIZE"
+
 if [[ "$space_id" == "$focused_ws" ]]; then
-    # Focused monitor - 100%
-    icon_font="$MONO_FONT:Heavy:$FONT_SIZE"
+    # Focused - 100%
     icon_color=$WS_FOCUSED
 elif [[ "$space_id" == "$m1_ws" || "$space_id" == "$m2_ws" ]]; then
-    # Unfocused monitor - 50%
-    icon_font="$MONO_FONT:Heavy:$FONT_SIZE"
+    # Visible on monitor - 80%
     icon_color=$WS_UNFOCUSED
 else
-    # All other workspaces - 20%
-    icon_font="$MONO_FONT:Light:$FONT_SIZE"
+    # Non-active with apps - 50%
     icon_color=$WS_INACTIVE
 fi
 

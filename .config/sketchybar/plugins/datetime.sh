@@ -1,10 +1,12 @@
 #!/bin/bash
 
-# Date/Time plugin - format: FRI 23 JAN 2:34 PM (ALL CAPS, spaced)
+# Date/Time plugin - updates both stacked items
+# Date: SA 2501 (day abbrev + DDMM)
+# Time: 5:34 PM
 
-day=$(date '+%a' | tr '[:lower:]' '[:upper:]')
-date_num=$(date '+%d')
-month=$(date '+%b' | tr '[:lower:]' '[:upper:]')
-time=$(date '+%l:%M %p' | tr '[:lower:]' '[:upper:]' | xargs)
+day_abbrev=$(date '+%a' | cut -c1-2 | tr '[:lower:]' '[:upper:]')
+date_fmt=$(date '+%d%m')
+time=$(date '+%l:%M %p' | tr '[:lower:]' '[:upper:]')
 
-sketchybar --set $NAME label="${day} ${date_num} ${month} ${time}"
+sketchybar --set date label=" ${day_abbrev} ${date_fmt}" \
+           --set time label="${time}"

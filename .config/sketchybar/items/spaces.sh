@@ -8,13 +8,13 @@ source "$CONFIG_DIR/colours.sh"
 MAX_ICONS=4
 FONT_SIZE=17.0
 WORKSPACE_GAP=14
-MONO_FONT="Iosevka"
+MONO_FONT="Iosevka Extended"
 
 # Left app (monitor 1) - fixed width for centering balance
 sketchybar --add item app_m1 center \
     --set app_m1 \
         icon.drawing=off \
-        label.font="$FONT:Heavy:11.0" \
+        label.font="$MONO_FONT:Bold:11.0" \
         label.color=$WS_FOCUSED \
         label.width=100 \
         label.align=right \
@@ -22,17 +22,17 @@ sketchybar --add item app_m1 center \
         background.drawing=off \
         update_freq=2 \
         script="$PLUGIN_DIR/front_app.sh 1" \
-    --subscribe app_m1 front_app_switched aerospace_workspace_change
+    --subscribe app_m1 front_app_switched aerospace_workspace_change system_woke
 
-# Workspaces 1-9 then 0
-WORKSPACES="1 2 3 4 5 6 7 8 9 0"
+# Workspaces 1-9, 0, then 10
+WORKSPACES="1 2 3 4 5 6 7 8 9 0 10"
 
 for sid in $WORKSPACES; do
     # Workspace number only
     sketchybar --add item space.$sid center \
         --set space.$sid \
             icon="$sid" \
-            icon.font="$MONO_FONT:Light:$FONT_SIZE" \
+            icon.font="$MONO_FONT:Bold:$FONT_SIZE" \
             icon.color=$WS_EMPTY \
             icon.padding_left=$WORKSPACE_GAP \
             icon.padding_right=4 \
@@ -73,7 +73,7 @@ sketchybar --add bracket spaces '/space\..*/' spaces_spacer \
 sketchybar --add item app_m2 center \
     --set app_m2 \
         icon.drawing=off \
-        label.font="$FONT:Heavy:11.0" \
+        label.font="$MONO_FONT:Bold:11.0" \
         label.color=$WS_FOCUSED \
         label.width=100 \
         label.align=left \

@@ -5,15 +5,28 @@
 # - Focused workspace: 100%
 # - Everything else: 50%
 
+# Prevent concurrent runs (use mkdir for atomic lock on macOS)
+LOCKDIR="/tmp/sketchybar_aerospace_refresh.lock"
+if ! mkdir "$LOCKDIR" 2>/dev/null; then
+    # Check if lock is stale (older than 5 seconds)
+    if [[ -d "$LOCKDIR" ]] && [[ $(($(date +%s) - $(stat -f%m "$LOCKDIR" 2>/dev/null || echo 0))) -gt 5 ]]; then
+        rm -rf "$LOCKDIR"
+        mkdir "$LOCKDIR" 2>/dev/null || exit 0
+    else
+        exit 0
+    fi
+fi
+trap "rm -rf '$LOCKDIR'" EXIT
+
 CONFIG_DIR="$HOME/.config/sketchybar"
-source "$CONFIG_DIR/colours.sh"
-source "$CONFIG_DIR/plugins/app_icons.sh"
-source "$CONFIG_DIR/plugins/icon_map.sh"
+source "$CONFIG_DIR/colours.sh" 2>/dev/null || exit 0
+source "$CONFIG_DIR/plugins/app_icons.sh" 2>/dev/null
+source "$CONFIG_DIR/plugins/icon_map.sh" 2>/dev/null
 
 APP_FONT="sketchybar-app-font:Regular:14.0"
 
-FONT="Iosevka Aile"
-MONO_FONT="Iosevka"
+FONT="Iosevka Extended"
+MONO_FONT="Iosevka Extended"
 MAX_ICONS=4
 FONT_SIZE=17.0
 ICON_SCALE=0.5
@@ -22,8 +35,8 @@ ICON_GAP=3
 WS_ICON_GAP=8
 WORKSPACE_GAP=20
 
-# Workspaces 1-9 then 0
-WORKSPACES="1 2 3 4 5 6 7 8 9 0"
+# Workspaces 1-9, 0, then 10
+WORKSPACES="1 2 3 4 5 6 7 8 9 0 10"
 
 # Get visible (active) workspace for each monitor
 m1_ws=$(aerospace list-workspaces --monitor 1 --visible 2>/dev/null | xargs)
@@ -38,23 +51,21 @@ for space_id in $WORKSPACES; do
     IFS=' ' read -ra BUNDLES <<< "$bundle_ids"
     num_apps=${#BUNDLES[@]}
 
-    # Determine state - 2 states only
+    # Determine state - all use Bold, opacity varies
+    # Active on monitor = 100% white, others with apps = 50% white
+    icon_font="$MONO_FONT:Bold:$FONT_SIZE"
+
     if [[ "$space_id" == "$focused_ws" || "$space_id" == "$m1_ws" || "$space_id" == "$m2_ws" ]]; then
         # Active on any monitor - 100%
-        icon_font="$MONO_FONT:Heavy:$FONT_SIZE"
         icon_color=$WS_FOCUSED
         icon_state="focused"
     else
         # Everything else - 50%
-        icon_font="$MONO_FONT:Light:$FONT_SIZE"
         icon_color=$WS_UNFOCUSED
         icon_state="unfocused"
     fi
 
-    # Tiling mode override - mint green (floating is default)
-    if [[ -f "$HOME/.cache/aerospace/tiling-mode-$space_id" ]]; then
-        icon_color=$WS_TILING
-    fi
+    # No colour override - all white
 
     # Update workspace number - hide if empty and not active
     if [[ $num_apps -eq 0 && "$space_id" != "$focused_ws" && "$space_id" != "$m1_ws" && "$space_id" != "$m2_ws" ]]; then
@@ -166,4 +177,7 @@ if [[ -n "$m2_ws" && "$m2_ws" != "$m1_ws" ]]; then
 fi
 
 # Execute all moves in single call
-sketchybar $move_cmd
+sketchybar $move_cmd 2>/dev/null
+
+# Update JankyBorders colour based on focused window layout
+"$CONFIG_DIR/plugins/borders.sh" 2>/dev/null &

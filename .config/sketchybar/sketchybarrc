@@ -1,44 +1,79 @@
 #!/bin/bash
 
-# SketchyBar - minimal floating pills, fixed widths
+# SketchyBar - clean monospace layout
+# NOTE: All text should be UPPERCASE throughout the bar
 source "$CONFIG_DIR/colours.sh"
 
 PLUGIN_DIR="$CONFIG_DIR/plugins"
 ITEM_DIR="$CONFIG_DIR/items"
-FONT="Iosevka Aile"
+FONT="Iosevka Extended"
+MONO_FONT="Iosevka Extended"
 
-export FONT PLUGIN_DIR
+export FONT MONO_FONT PLUGIN_DIR
 
-# Bar - transparent container, displays on all monitors, TOP
+# Bar - 10% opacity background
 sketchybar --bar \
     position=top \
-    height=40 \
-    color=0x0d000000 \
+    height=35 \
+    color=0x1A000000 \
     blur_radius=50 \
     margin=0 \
     y_offset=0 \
-    padding_left=10 \
-    padding_right=10 \
+    padding_left=8 \
+    padding_right=8 \
     notch_width=188 \
     topmost=on \
+    sticky=on \
     display=all
 
-# Defaults
+# Defaults - monospace font
 sketchybar --default \
-    icon.font="$FONT:Bold:11.0" \
-    icon.color=0x99ffffff \
-    label.font="$FONT:Bold:11.0" \
+    icon.font="$MONO_FONT:Bold:11.0" \
+    icon.color=0xccffffff \
+    label.font="$MONO_FONT:Bold:11.0" \
     label.color=$LABEL_COLOR \
     padding_left=0 \
     padding_right=0
 
-# === LEFT: Date/Time ===
-source "$ITEM_DIR/datetime.sh"
+# === LEFT: Logo ===
+sketchybar --add item logo left \
+    --set logo \
+        icon.drawing=off \
+        label.drawing=off \
+        background.image="$CONFIG_DIR/icons/logo.png" \
+        background.image.scale=0.06 \
+        background.image.padding_left=4 \
+        background.image.padding_right=8 \
+        background.drawing=on \
+        background.color=0x00000000
+
+# === LEFT: Menu bar items (clickable) ===
+MAX_MENUS=8
+for i in $(seq 0 $((MAX_MENUS - 1))); do
+    sketchybar --add item menu.$i left \
+        --set menu.$i \
+            icon.drawing=off \
+            label.font="$MONO_FONT:Regular:12.0" \
+            label.color=0x99ffffff \
+            label.padding_left=6 \
+            label.padding_right=6 \
+            label.drawing=off \
+            background.drawing=off
+done
+
+# First menu item triggers the update script
+sketchybar --set menu.0 \
+    update_freq=1 \
+    script="$PLUGIN_DIR/menus.sh" \
+    --subscribe menu.0 front_app_switched
 
 # === CENTER: App (M1) | Workspaces | App (M2) ===
 source "$ITEM_DIR/spaces.sh"
 
-# === RIGHT: Stats ===
+# === RIGHT: DateTime (rightmost, sourced first) ===
+source "$ITEM_DIR/datetime.sh"
+
+# === RIGHT: Stats (left of datetime) ===
 source "$ITEM_DIR/system.sh"
 
 sketchybar --update

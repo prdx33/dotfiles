@@ -1,30 +1,41 @@
 #!/bin/bash
 
-# Font
-export FONT="Iosevka Aile"
+# Font - monospace
+export FONT="Iosevka Extended"
+export MONO_FONT="Iosevka Extended"
 
-# Colour scheme - mint green and teal
+# Bar
+export BAR_COLOR=0x80000000
 
-export BAR_COLOR=0x00000000
-
-# Text - with some opacity
+# Text
 export LABEL_COLOR=0xccffffff
+export STAT_LABEL=0xccffffff
 
-# Backgrounds - black with opacity
+# Backgrounds
 export BG_COLOR=0xcc1a1a1a
 
-# Workspace colours - arctic white with opacity levels
-export WS_FOCUSED=0xffe8f0f8         # 100% - focused monitor
-export WS_UNFOCUSED=0x80e8f0f8       # 50% - unfocused monitor
-export WS_INACTIVE=0x33e8f0f8        # 20% - all other workspaces
-export WS_TILING=0xff6ee7b7          # mint green - tiling mode indicator
+# Workspace colours - all white (no colour distinction)
+export WS_FOCUSED=0xffffffff         # White
+export WS_UNFOCUSED=0x80ffffff       # 50% white
+export WS_INACTIVE=0x40ffffff        # 25% white
+export WS_TILING=0xffffffff          # White (no special colour)
 
-# Stats
-export STAT_LABEL=0xccffffff         # Text with opacity
-export GRAPH_LINE=0x66ffffff         # Graph line
-export GRAPH_FILL=0x22ffffff         # Graph fill - low opacity
+# Graph
+export GRAPH_LINE=0x66ffffff
+export GRAPH_FILL=0x44ffffff
+
+# Threshold colours for CPU/GPU/MEM
+export STAT_NORMAL=0xccffffff        # Normal (white)
+export STAT_WARN=0xffFFB380          # 75-90% (pastel orange)
+export STAT_CRIT=0xffFF8080          # 90-100% (pastel red)
 
 # Ping colours
 export PING_GOOD=0xff4ade80
 export PING_MED=0xfffbbf24
 export PING_BAD=0xffef4444
+
+# VPN and DNS indicators
+export VPN_ACTIVE=0xffffffff
+export VPN_INACTIVE=0xffef4444
+export DNS_ACTIVE=0xffffffff
+export DNS_INACTIVE=0xffef4444

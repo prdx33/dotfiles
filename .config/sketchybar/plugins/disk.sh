@@ -1,34 +1,51 @@
 #!/bin/bash
 
-# Disk I/O plugin - updates disk_read and disk_write items
+# Disk I/O plugin using ioreg
+# Fixed width format: "R XXX.XX MB" (11 chars total)
 
 CACHE="/tmp/sketchybar_disk"
 
-# Get disk stats from iostat
-read_bytes=$(iostat -c 1 disk0 2>/dev/null | tail -1 | awk '{print $3}')
-write_bytes=$(iostat -c 1 disk0 2>/dev/null | tail -1 | awk '{print $4}')
+# Get cumulative bytes from ioreg
+STATS=$(ioreg -c IOBlockStorageDriver -r -w 0 2>/dev/null | grep "Statistics" | grep -v '"Bytes (Read)"=0' | head -1)
+READ_BYTES=$(echo "$STATS" | grep -oE '"Bytes \(Read\)"=[0-9]+' | grep -oE '[0-9]+' 2>/dev/null)
+WRITE_BYTES=$(echo "$STATS" | grep -oE '"Bytes \(Write\)"=[0-9]+' | grep -oE '[0-9]+' 2>/dev/null)
 
-# Format (iostat gives KB/s)
-if [[ -n "$read_bytes" && "$read_bytes" =~ ^[0-9.]+$ ]]; then
-    read_kb=$(echo "$read_bytes" | cut -d. -f1)
-    if [[ $read_kb -ge 1024 ]]; then
-        read_fmt="$(echo "scale=1; $read_kb/1024" | bc)M"
-    else
-        read_fmt="${read_kb}K"
-    fi
+[[ -z "$READ_BYTES" || ! "$READ_BYTES" =~ ^[0-9]+$ ]] && READ_BYTES=0
+[[ -z "$WRITE_BYTES" || ! "$WRITE_BYTES" =~ ^[0-9]+$ ]] && WRITE_BYTES=0
+
+NOW=$(date +%s 2>/dev/null) || NOW=0
+
+if [[ -f "$CACHE" ]]; then
+    read PREV_READ PREV_WRITE PREV_TIME < "$CACHE" 2>/dev/null
+    [[ -z "$PREV_READ" ]] && PREV_READ=0
+    [[ -z "$PREV_WRITE" ]] && PREV_WRITE=0
+    [[ -z "$PREV_TIME" ]] && PREV_TIME=$NOW
+
+    ELAPSED=$((NOW - PREV_TIME))
+    [[ $ELAPSED -lt 1 ]] && ELAPSED=1
+
+    READ_RATE=$(( (READ_BYTES - PREV_READ) / ELAPSED )) 2>/dev/null || READ_RATE=0
+    WRITE_RATE=$(( (WRITE_BYTES - PREV_WRITE) / ELAPSED )) 2>/dev/null || WRITE_RATE=0
+
+    [[ $READ_RATE -lt 0 ]] && READ_RATE=0
+    [[ $WRITE_RATE -lt 0 ]] && WRITE_RATE=0
+
+    # Convert bytes/s to MB/s
+    READ_MB=$(echo "scale=2; $READ_RATE / 1048576" | bc 2>/dev/null) || READ_MB="0.00"
+    WRITE_MB=$(echo "scale=2; $WRITE_RATE / 1048576" | bc 2>/dev/null) || WRITE_MB="0.00"
+
+    [[ -z "$READ_MB" ]] && READ_MB="0.00"
+    [[ -z "$WRITE_MB" ]] && WRITE_MB="0.00"
+
+    # Fixed width: "X NNN.NN MB" where X is glyph, number is 6 chars (padded)
+    READ_FMT=$(printf "R %6.2f MB" "$READ_MB")
+    WRITE_FMT=$(printf "W %6.2f MB" "$WRITE_MB")
+
+    sketchybar --set disk_read label="$READ_FMT" \
+               --set disk_write label="$WRITE_FMT" 2>/dev/null
 else
-    read_fmt="0K"
+    sketchybar --set disk_read label="R   0.00 MB" \
+               --set disk_write label="W   0.00 MB" 2>/dev/null
 fi
 
-if [[ -n "$write_bytes" && "$write_bytes" =~ ^[0-9.]+$ ]]; then
-    write_kb=$(echo "$write_bytes" | cut -d. -f1)
-    if [[ $write_kb -ge 1024 ]]; then
-        write_fmt="$(echo "scale=1; $write_kb/1024" | bc)M"
-    else
-        write_fmt="${write_kb}K"
-    fi
-else
-    write_fmt="0K"
-fi
-
-sketchybar --set disk_read label="$read_fmt" --set disk_write label="$write_fmt"
+echo "$READ_BYTES $WRITE_BYTES $NOW" > "$CACHE" 2>/dev/null
