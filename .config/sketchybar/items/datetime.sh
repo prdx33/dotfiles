@@ -5,29 +5,29 @@
 
 source "$CONFIG_DIR/colours.sh"
 
-# Date (top) - right aligned in fixed width
+DATETIME_WIDTH=55
+
+# Date (top) - same padding_right as time for alignment
 sketchybar --add item date right \
     --set date \
         icon.drawing=off \
-        label.font="JetBrains Mono:Bold:9.0" \
+        label.font="Iosevka Extended:Heavy:9.0" \
         label.color=$LABEL_COLOR \
-        label.width=60 \
-        label.align=right \
-        label.padding_right=8 \
-        y_offset=6 \
+        label.width=$DATETIME_WIDTH \
+        padding_right=0 \
+        y_offset=7 \
         width=0 \
         background.drawing=off
 
-# Time (bottom) - right aligned in fixed width
+# Time (bottom) - padding_right for edge spacing
 sketchybar --add item time right \
     --set time \
         icon.drawing=off \
-        label.font="JetBrains Mono:Bold:9.0" \
+        label.font="$MONO_FONT:Regular:9.0" \
         label.color=$LABEL_COLOR \
-        label.width=60 \
-        label.align=right \
-        label.padding_right=8 \
-        y_offset=-6 \
+        label.width=$DATETIME_WIDTH \
+        padding_right=0 \
+        y_offset=-5 \
         background.drawing=off \
         update_freq=30 \
         script="$PLUGIN_DIR/datetime.sh" \

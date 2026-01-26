@@ -33,19 +33,35 @@ sketchybar --default \
     label.font="$MONO_FONT:Bold:11.0" \
     label.color=$LABEL_COLOR \
     padding_left=0 \
-    padding_right=0
+    padding_right=0 \
+    y_offset=1
 
-# === LEFT: Logo ===
-sketchybar --add item logo left \
-    --set logo \
+# === LEFT: Focused app icon ===
+sketchybar --add item app_icon left \
+    --set app_icon \
         icon.drawing=off \
         label.drawing=off \
-        background.image="$CONFIG_DIR/icons/logo.png" \
-        background.image.scale=0.06 \
-        background.image.padding_left=4 \
-        background.image.padding_right=8 \
+        background.image.scale=0.60 \
+        background.image.drawing=on \
         background.drawing=on \
-        background.color=0x00000000
+        background.color=0x00000000 \
+        padding_left=9 \
+        padding_right=4 \
+        width=26 \
+        y_offset=0 \
+        script="$PLUGIN_DIR/front_app_icon.sh" \
+    --subscribe app_icon front_app_switched
+
+# === LEFT: App name ===
+sketchybar --add item app_name left \
+    --set app_name \
+        icon.drawing=off \
+        label.font="Iosevka Extended:Heavy:12.0" \
+        label.color=0xffffffff \
+        label.padding_left=20 \
+        label.padding_right=12 \
+        label.drawing=on \
+        label="APP"
 
 # === LEFT: Menu bar items (clickable) ===
 MAX_MENUS=8
@@ -53,24 +69,23 @@ for i in $(seq 0 $((MAX_MENUS - 1))); do
     sketchybar --add item menu.$i left \
         --set menu.$i \
             icon.drawing=off \
-            label.font="$MONO_FONT:Regular:12.0" \
+            label.font="Iosevka Extended:SemiBold:12.0" \
             label.color=0x99ffffff \
-            label.padding_left=6 \
-            label.padding_right=6 \
+            label.padding_left=9 \
+            label.padding_right=11 \
             label.drawing=off \
             background.drawing=off
 done
 
 # First menu item triggers the update script
 sketchybar --set menu.0 \
-    update_freq=1 \
     script="$PLUGIN_DIR/menus.sh" \
     --subscribe menu.0 front_app_switched
 
 # === CENTER: App (M1) | Workspaces | App (M2) ===
 source "$ITEM_DIR/spaces.sh"
 
-# === RIGHT: DateTime (rightmost, sourced first) ===
+# === RIGHT: DateTime ===
 source "$ITEM_DIR/datetime.sh"
 
 # === RIGHT: Stats (left of datetime) ===

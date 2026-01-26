@@ -9,7 +9,8 @@ OUTPUT=$(osascript -e '
 tell application "System Events"
     try
         set frontApp to first application process whose frontmost is true
-        set appName to name of frontApp
+        set procName to name of frontApp
+        set dispName to displayed name of frontApp
         set menuItems to name of every menu bar item of menu bar 1 of frontApp
         set output to ""
         repeat with i from 3 to count of menuItems
@@ -22,16 +23,24 @@ tell application "System Events"
                 end if
             end if
         end repeat
-        return appName & "|||" & output
+        return procName & "|||" & dispName & "|||" & output
     on error
-        return "|||"
+        return "||||||"
     end try
 end tell
 ' 2>/dev/null)
 
-# Parse
-APP_NAME="${OUTPUT%%|||*}"
-MENU_LIST="${OUTPUT#*|||}"
+# Parse: PROC_NAME|||DISPLAY_NAME|||MENUS
+PROC_NAME="${OUTPUT%%|||*}"
+REST="${OUTPUT#*|||}"
+DISPLAY_NAME="${REST%%|||*}"
+MENU_LIST="${REST#*|||}"
+
+# Update app name item (uppercase) - use display name for label
+if [[ -n "$DISPLAY_NAME" ]]; then
+    APP_UPPER=$(echo "$DISPLAY_NAME" | tr '[:lower:]' '[:upper:]')
+    sketchybar --set app_name label="$APP_UPPER"
+fi
 
 # Save to temp file to avoid subshell issues
 TMPFILE="/tmp/sketchybar_menus_$$"
@@ -46,7 +55,7 @@ while read -r menu_name && [[ $i -lt $MAX_MENUS ]]; do
         sketchybar --set "menu.$i" \
             label="$menu_upper" \
             label.drawing=on \
-            click_script="osascript -e 'tell application \"System Events\" to tell process \"$APP_NAME\" to click menu bar item \"$menu_name\" of menu bar 1'" \
+            click_script="osascript -e 'tell application \"System Events\" to tell process \"$PROC_NAME\" to click menu bar item \"$menu_name\" of menu bar 1'" \
             2>/dev/null
     fi
     i=$((i + 1))

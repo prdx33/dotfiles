@@ -15,10 +15,10 @@ export STAT_LABEL=0xccffffff
 export BG_COLOR=0xcc1a1a1a
 
 # Workspace colours - all white (no colour distinction)
-export WS_FOCUSED=0xffffffff         # White
-export WS_UNFOCUSED=0x80ffffff       # 50% white
-export WS_INACTIVE=0x40ffffff        # 25% white
-export WS_TILING=0xffffffff          # White (no special colour)
+export WS_FOCUSED=0xffffffff         # White - visible on monitor
+export WS_UNFOCUSED=0x80ffffff       # 50% white - has apps but not visible
+export WS_EMPTY=0x40ffffff           # 25% white - initial state (hidden when empty)
+export WS_INACTIVE=0x40ffffff        # 25% white - legacy alias
 
 # Graph
 export GRAPH_LINE=0x66ffffff
