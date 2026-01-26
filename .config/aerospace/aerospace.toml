@@ -19,7 +19,7 @@ default-root-container-orientation = 'horizontal'
 
 # SketchyBar integration
 exec-on-workspace-change = ['/bin/bash', '-c',
-    '~/.config/sketchybar/plugins/aerospace_refresh.sh && sketchybar --trigger front_app_switched'
+    'sketchybar --trigger aerospace_workspace_change'
 ]
 
 # Disable macOS hide application
@@ -43,43 +43,54 @@ outer.right = 12
 [mode.main.binding]
 
 # Send workspace to next monitor
-alt-g = ['move-workspace-to-monitor --wrap-around next', 'exec-and-forget ~/.config/sketchybar/plugins/aerospace_refresh.sh']
+alt-g = 'move-workspace-to-monitor --wrap-around next'
 
 # Send window to workspace (stay put)
-alt-q = ['move-node-to-workspace 1', 'exec-and-forget sleep 0.1 && ~/.config/sketchybar/plugins/aerospace_refresh.sh']
-alt-w = ['move-node-to-workspace 2', 'exec-and-forget sleep 0.1 && ~/.config/sketchybar/plugins/aerospace_refresh.sh']
-alt-e = ['move-node-to-workspace 3', 'exec-and-forget sleep 0.1 && ~/.config/sketchybar/plugins/aerospace_refresh.sh']
-alt-r = ['move-node-to-workspace 4', 'exec-and-forget sleep 0.1 && ~/.config/sketchybar/plugins/aerospace_refresh.sh']
-alt-t = ['move-node-to-workspace 5', 'exec-and-forget sleep 0.1 && ~/.config/sketchybar/plugins/aerospace_refresh.sh']
-alt-y = ['move-node-to-workspace 6', 'exec-and-forget sleep 0.1 && ~/.config/sketchybar/plugins/aerospace_refresh.sh']
-alt-u = ['move-node-to-workspace 7', 'exec-and-forget sleep 0.1 && ~/.config/sketchybar/plugins/aerospace_refresh.sh']
-alt-i = ['move-node-to-workspace 8', 'exec-and-forget sleep 0.1 && ~/.config/sketchybar/plugins/aerospace_refresh.sh']
-alt-o = ['move-node-to-workspace 9', 'exec-and-forget sleep 0.1 && ~/.config/sketchybar/plugins/aerospace_refresh.sh']
-alt-p = ['move-node-to-workspace 0', 'exec-and-forget sleep 0.1 && ~/.config/sketchybar/plugins/aerospace_refresh.sh']
+alt-q = 'move-node-to-workspace 1'
+alt-w = 'move-node-to-workspace 2'
+alt-e = 'move-node-to-workspace 3'
+alt-r = 'move-node-to-workspace 4'
+alt-t = 'move-node-to-workspace 5'
+alt-y = 'move-node-to-workspace 6'
+alt-u = 'move-node-to-workspace 7'
+alt-i = 'move-node-to-workspace 8'
+alt-o = 'move-node-to-workspace 9'
+alt-p = 'move-node-to-workspace 0'
+
+# Resize
+alt-s = 'resize smart -50'
+alt-f = 'resize smart +50'
+alt-shift-s = 'resize smart -150'
+alt-shift-f = 'resize smart +150'
+
+# Reset layout
+alt-d = ['flatten-workspace-tree', 'layout tiles horizontal', 'balance-sizes']
 
 # ============================================================================
 # ALT-SHIFT — Send + Follow
 # ============================================================================
 
 # Send window to workspace + follow
-alt-shift-q = ['move-node-to-workspace 1', 'workspace 1', 'exec-and-forget ~/.config/sketchybar/plugins/aerospace_refresh.sh']
-alt-shift-w = ['move-node-to-workspace 2', 'workspace 2', 'exec-and-forget ~/.config/sketchybar/plugins/aerospace_refresh.sh']
-alt-shift-e = ['move-node-to-workspace 3', 'workspace 3', 'exec-and-forget ~/.config/sketchybar/plugins/aerospace_refresh.sh']
-alt-shift-r = ['move-node-to-workspace 4', 'workspace 4', 'exec-and-forget ~/.config/sketchybar/plugins/aerospace_refresh.sh']
-alt-shift-t = ['move-node-to-workspace 5', 'workspace 5', 'exec-and-forget ~/.config/sketchybar/plugins/aerospace_refresh.sh']
-alt-shift-y = ['move-node-to-workspace 6', 'workspace 6', 'exec-and-forget ~/.config/sketchybar/plugins/aerospace_refresh.sh']
-alt-shift-u = ['move-node-to-workspace 7', 'workspace 7', 'exec-and-forget ~/.config/sketchybar/plugins/aerospace_refresh.sh']
-alt-shift-i = ['move-node-to-workspace 8', 'workspace 8', 'exec-and-forget ~/.config/sketchybar/plugins/aerospace_refresh.sh']
-alt-shift-o = ['move-node-to-workspace 9', 'workspace 9', 'exec-and-forget ~/.config/sketchybar/plugins/aerospace_refresh.sh']
-alt-shift-p = ['move-node-to-workspace 0', 'workspace 0', 'exec-and-forget ~/.config/sketchybar/plugins/aerospace_refresh.sh']
+alt-shift-q = ['move-node-to-workspace 1', 'workspace 1']
+alt-shift-w = ['move-node-to-workspace 2', 'workspace 2']
+alt-shift-e = ['move-node-to-workspace 3', 'workspace 3']
+alt-shift-r = ['move-node-to-workspace 4', 'workspace 4']
+alt-shift-t = ['move-node-to-workspace 5', 'workspace 5']
+alt-shift-y = ['move-node-to-workspace 6', 'workspace 6']
+alt-shift-u = ['move-node-to-workspace 7', 'workspace 7']
+alt-shift-i = ['move-node-to-workspace 8', 'workspace 8']
+alt-shift-o = ['move-node-to-workspace 9', 'workspace 9']
+alt-shift-p = ['move-node-to-workspace 0', 'workspace 0']
 
 # ============================================================================
 # SERVICE MODE
 # ============================================================================
 [mode.service.binding]
-esc = ['reload-config', 'mode main']
+esc = 'mode main'
 r = ['reload-config', 'mode main']
 q = ['close-all-windows-but-current', 'mode main']
+d = ['enable toggle', 'mode main']
+f = ['flatten-workspace-tree', 'mode main']
 
 # ============================================================================
 # FLOATING WINDOW RULES
@@ -136,6 +147,6 @@ run = 'layout floating'
 if.app-name-regex-substring = 'karabiner-eventviewer'
 run = 'layout floating'
 
-# Default: float all windows
+# Default: float all windows, reasonable size centered
 [[on-window-detected]]
-run = 'layout floating'
+run = ['layout floating', 'exec-and-forget sleep 0.3 && open -g "rectangle://execute-action?name=reasonable-size" && sleep 0.1 && open -g "rectangle://execute-action?name=center"']

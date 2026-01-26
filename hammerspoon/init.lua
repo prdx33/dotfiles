@@ -18,9 +18,31 @@ package.loaded["windowManager"] = nil  -- force reload on config reload
 local wm = require("windowManager")
 
 ------------------------------------------------------------
--- Toggle Menu Bar (Hyper + ')
+-- Cheatsheet (simple alert style)
 ------------------------------------------------------------
 local hyper = {"cmd", "alt", "ctrl", "shift"}
+
+local cheatsheetText = [[
+HYPER (⌘⌃⌥⇧)
+Q-P  Summon workspace    A  Toggle mode
+S/F  Left/Right          D  Center/Pop-out
+X/V  Focus L/R           C  Focus monitor
+G    Move to monitor     B/N  Tiles H/V
+H/J/K/L  Focus (vim)     ;  Service mode
+
+ALT (⌥)
+Q-P  Send to workspace   S/F  Resize ±50
+D    Reset layout        G  Move workspace
+
+ALT+SHIFT: Send + follow, Resize ±150
+]]
+
+hs.hotkey.bind(hyper, "slash", function()
+  hs.alert.show(cheatsheetText, 4)
+end)
+
+------------------------------------------------------------
+-- Toggle Menu Bar (Hyper + ')
 
 hs.hotkey.bind(hyper, "'", function()
   hs.applescript([[
