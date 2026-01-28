@@ -53,15 +53,17 @@ local holdState = {
   lastUpdate = 0,
 }
 
--- Throttle interval in nanoseconds (~120fps)
-local THROTTLE_NS = 8000000  -- 8ms in nanoseconds
-local MIN_WINDOW_SIZE = 100  -- minimum width/height when resizing
+-- Throttle interval in nanoseconds (~60fps) - balanced smoothness vs GPU load
+local THROTTLE_NS = 16000000  -- 16ms in nanoseconds
+local MIN_WINDOW_SIZE = 100   -- minimum width/height when resizing
+local MIN_DELTA = 2           -- minimum pixel movement to trigger update
 
 -- Cache frequently used functions
 local absoluteTime = hs.timer.absoluteTime
 local absolutePosition = hs.mouse.absolutePosition
 local orderedWindows = hs.window.orderedWindows
 local max = math.max
+local abs = math.abs
 
 -- Helper: find topmost window under cursor
 local function windowUnderCursor(mousePos)
@@ -137,20 +139,30 @@ local holdMoveWatcher = hs.eventtap.new(
         end
         holdState.lastUpdate = now
 
-        local ok, _ = pcall(function()
-          local currentMouse = absolutePosition()
-          local deltaX = currentMouse.x - holdState.initialMousePos.x
-          local deltaY = currentMouse.y - holdState.initialMousePos.y
-          local init = holdState.initialFrame
+        -- Quick validity check before pcall overhead
+        if not holdState.window:isVisible() then
+          holdState.mode = nil
+          holdState.window = nil
+          return false
+        end
 
+        local currentMouse = absolutePosition()
+        local deltaX = currentMouse.x - holdState.initialMousePos.x
+        local deltaY = currentMouse.y - holdState.initialMousePos.y
+
+        -- Skip tiny movements (reduces jitter from hand tremor)
+        if abs(deltaX) < MIN_DELTA and abs(deltaY) < MIN_DELTA then
+          return false
+        end
+
+        local init = holdState.initialFrame
+        local ok, _ = pcall(function()
           if holdState.mode == "move" then
-            -- Move: shift position, keep size
-            holdState.window:setFrame({
+            -- Move: use setTopLeft (more efficient than setFrame for position-only)
+            holdState.window:setTopLeft({
               x = init.x + deltaX,
-              y = init.y + deltaY,
-              w = init.w,
-              h = init.h
-            }, 0)
+              y = init.y + deltaY
+            })
 
           elseif holdState.mode == "resize" then
             -- Resize: keep position, adjust size (with minimum)
@@ -179,5 +191,40 @@ local holdMoveWatcher = hs.eventtap.new(
 -- Keep reference to prevent garbage collection
 M.holdMoveWatcher = holdMoveWatcher
 holdMoveWatcher:start()
+
+----------------------------------------------------
+-- Toggle Floating with Margins (Hyper + D)
+-- Pops out of Aerospace tiling and positions with gaps matching tiled mode
+----------------------------------------------------
+local OUTER_GAP = 12
+local TOP_GAP = 44  -- matches aerospace outer.top
+
+M.toggleFloatWithMargins = function()
+  -- Toggle Aerospace fullscreen (pops in/out of tiling)
+  hs.execute("/opt/homebrew/bin/aerospace fullscreen", true)
+
+  -- Brief delay for Aerospace to process
+  hs.timer.doAfter(0.05, function()
+    local win = hs.window.focusedWindow()
+    if not win then return end
+
+    -- Check if now floating (fullscreen in Aerospace terms)
+    local output = hs.execute("/opt/homebrew/bin/aerospace list-windows --focused --format '%{window-id}|%{floating}'", true)
+    local isFloating = output and output:match("|true")
+
+    if isFloating then
+      -- Position with margins matching tiled gaps
+      local screen = win:screen()
+      local screenFrame = screen:frame()
+
+      win:setFrame({
+        x = screenFrame.x + OUTER_GAP,
+        y = screenFrame.y + TOP_GAP,
+        w = screenFrame.w - (OUTER_GAP * 2),
+        h = screenFrame.h - TOP_GAP - OUTER_GAP
+      }, 0)
+    end
+  end)
+end
 
 return M
