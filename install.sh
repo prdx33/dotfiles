@@ -38,7 +38,6 @@ echo "Shell configs:"
 link_file "$DOTFILES_DIR/shell/zshrc" "$HOME/.zshrc"
 link_file "$DOTFILES_DIR/shell/zsh_aliases" "$HOME/.zsh_aliases"
 link_file "$DOTFILES_DIR/shell/zsh_plugins.txt" "$HOME/.zsh_plugins.txt"
-link_file "$DOTFILES_DIR/shell/p10k.zsh" "$HOME/.p10k.zsh"
 echo ""
 
 # ────────────────────────────────────────────────────────────────────────────

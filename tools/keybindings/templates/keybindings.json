@@ -1,5 +1,5 @@
 {
-  "generated": "2026-02-04T21:53:04.885341",
+  "generated": "2026-02-06T00:16:45.826337",
   "sourceFiles": {
     "karabiner": "/Users/n0id/Dev/dotfiles/.config/karabiner/karabiner.json",
     "aerospace": "/Users/n0id/Dev/dotfiles/.config/aerospace/aerospace.toml",
@@ -38,72 +38,6 @@
           "icon": "sys",
           "iconData": null
         },
-        "g": {
-          "variants": [
-            {
-              "condition": "hyper=1",
-              "action": "Mon",
-              "type": "focus",
-              "source": "karabiner",
-              "desc": "Focus next monitor",
-              "raw_command": "/opt/homebrew/bin/aerospace focus-monitor --wrap-around next",
-              "icon": "focus",
-              "iconData": "\u25b8"
-            }
-          ],
-          "action": "Mon",
-          "type": "focus",
-          "source": "karabiner",
-          "desc": "Focus next monitor",
-          "raw_command": "/opt/homebrew/bin/aerospace focus-monitor --wrap-around next",
-          "condition": "hyper=1",
-          "icon": "focus",
-          "iconData": "\u25b8"
-        },
-        "w": {
-          "variants": [
-            {
-              "condition": "hyper=1",
-              "action": "Hyper W \u2192 ",
-              "type": "system",
-              "source": "karabiner",
-              "desc": "Focus next monitor",
-              "raw_command": "/Users/n0id/.local/bin/hyper-w-action",
-              "icon": "sys",
-              "iconData": null
-            }
-          ],
-          "action": "Hyper W \u2192 ",
-          "type": "system",
-          "source": "karabiner",
-          "desc": "Focus next monitor",
-          "raw_command": "/Users/n0id/.local/bin/hyper-w-action",
-          "condition": "hyper=1",
-          "icon": "sys",
-          "iconData": null
-        },
-        "r": {
-          "variants": [
-            {
-              "condition": "hyper=1",
-              "action": "Hyper R \u2192 ",
-              "type": "system",
-              "source": "karabiner",
-              "desc": "Move window to monitor + follow",
-              "raw_command": "/Users/n0id/.local/bin/hyper-r-action",
-              "icon": "sys",
-              "iconData": null
-            }
-          ],
-          "action": "Hyper R \u2192 ",
-          "type": "system",
-          "source": "karabiner",
-          "desc": "Move window to monitor + follow",
-          "raw_command": "/Users/n0id/.local/bin/hyper-r-action",
-          "condition": "hyper=1",
-          "icon": "sys",
-          "iconData": null
-        },
         "t": {
           "variants": [
             {
@@ -112,7 +46,7 @@
               "type": "focus",
               "source": "karabiner",
               "desc": "Focus next window",
-              "raw_command": "/opt/homebrew/bin/aerospace move-node-to-monitor --wrap-around next && /opt/homebrew/bin/aerospace focus-monitor --wrap-around next",
+              "raw_command": "/opt/homebrew/bin/aerospace focus-monitor --wrap-around next",
               "icon": "focus",
               "iconData": "\u25b8"
             }
@@ -121,7 +55,7 @@
           "type": "focus",
           "source": "karabiner",
           "desc": "Focus next window",
-          "raw_command": "/opt/homebrew/bin/aerospace move-node-to-monitor --wrap-around next && /opt/homebrew/bin/aerospace focus-monitor --wrap-around next",
+          "raw_command": "/opt/homebrew/bin/aerospace focus-monitor --wrap-around next",
           "condition": "hyper=1",
           "icon": "focus",
           "iconData": "\u25b8"
@@ -130,152 +64,240 @@
           "variants": [
             {
               "condition": "hyper=1",
-              "action": "Hyper S \u2192 ",
-              "type": "system",
+              "action": "Foc L",
+              "type": "focus",
               "source": "karabiner",
               "desc": "Left half (cycles)",
-              "raw_command": "/Users/n0id/.local/bin/hyper-s-action",
-              "icon": "sys",
-              "iconData": null
+              "raw_command": "L=$(/opt/homebrew/bin/aerospace list-windows --focused --format '%{window-layout}'); if [ \"$L\" = floating ]; then open -g 'rectangle://execute-action?name=first-third'; else /opt/homebrew/bin/aerospace move left; fi",
+              "icon": "focus",
+              "iconData": "\u25c2"
             }
           ],
-          "action": "Hyper S \u2192 ",
-          "type": "system",
+          "action": "Foc L",
+          "type": "focus",
           "source": "karabiner",
           "desc": "Left half (cycles)",
-          "raw_command": "/Users/n0id/.local/bin/hyper-s-action",
+          "raw_command": "L=$(/opt/homebrew/bin/aerospace list-windows --focused --format '%{window-layout}'); if [ \"$L\" = floating ]; then open -g 'rectangle://execute-action?name=first-third'; else /opt/homebrew/bin/aerospace move left; fi",
           "condition": "hyper=1",
-          "icon": "sys",
-          "iconData": null
-        },
-        "d": {
-          "variants": [
-            {
-              "condition": "hyper=1",
-              "action": "Hyper D \u2192 ",
-              "type": "system",
-              "source": "karabiner",
-              "desc": "Center",
-              "raw_command": "/Users/n0id/.local/bin/hyper-d-action",
-              "icon": "sys",
-              "iconData": null
-            }
-          ],
-          "action": "Hyper D \u2192 ",
-          "type": "system",
-          "source": "karabiner",
-          "desc": "Center",
-          "raw_command": "/Users/n0id/.local/bin/hyper-d-action",
-          "condition": "hyper=1",
-          "icon": "sys",
-          "iconData": null
+          "icon": "focus",
+          "iconData": "\u25c2"
         },
         "f": {
           "variants": [
             {
               "condition": "hyper=1",
-              "action": "Hyper F \u2192 ",
-              "type": "system",
+              "action": "Foc R",
+              "type": "focus",
               "source": "karabiner",
               "desc": "Right half (cycles)",
-              "raw_command": "/Users/n0id/.local/bin/hyper-f-action",
-              "icon": "sys",
-              "iconData": null
+              "raw_command": "L=$(/opt/homebrew/bin/aerospace list-windows --focused --format '%{window-layout}'); if [ \"$L\" = floating ]; then open -g 'rectangle://execute-action?name=last-third'; else /opt/homebrew/bin/aerospace move right; fi",
+              "icon": "focus",
+              "iconData": "\u25b8"
             }
           ],
-          "action": "Hyper F \u2192 ",
-          "type": "system",
+          "action": "Foc R",
+          "type": "focus",
           "source": "karabiner",
           "desc": "Right half (cycles)",
-          "raw_command": "/Users/n0id/.local/bin/hyper-f-action",
+          "raw_command": "L=$(/opt/homebrew/bin/aerospace list-windows --focused --format '%{window-layout}'); if [ \"$L\" = floating ]; then open -g 'rectangle://execute-action?name=last-third'; else /opt/homebrew/bin/aerospace move right; fi",
           "condition": "hyper=1",
-          "icon": "sys",
-          "iconData": null
+          "icon": "focus",
+          "iconData": "\u25b8"
+        },
+        "g": {
+          "variants": [
+            {
+              "condition": "hyper=1",
+              "action": "Mon",
+              "type": "focus",
+              "source": "karabiner",
+              "desc": "Focus next monitor",
+              "raw_command": "/opt/homebrew/bin/aerospace move-node-to-monitor --wrap-around next && /opt/homebrew/bin/aerospace focus-monitor --wrap-around next",
+              "icon": "focus",
+              "iconData": "\u25b8"
+            }
+          ],
+          "action": "Mon",
+          "type": "focus",
+          "source": "karabiner",
+          "desc": "Focus next monitor",
+          "raw_command": "/opt/homebrew/bin/aerospace move-node-to-monitor --wrap-around next && /opt/homebrew/bin/aerospace focus-monitor --wrap-around next",
+          "condition": "hyper=1",
+          "icon": "focus",
+          "iconData": "\u25b8"
+        },
+        "w": {
+          "variants": [
+            {
+              "condition": "hyper=1",
+              "action": "Prev",
+              "type": "focus",
+              "source": "karabiner",
+              "desc": "Focus next monitor",
+              "raw_command": "/Users/n0id/.local/bin/aerospace-focus-wrap-prev",
+              "icon": "focus",
+              "iconData": "\u25c2"
+            }
+          ],
+          "action": "Prev",
+          "type": "focus",
+          "source": "karabiner",
+          "desc": "Focus next monitor",
+          "raw_command": "/Users/n0id/.local/bin/aerospace-focus-wrap-prev",
+          "condition": "hyper=1",
+          "icon": "focus",
+          "iconData": "\u25c2"
         },
         "e": {
           "variants": [
             {
               "condition": "hyper=1",
-              "action": "Hyper E \u2192 ",
-              "type": "system",
+              "action": "Foc U",
+              "type": "focus",
               "source": "karabiner",
               "desc": "Maximize",
-              "raw_command": "/Users/n0id/.local/bin/hyper-e-action",
-              "icon": "sys",
+              "raw_command": "L=$(/opt/homebrew/bin/aerospace list-windows --focused --format '%{window-layout}'); if [ \"$L\" = floating ]; then open -g 'rectangle://execute-action?name=maximize'; else /opt/homebrew/bin/aerospace move up; fi",
+              "icon": "focus",
+              "iconData": "\u25b4"
+            }
+          ],
+          "action": "Foc U",
+          "type": "focus",
+          "source": "karabiner",
+          "desc": "Maximize",
+          "raw_command": "L=$(/opt/homebrew/bin/aerospace list-windows --focused --format '%{window-layout}'); if [ \"$L\" = floating ]; then open -g 'rectangle://execute-action?name=maximize'; else /opt/homebrew/bin/aerospace move up; fi",
+          "condition": "hyper=1",
+          "icon": "focus",
+          "iconData": "\u25b4"
+        },
+        "r": {
+          "variants": [
+            {
+              "condition": "hyper=1",
+              "action": "Next",
+              "type": "focus",
+              "source": "karabiner",
+              "desc": "Move window to monitor + follow",
+              "raw_command": "/Users/n0id/.local/bin/aerospace-focus-wrap-next",
+              "icon": "focus",
+              "iconData": "\u25b8"
+            }
+          ],
+          "action": "Next",
+          "type": "focus",
+          "source": "karabiner",
+          "desc": "Move window to monitor + follow",
+          "raw_command": "/Users/n0id/.local/bin/aerospace-focus-wrap-next",
+          "condition": "hyper=1",
+          "icon": "focus",
+          "iconData": "\u25b8"
+        },
+        "d": {
+          "variants": [
+            {
+              "condition": "hyper=1",
+              "action": "Foc D",
+              "type": "focus",
+              "source": "karabiner",
+              "desc": "Center",
+              "raw_command": "L=$(/opt/homebrew/bin/aerospace list-windows --focused --format '%{window-layout}'); if [ \"$L\" = floating ]; then open -g 'rectangle://execute-action?name=center-third'; else /opt/homebrew/bin/aerospace move down; fi",
+              "icon": "focus",
+              "iconData": "\u25be"
+            }
+          ],
+          "action": "Foc D",
+          "type": "focus",
+          "source": "karabiner",
+          "desc": "Center",
+          "raw_command": "L=$(/opt/homebrew/bin/aerospace list-windows --focused --format '%{window-layout}'); if [ \"$L\" = floating ]; then open -g 'rectangle://execute-action?name=center-third'; else /opt/homebrew/bin/aerospace move down; fi",
+          "condition": "hyper=1",
+          "icon": "focus",
+          "iconData": "\u25be"
+        },
+        "c": {
+          "variants": [
+            {
+              "condition": "hyper=1",
+              "action": "Flat",
+              "type": "mode",
+              "source": "karabiner",
+              "desc": "Flatten workspace tree",
+              "raw_command": "L=$(/opt/homebrew/bin/aerospace list-windows --focused --format '%{window-layout}'); if [ \"$L\" = floating ]; then open -g 'rectangle://execute-action?name=center-two-thirds'; else /opt/homebrew/bin/aerospace flatten-workspace-tree && /opt/homebrew/bin/aerospace layout tiles horizontal; fi",
+              "icon": "mode",
               "iconData": null
             }
           ],
-          "action": "Hyper E \u2192 ",
-          "type": "system",
+          "action": "Flat",
+          "type": "mode",
           "source": "karabiner",
-          "desc": "Maximize",
-          "raw_command": "/Users/n0id/.local/bin/hyper-e-action",
+          "desc": "Flatten workspace tree",
+          "raw_command": "L=$(/opt/homebrew/bin/aerospace list-windows --focused --format '%{window-layout}'); if [ \"$L\" = floating ]; then open -g 'rectangle://execute-action?name=center-two-thirds'; else /opt/homebrew/bin/aerospace flatten-workspace-tree && /opt/homebrew/bin/aerospace layout tiles horizontal; fi",
           "condition": "hyper=1",
-          "icon": "sys",
+          "icon": "mode",
           "iconData": null
         },
         "x": {
           "variants": [
             {
               "condition": "hyper=1",
-              "action": "1/3",
-              "type": "position",
+              "action": "-150",
+              "type": "resize",
               "source": "karabiner",
               "desc": "First third",
-              "raw_command": "open -g 'rectangle-pro://execute-action?name=first-third'",
-              "icon": "pos",
-              "iconData": "center"
+              "raw_command": "L=$(/opt/homebrew/bin/aerospace list-windows --focused --format '%{window-layout}'); if [ \"$L\" = floating ]; then open -g 'rectangle://execute-action?name=first-two-thirds'; else /opt/homebrew/bin/aerospace resize smart -150; fi",
+              "icon": "resize",
+              "iconData": "shrink"
             }
           ],
-          "action": "1/3",
-          "type": "position",
+          "action": "-150",
+          "type": "resize",
           "source": "karabiner",
           "desc": "First third",
-          "raw_command": "open -g 'rectangle-pro://execute-action?name=first-third'",
+          "raw_command": "L=$(/opt/homebrew/bin/aerospace list-windows --focused --format '%{window-layout}'); if [ \"$L\" = floating ]; then open -g 'rectangle://execute-action?name=first-two-thirds'; else /opt/homebrew/bin/aerospace resize smart -150; fi",
           "condition": "hyper=1",
-          "icon": "pos",
-          "iconData": "center"
-        },
-        "c": {
-          "variants": [
-            {
-              "condition": "hyper=1",
-              "action": "C 1/3",
-              "type": "position",
-              "source": "karabiner",
-              "desc": "Center third of screen",
-              "raw_command": "open -g 'rectangle-pro://execute-action?name=center-third'",
-              "icon": "pos",
-              "iconData": "center"
-            }
-          ],
-          "action": "C 1/3",
-          "type": "position",
-          "source": "karabiner",
-          "desc": "Center third of screen",
-          "raw_command": "open -g 'rectangle-pro://execute-action?name=center-third'",
-          "condition": "hyper=1",
-          "icon": "pos",
-          "iconData": "center"
+          "icon": "resize",
+          "iconData": "shrink"
         },
         "v": {
           "variants": [
             {
               "condition": "hyper=1",
-              "action": "3/3",
-              "type": "position",
+              "action": "+150",
+              "type": "resize",
               "source": "karabiner",
               "desc": "Last third",
-              "raw_command": "open -g 'rectangle-pro://execute-action?name=last-third'",
+              "raw_command": "L=$(/opt/homebrew/bin/aerospace list-windows --focused --format '%{window-layout}'); if [ \"$L\" = floating ]; then open -g 'rectangle://execute-action?name=last-two-thirds'; else /opt/homebrew/bin/aerospace resize smart +150; fi",
+              "icon": "resize",
+              "iconData": "grow"
+            }
+          ],
+          "action": "+150",
+          "type": "resize",
+          "source": "karabiner",
+          "desc": "Last third",
+          "raw_command": "L=$(/opt/homebrew/bin/aerospace list-windows --focused --format '%{window-layout}'); if [ \"$L\" = floating ]; then open -g 'rectangle://execute-action?name=last-two-thirds'; else /opt/homebrew/bin/aerospace resize smart +150; fi",
+          "condition": "hyper=1",
+          "icon": "resize",
+          "iconData": "grow"
+        },
+        "q": {
+          "variants": [
+            {
+              "condition": "hyper=1",
+              "action": "Rect",
+              "type": "position",
+              "source": "karabiner",
+              "desc": "Focus prev window",
+              "raw_command": "[ \"$(/opt/homebrew/bin/aerospace list-windows --focused --format '%{window-layout}')\" = floating ] && open -g 'rectangle://execute-action?name=cascade-all'",
               "icon": "pos",
               "iconData": "center"
             }
           ],
-          "action": "3/3",
+          "action": "Rect",
           "type": "position",
           "source": "karabiner",
-          "desc": "Last third",
-          "raw_command": "open -g 'rectangle-pro://execute-action?name=last-third'",
+          "desc": "Focus prev window",
+          "raw_command": "[ \"$(/opt/homebrew/bin/aerospace list-windows --focused --format '%{window-layout}')\" = floating ] && open -g 'rectangle://execute-action?name=cascade-all'",
           "condition": "hyper=1",
           "icon": "pos",
           "iconData": "center"
@@ -284,23 +306,45 @@
           "variants": [
             {
               "condition": "hyper=1",
-              "action": "Cascade",
-              "type": "position",
+              "action": "Float",
+              "type": "mode",
               "source": "karabiner",
               "desc": "Cascade all",
-              "raw_command": "open -g 'rectangle-pro://execute-action?name=cascade-all'",
-              "icon": "pos",
-              "iconData": "center"
+              "raw_command": "L=$(/opt/homebrew/bin/aerospace list-windows --focused --format '%{window-layout}'); if [ \"$L\" = floating ]; then /opt/homebrew/bin/aerospace layout tiling; else /opt/homebrew/bin/aerospace layout floating; fi",
+              "icon": "mode",
+              "iconData": null
             }
           ],
-          "action": "Cascade",
-          "type": "position",
+          "action": "Float",
+          "type": "mode",
           "source": "karabiner",
           "desc": "Cascade all",
-          "raw_command": "open -g 'rectangle-pro://execute-action?name=cascade-all'",
+          "raw_command": "L=$(/opt/homebrew/bin/aerospace list-windows --focused --format '%{window-layout}'); if [ \"$L\" = floating ]; then /opt/homebrew/bin/aerospace layout tiling; else /opt/homebrew/bin/aerospace layout floating; fi",
           "condition": "hyper=1",
-          "icon": "pos",
-          "iconData": "center"
+          "icon": "mode",
+          "iconData": null
+        },
+        "b": {
+          "variants": [
+            {
+              "condition": "hyper=1",
+              "action": "Hyper B \u2192 ",
+              "type": "system",
+              "source": "karabiner",
+              "desc": "Hyper B \u2192 Swap monitor workspaces",
+              "raw_command": "/Users/n0id/.local/bin/aerospace-swap-workspaces.sh",
+              "icon": "sys",
+              "iconData": null
+            }
+          ],
+          "action": "Hyper B \u2192 ",
+          "type": "system",
+          "source": "karabiner",
+          "desc": "Hyper B \u2192 Swap monitor workspaces",
+          "raw_command": "/Users/n0id/.local/bin/aerospace-swap-workspaces.sh",
+          "condition": "hyper=1",
+          "icon": "sys",
+          "iconData": null
         },
         "quote": {
           "variants": [
@@ -378,15 +422,6 @@
       "layerClass": "alt-layer",
       "description": "Option key bindings",
       "bindings": {
-        "1": {
-          "action": "workspace 1",
-          "type": "system",
-          "source": "aerospace",
-          "desc": "workspace 1",
-          "raw_command": "workspace 1",
-          "icon": "sys",
-          "iconData": null
-        },
         "b": {
           "action": "workspace B",
           "type": "system",
@@ -506,15 +541,6 @@
       "layerClass": "alt-layer",
       "description": "Option + Shift bindings",
       "bindings": {
-        "1": {
-          "action": "Go 1",
-          "type": "workspace",
-          "source": "aerospace",
-          "desc": "Send window + follow to workspace 1",
-          "raw_command": "move-node-to-workspace 1 && workspace 1",
-          "icon": "ws",
-          "iconData": "1"
-        },
         "b": {
           "action": "Send ?",
           "type": "workspace",

@@ -1,57 +1,73 @@
-# ────────────────────────────────────────────────────────────────────────────
-# Secrets (not tracked in git)
-# ────────────────────────────────────────────────────────────────────────────
-[ -f ~/.env ] && source ~/.env
+# ============================================================================
+# Brewfile — dotfiles dependencies
+# Install: brew bundle --file=~/Dev/dotfiles/Brewfile
+# ============================================================================
+
+# Taps
+tap "felixkratz/formulae"        # SketchyBar + JankyBorders
+tap "nikitabobko/tap"            # AeroSpace
 
 # ────────────────────────────────────────────────────────────────────────────
-# Plugins
+# Shell & Terminal
 # ────────────────────────────────────────────────────────────────────────────
-source $(brew --prefix)/opt/antidote/share/antidote/antidote.zsh
-antidote load
+brew "antidote"                  # Zsh plugin manager
+brew "starship"                  # Prompt
+brew "zoxide"                    # Smart cd
+brew "fzf"                       # Fuzzy finder
 
-# ────────────────────────────────────────────────────────────────────────────
-# Prompt & Navigation
-# ────────────────────────────────────────────────────────────────────────────
-eval "$(starship init zsh)"
-eval "$(zoxide init zsh)"
+cask "ghostty"                   # Terminal emulator
 
 # ────────────────────────────────────────────────────────────────────────────
-# PATH
+# Window Management Stack
 # ────────────────────────────────────────────────────────────────────────────
-export PATH="$HOME/.local/bin:$HOME/go/bin:$PATH"
-
-# NVM
-export NVM_DIR="$HOME/.nvm"
-[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
-[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"
-
-# fzf
-[ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
-
-# LM Studio CLI
-export PATH="$PATH:$HOME/.lmstudio/bin"
-
-# Docker CLI completions
-fpath=($HOME/.docker/completions $fpath)
-autoload -Uz compinit
-compinit
+cask "nikitabobko/tap/aerospace" # Tiling WM (workspaces + layout)
+cask "hammerspoon"               # Lua automation (hold-to-quit, bar toggle)
+cask "karabiner-elements"        # Hyper key (Tab → modifier)
+cask "rectangle"                 # Float positioning (URL scheme)
+brew "felixkratz/formulae/sketchybar"  # Status bar
+brew "felixkratz/formulae/borders"     # Window borders
 
 # ────────────────────────────────────────────────────────────────────────────
-# Aliases
+# Development
 # ────────────────────────────────────────────────────────────────────────────
-[ -f ~/.zsh_aliases ] && source ~/.zsh_aliases
-
-# Logitech Fix
-alias ghub-kill="sudo kill \$(ps aux | grep lghub | grep -v grep | awk '{print \$2}');"
-alias ghub='open /Applications/lghub.app/Contents/MacOS/lghub_agent.app; open /Applications/lghub.app/Contents/MacOS/lghub_updater.app; open /Applications/lghub.app;'
-
-# Tools
-alias p3="python3 $HOME/Dev/Scripts/pocket3ingest.py"
-alias vimman="(cd ~/Dev/vim-man && go run cmd/console/vimman.go)"
-alias vimgym="python3 $HOME/Dev/vimgym/vimgym.py"
-alias claudego="claude --dangerously-skip-permissions"
+brew "gh"                        # GitHub CLI
+brew "go"                        # Go lang
+brew "neovim"                    # Editor
+brew "docker"                    # Containers
+brew "tmux"                      # Terminal multiplexer
 
 # ────────────────────────────────────────────────────────────────────────────
-# Default working directory
+# Utilities
 # ────────────────────────────────────────────────────────────────────────────
-[[ "$PWD" == "$HOME" ]] && cd ~/Dev
+brew "tree"                      # Directory tree
+brew "rsync"                     # File sync
+brew "yq"                        # YAML processor
+brew "yt-dlp"                    # Video downloader
+brew "gum"                       # TUI scripting
+brew "osx-cpu-temp"              # CPU temp (used by SketchyBar)
+brew "smartmontools"             # Disk health (used by SketchyBar)
+brew "nmap"                      # Network scanning
+
+# ────────────────────────────────────────────────────────────────────────────
+# Applications
+# ────────────────────────────────────────────────────────────────────────────
+cask "claude"                    # Claude desktop
+cask "cursor"                    # AI code editor
+cask "obsidian"                  # Knowledge base
+cask "raycast"                   # Launcher
+cask "figma"                     # Design
+cask "slack"                     # Comms
+cask "discord"                   # Comms
+cask "notion"                    # Team PM
+
+# ────────────────────────────────────────────────────────────────────────────
+# Fonts
+# ────────────────────────────────────────────────────────────────────────────
+cask "font-iosevka-aile"         # Primary UI font (SketchyBar)
+cask "font-jetbrains-mono-nerd-font"  # Terminal nerd font
+cask "font-symbols-only-nerd-font"    # Nerd font symbols
+cask "font-inter"                # Sans-serif
+cask "font-geist"                # Sans-serif
+cask "font-geist-mono"           # Mono
+cask "font-maple-mono"           # Mono
+cask "font-commit-mono"          # Mono

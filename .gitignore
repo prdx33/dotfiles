@@ -1,5 +1,12 @@
-# Never commit these - they contain secrets or machine-specific data
+# Secrets — NEVER commit
+shell/.env
+.env
+
+# macOS noise
 .DS_Store
 
-# If you add Hammerspoon or other app configs later, exclude secrets:
-# hammerspoon/secrets.lua
+# Icon generation artifacts (6M+)
+.config/sketchybar/icons/_archive/
+
+# Hammerspoon secrets
+hammerspoon/secrets.lua
