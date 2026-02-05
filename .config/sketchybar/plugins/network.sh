@@ -19,9 +19,8 @@ UP_MB=$(echo "scale=2; $UP / 8000" | bc 2>/dev/null) || UP_MB="0.00"
 [[ -z "$DOWN_MB" ]] && DOWN_MB="0.00"
 [[ -z "$UP_MB" ]] && UP_MB="0.00"
 
-# Fixed width: "X NNN.NN MB" where X is glyph, number is 6 chars (padded)
-DOWN_FMT=$(printf "D %6.2f MB" "$DOWN_MB")
-UP_FMT=$(printf "U %6.2f MB" "$UP_MB")
+DOWN_FMT=$(printf "%5.2fMB" "$DOWN_MB")
+UP_FMT=$(printf "%5.2fMB" "$UP_MB")
 
 sketchybar --set net_down label="$DOWN_FMT" \
            --set net_up label="$UP_FMT" 2>/dev/null

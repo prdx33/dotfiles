@@ -1,0 +1,12 @@
+#!/bin/bash
+LAYOUT=$(/opt/homebrew/bin/aerospace list-windows --focused --format '%{window-layout}')
+
+if [ "$LAYOUT" = "floating" ]; then
+  # Floating → center half
+  open -g 'rectangle-pro://execute-action?name=center-half'
+else
+  # Tiled → detach (float) + center half
+  /opt/homebrew/bin/aerospace layout floating
+  sleep 0.1
+  open -g 'rectangle-pro://execute-action?name=center-half'
+fi

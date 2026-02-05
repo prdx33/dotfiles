@@ -1,26 +1,26 @@
 #!/bin/bash
 
 # CPU plugin - outputs XX% with colour thresholds
+# Uses ps instead of top for ~24x faster execution
 
 source "$CONFIG_DIR/colours.sh" 2>/dev/null || exit 0
 
-cpu_line=$(top -l 1 -n 0 2>/dev/null | grep "CPU usage")
-user=$(echo "$cpu_line" | awk '{print $3}' | tr -d '%')
-sys=$(echo "$cpu_line" | awk '{print $5}' | tr -d '%')
+# Sum all process CPU and normalise by core count
+cores=$(sysctl -n hw.ncpu)
+cpu=$(ps -A -o %cpu | awk -v c="$cores" '{s+=$1} END {printf "%.0f", s/c}')
 
-cpu=$(echo "$user + $sys" | bc 2>/dev/null | cut -d. -f1)
 [[ -z "$cpu" ]] && cpu=0
 [[ ! "$cpu" =~ ^[0-9]+$ ]] && cpu=0
 [[ $cpu -gt 99 ]] && cpu=99
 
-# Colour based on threshold
-if [[ $cpu -ge 90 ]]; then
+# Colour based on threshold (cpu: 70% warn, 85% crit)
+if [[ $cpu -ge 85 ]]; then
     color=$STAT_CRIT
-elif [[ $cpu -ge 75 ]]; then
+elif [[ $cpu -ge 70 ]]; then
     color=$STAT_WARN
 else
     color=$STAT_NORMAL
 fi
 
-label=$(printf "%2d%%" "$cpu")
+label=$(printf "%3d%%" "$cpu")
 sketchybar --set "$NAME" label="$label" label.color="$color" 2>/dev/null

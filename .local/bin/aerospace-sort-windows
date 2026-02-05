@@ -1,0 +1,37 @@
+#!/bin/zsh
+# Sort windows into letter-based workspaces (matching Raycast hotkeys)
+# Alt+letter switches to that workspace
+
+typeset -A APP_WORKSPACE
+APP_WORKSPACE=(
+  "1Password" "1"
+  "Bloom" "B"
+  "Claude" "C"
+  "Firefox" "F"
+  "Safari" "F"
+  "Ghostty" "G"
+  "Terminal" "G"
+  "Warp" "G"
+  "Karabiner-EventViewer" "K"
+  "Karabiner-Elements" "K"
+  "LM Studio" "L"
+  "Obsidian" "D"
+  "Spark" "R"
+  "Microsoft Outlook" "R"
+  "Spotify" "S"
+  "Music" "S"
+  "System Settings" "I"
+  "System Information" "I"
+  "Visual Studio Code" "V"
+  "Code" "V"
+  "Cursor" "V"
+  "WhatsApp" "W"
+  "Messages" "W"
+)
+
+/opt/homebrew/bin/aerospace list-windows --all --format '%{window-id}|%{app-name}' | while IFS='|' read -r WID APP; do
+  WS="${APP_WORKSPACE[$APP]}"
+  if [[ -n "$WS" ]]; then
+    /opt/homebrew/bin/aerospace move-node-to-workspace --window-id "$WID" "$WS" 2>/dev/null
+  fi
+done

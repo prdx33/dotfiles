@@ -56,6 +56,29 @@ echo ""
 echo "AeroSpace config:"
 mkdir -p "$HOME/.config/aerospace"
 link_file "$DOTFILES_DIR/.config/aerospace/aerospace.toml" "$HOME/.config/aerospace/aerospace.toml"
+echo ""
+
+# ────────────────────────────────────────────────────────────────────────────
+# Karabiner Configuration
+# ────────────────────────────────────────────────────────────────────────────
+echo "Karabiner config:"
+mkdir -p "$HOME/.config/karabiner"
+link_file "$DOTFILES_DIR/.config/karabiner/karabiner.json" "$HOME/.config/karabiner/karabiner.json"
+echo ""
+
+# ────────────────────────────────────────────────────────────────────────────
+# SketchyBar Configuration
+# ────────────────────────────────────────────────────────────────────────────
+echo "SketchyBar config:"
+link_file "$DOTFILES_DIR/.config/sketchybar" "$HOME/.config/sketchybar"
+echo ""
+
+# ────────────────────────────────────────────────────────────────────────────
+# JankyBorders Configuration
+# ────────────────────────────────────────────────────────────────────────────
+echo "JankyBorders config:"
+mkdir -p "$HOME/.config/borders"
+link_file "$DOTFILES_DIR/.config/borders/bordersrc" "$HOME/.config/borders/bordersrc"
 
 # Remove old ~/.gitconfig if it exists and point to new location
 if [ -f "$HOME/.gitconfig" ] && [ ! -L "$HOME/.gitconfig" ]; then
@@ -107,6 +130,20 @@ for plist in "$DOTFILES_DIR"/launchagents/*.plist; do
         echo "    → Loaded $label"
     fi
 done
+echo ""
+
+# ────────────────────────────────────────────────────────────────────────────
+# macOS Defaults (apps without config files)
+# ────────────────────────────────────────────────────────────────────────────
+echo "macOS defaults:"
+
+# Rectangle gaps (match AeroSpace gaps)
+defaults write com.knollsoft.Rectangle gapSize -int 10
+defaults write com.knollsoft.Rectangle screenEdgeGapBottom -int 10
+defaults write com.knollsoft.Rectangle screenEdgeGapLeft -int 10
+defaults write com.knollsoft.Rectangle screenEdgeGapRight -int 10
+defaults write com.knollsoft.Rectangle screenEdgeGapTop -int 10
+echo "  ✓ Rectangle gaps: 10px (matching AeroSpace)"
 echo ""
 
 # ────────────────────────────────────────────────────────────────────────────

@@ -4,9 +4,14 @@ source $(brew --prefix)/opt/antidote/share/antidote/antidote.zsh
 # Load plugins from the list
 antidote load
 
+# Logitech Fix 
+alias ghub-kill="sudo kill \$(ps aux | grep lghub | grep -v grep | awk '{print \$2}');"
+
+alias ghub='open /Applications/lghub.app/Contents/MacOS/lghub_agent.app; open /Applications/lghub.app/Contents/MacOS/lghub_updater.app; open /Applications/lghub.app;'
+
 # Starship prompt
 eval "$(starship init zsh)"
-export PATH="$HOME/.local/bin:$PATH"
+export PATH="$HOME/.local/bin:$HOME/go/bin:$PATH"
 eval "$(zoxide init zsh)"
 
 export NVM_DIR="$HOME/.nvm"
@@ -34,3 +39,11 @@ alias p3="python3 /Users/n0id/Dev/Scripts/pocket3ingest.py"
 # Default to ~/Dev for new terminals
 [[ "$PWD" == "$HOME" ]] && cd ~/Dev
 export PATH="$HOME/.local/bin:$PATH"
+
+# VimMan - Vim learning game
+alias vimman="(cd ~/Dev/vim-man && go run cmd/console/vimman.go)"
+
+# Gemini API
+export GEMINI_API_KEY="REDACTED"
+alias vimgym='python3 /Users/n0id/Dev/vimgym/vimgym.py'
+alias claudego="claude --dangerously-skip-permissions"

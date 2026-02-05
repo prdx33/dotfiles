@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Keybindings Cheat Sheet</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600&display=swap');
+
+    :root {
+      --bg: #0a0a0a;
+      --bg-card: #141414;
+      --bg-row: #1a1a1a;
+      --bg-row-alt: #1e1e1e;
+      --text: #e8e8e8;
+      --text-muted: #888;
+      --text-dim: #555;
+      --border: #2a2a2a;
+
+      --hyper: #4a9d9a;
+      --alt: #7b9f5c;
+      --alt-shift: #c98a4b;
+      --service: #9a7bb8;
+
+      --karabiner: #8b7bc7;
+      --aerospace: #5ba3c9;
+      --rectangle: #c77da0;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'JetBrains Mono', monospace;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 32px 48px;
+      font-size: 14px;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    h1 {
+      font-size: 1.75rem;
+      font-weight: 500;
+    }
+
+    .header-meta {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      font-size: 0.8rem;
+      color: var(--text-dim);
+    }
+
+    .refresh-btn {
+      padding: 8px 16px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--text-muted);
+      font-family: inherit;
+      font-size: 0.8rem;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .refresh-btn:hover {
+      background: var(--bg-row);
+      color: var(--text);
+    }
+
+    .nav {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 24px;
+    }
+
+    .nav a {
+      padding: 10px 20px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 0.9rem;
+      transition: all 0.15s;
+    }
+
+    .nav a:hover { background: var(--bg-row); color: var(--text); }
+    .nav a.active { background: var(--bg-row); color: var(--text); border-color: #444; }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 20px;
+    }
+
+    @media (max-width: 900px) {
+      .grid { grid-template-columns: 1fr; }
+    }
+
+    .layer-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    .layer-header {
+      padding: 14px 20px;
+      border-radius: 9px 9px 0 0;
+      text-align: left;
+    }
+
+    .layer-card[data-layer="hyper"] .layer-header { background: var(--hyper); }
+    .layer-card[data-layer="alt"] .layer-header { background: var(--alt); }
+    .layer-card[data-layer="alt-shift"] .layer-header { background: var(--alt-shift); }
+    .layer-card[data-layer="service"] .layer-header { background: var(--service); }
+
+    .layer-name {
+      font-weight: 600;
+      font-size: 1rem;
+      color: var(--bg);
+      letter-spacing: 0.01em;
+    }
+
+    .layer-activator {
+      font-weight: 300;
+      opacity: 0.7;
+    }
+
+    .bindings {
+      padding: 8px 0;
+    }
+
+    .binding-row {
+      display: grid;
+      grid-template-columns: 48px 1fr auto;
+      align-items: center;
+      padding: 10px 20px;
+      gap: 16px;
+      font-size: 0.9rem;
+    }
+
+    .binding-row:nth-child(odd) { background: var(--bg-row); }
+    .binding-row:nth-child(even) { background: var(--bg-row-alt); }
+
+    .binding-key {
+      font-weight: 600;
+      color: var(--text);
+      background: var(--bg);
+      padding: 4px 8px;
+      border-radius: 5px;
+      text-align: center;
+      font-size: 0.8rem;
+      letter-spacing: 0.02em;
+    }
+
+    .binding-desc {
+      color: var(--text);
+      font-weight: 500;
+      letter-spacing: 0.01em;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      white-space: nowrap;
+    }
+
+    .binding-source-dots {
+      display: flex;
+      gap: 3px;
+      width: 18px;
+      flex-shrink: 0;
+    }
+
+    .binding-source-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+    }
+
+    .binding-source-dot.karabiner { background: var(--karabiner); }
+    .binding-source-dot.aerospace { background: var(--aerospace); }
+    .binding-source-dot.rectangle { background: var(--rectangle); }
+
+    .binding-action {
+      color: var(--text-muted);
+      font-size: 0.8rem;
+      text-align: right;
+      white-space: nowrap;
+      font-weight: 400;
+    }
+
+
+    .empty-state {
+      padding: 24px;
+      text-align: center;
+      color: var(--text-dim);
+      font-size: 0.8rem;
+    }
+
+    .legend {
+      display: flex;
+      gap: 24px;
+      padding: 16px 24px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      margin-top: 24px;
+      font-size: 0.75rem;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--text-muted);
+    }
+
+    .legend-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 48px;
+      color: var(--text-dim);
+    }
+
+    .legend-top {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 40px;
+      padding: 16px 20px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      margin-bottom: 20px;
+      font-size: 0.85rem;
+    }
+
+    .legend-group {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+
+    .legend-label {
+      color: var(--text-muted);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      font-size: 0.7rem;
+      min-width: 50px;
+    }
+
+    .legend-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--text);
+      padding: 5px 12px;
+      border-radius: 20px;
+      background: var(--bg);
+    }
+
+    .source-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--text);
+    }
+
+    .source-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .source-dot.karabiner { background: var(--karabiner); }
+    .source-dot.aerospace { background: var(--aerospace); }
+    .source-dot.rectangle { background: var(--rectangle); }
+
+    .layer-pill {
+      padding: 6px 14px;
+      border-radius: 6px;
+      font-weight: 500;
+      color: var(--bg);
+    }
+
+    .layer-pill.hyper { background: var(--hyper); }
+    .layer-pill.alt { background: var(--alt); }
+    .layer-pill.alt-shift { background: var(--alt-shift); }
+    .layer-pill.service { background: var(--service); }
+
+    @media (max-width: 800px) {
+      body { padding: 16px; }
+      .binding-row { grid-template-columns: 36px 1fr; }
+      .binding-desc { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Keybindings</h1>
+    <div class="header-meta">
+      <span id="lastUpdated"></span>
+      <button class="refresh-btn" onclick="regenerateAndReload()">Regenerate</button>
+    </div>
+  </header>
+
+  <nav class="nav">
+    <a href="index.html" class="active">Cheat Sheet</a>
+    <a href="window-management-keymap.html">Visual</a>
+    <a href="corne-keymap-viewer.html">Corne</a>
+  </nav>
+
+  <div class="legend-top">
+    <div class="legend-group">
+      <span class="legend-label">Layer</span>
+      <span class="layer-pill hyper">Hyper</span>
+      <span class="layer-pill alt">Alt</span>
+      <span class="layer-pill alt-shift">Alt+Shift</span>
+      <span class="layer-pill service">Service</span>
+    </div>
+    <div class="legend-group">
+      <span class="legend-label">Source</span>
+      <span class="source-item"><span class="source-dot karabiner"></span>Karabiner</span>
+      <span class="source-item"><span class="source-dot aerospace"></span>AeroSpace</span>
+      <span class="source-item"><span class="source-dot rectangle"></span>Rectangle</span>
+    </div>
+  </div>
+
+  <div id="content" class="loading">Loading keybindings...</div>
+
+  <!-- Load data as JS to avoid CORS issues with file:// -->
+  <script src="keybindings-data.js"></script>
+
+
+  <script>
+    const KEY_LABELS = {
+      tab:'Tab', caps:'Caps', shift:'Shift', alt:'Alt', cmd:'Cmd', space:'Space',
+      backspace:'Bksp', ctrl:'Ctrl', backslash:'\\', semicolon:';',
+      quote:"'", comma:',', period:'.', slash:'/', enter:'Enter',
+      q:'Q', w:'W', e:'E', r:'R', t:'T', y:'Y', u:'U', i:'I', o:'O', p:'P',
+      a:'A', s:'S', d:'D', f:'F', g:'G', h:'H', j:'J', k:'K', l:'L',
+      z:'Z', x:'X', c:'C', v:'V', b:'B', n:'N', m:'M'
+    };
+
+    const LAYER_ORDER = ['hyper', 'alt', 'alt-shift', 'service'];
+
+    const ACTIVATOR_TEXT = {
+      'hyper': 'Tab (hold)',
+      'alt': 'Option',
+      'alt-shift': 'Opt+Shift',
+      'service': 'Hyper+;'
+    };
+
+    const LAYER_SOURCE = {
+      'hyper': 'karabiner',
+      'alt': 'aerospace',
+      'alt-shift': 'aerospace',
+      'service': 'aerospace'
+    };
+
+    // QWERTY keyboard order for sorting
+    const QWERTY_ORDER = 'qwertyuiopasdfghjklzxcvbnm';
+    function qwertySort(a, b) {
+      const aKey = a[0].toLowerCase();
+      const bKey = b[0].toLowerCase();
+      const aIdx = QWERTY_ORDER.indexOf(aKey);
+      const bIdx = QWERTY_ORDER.indexOf(bKey);
+      // If not in QWERTY string, sort to end
+      const aPos = aIdx === -1 ? 100 : aIdx;
+      const bPos = bIdx === -1 ? 100 : bIdx;
+      return aPos - bPos;
+    }
+
+    function getSourceDots(binding) {
+      const dots = [];
+      const source = binding.source;
+      const rawCmd = (binding.raw_command || '').toLowerCase();
+
+      // Primary source
+      dots.push(source);
+
+      // Check for chained sources (e.g., Karabiner calling Rectangle)
+      if (source === 'karabiner') {
+        if (rawCmd.includes('rectangle')) {
+          dots.push('rectangle');
+        } else if (rawCmd.includes('aerospace')) {
+          dots.push('aerospace');
+        }
+      }
+
+      return dots;
+    }
+
+    function loadBindings() {
+      // Use global data loaded via script tag (avoids CORS issues with file://)
+      if (window.KEYBINDINGS_DATA) {
+        return window.KEYBINDINGS_DATA;
+      }
+      console.error('KEYBINDINGS_DATA not found - run generate.py');
+      return null;
+    }
+
+    function renderBindings(data) {
+      const container = document.getElementById('content');
+
+      if (!data || !data.layers) {
+        container.innerHTML = `
+          <div class="empty-state">
+            <p>Could not load keybindings.</p>
+            <p>Run: <code>python3 tools/keybindings/generate.py</code></p>
+          </div>
+        `;
+        return;
+      }
+
+      // Update timestamp
+      const lastUpdated = document.getElementById('lastUpdated');
+      if (data.generated) {
+        const date = new Date(data.generated);
+        lastUpdated.textContent = `Updated: ${date.toLocaleDateString()} ${date.toLocaleTimeString()}`;
+      }
+
+      // Build cards
+      let html = '<div class="grid">';
+
+      for (const layerId of LAYER_ORDER) {
+        const layer = data.layers[layerId];
+        if (!layer) continue;
+
+        const bindings = Object.entries(layer.bindings || {})
+          .sort(qwertySort);
+
+        html += `
+          <div class="layer-card" data-layer="${layerId}">
+            <div class="layer-header">
+              <span class="layer-name">${layer.name} <span class="layer-activator">- ${ACTIVATOR_TEXT[layerId] || ''}</span></span>
+            </div>
+            <div class="bindings">
+        `;
+
+        if (bindings.length === 0) {
+          html += `<div class="empty-state">No bindings</div>`;
+        } else {
+          for (const [key, binding] of bindings) {
+            const keyLabel = KEY_LABELS[key] || key.toUpperCase();
+            const sources = getSourceDots(binding);
+            const dotsHtml = sources.map(s => `<span class="binding-source-dot ${s}"></span>`).join('');
+
+            const displayDesc = binding.desc || binding.action;
+            const displayAction = binding.desc ? binding.action : '';
+
+            html += `
+              <div class="binding-row">
+                <span class="binding-key">${keyLabel}</span>
+                <span class="binding-desc">
+                  <span class="binding-source-dots">${dotsHtml}</span>
+                  ${displayDesc}
+                </span>
+                <span class="binding-action">${displayAction}</span>
+              </div>
+            `;
+          }
+        }
+
+        html += `
+            </div>
+          </div>
+        `;
+      }
+
+      html += '</div>';
+      container.innerHTML = html;
+    }
+
+    async function regenerateAndReload() {
+      const btn = document.querySelector('.refresh-btn');
+      btn.textContent = 'Regenerating...';
+      btn.disabled = true;
+
+      try {
+        // Try to trigger regeneration via local server or just reload
+        // In practice, user runs: python3 tools/keybindings/generate.py
+        // Then reload this page
+
+        // For now, just reload after a short delay
+        setTimeout(async () => {
+          const data = await loadBindings();
+          renderBindings(data);
+          btn.textContent = 'Regenerate';
+          btn.disabled = false;
+        }, 500);
+      } catch (err) {
+        btn.textContent = 'Regenerate';
+        btn.disabled = false;
+        alert('Run: python3 tools/keybindings/generate.py\nThen refresh the page.');
+      }
+    }
+
+    // Initial load
+    const data = loadBindings();
+    renderBindings(data);
+
+    // Auto-refresh every 30 seconds (optional, for dev)
+    // setInterval(async () => {
+    //   const data = await loadBindings();
+    //   renderBindings(data);
+    // }, 30000);
+  </script>
+</body>
+</html>

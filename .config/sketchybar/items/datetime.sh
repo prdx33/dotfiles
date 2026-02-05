@@ -12,7 +12,7 @@ sketchybar --add item date right \
     --set date \
         icon.drawing=off \
         label.font="Iosevka Extended:Heavy:9.0" \
-        label.color=$LABEL_COLOR \
+        label.color=$STAT_DATE \
         label.width=$DATETIME_WIDTH \
         padding_right=0 \
         y_offset=7 \

@@ -17,7 +17,7 @@ sketchybar --add item cpu_label right \
         icon.drawing=off \
         label=" CPU" \
         label.font="Iosevka Extended:Heavy:9.0" \
-        label.color=$STAT_LABEL \
+        label.color=$STAT_CPU \
         label.width=$STAT_WIDTH \
         padding_right=$STAT_PAD \
         y_offset=7 \
@@ -33,7 +33,7 @@ sketchybar --add item cpu right \
         padding_right=$STAT_PAD \
         y_offset=-5 \
         background.drawing=off \
-        update_freq=2 \
+        update_freq=5 \
         script="$PLUGIN_DIR/cpu.sh"
 
 # === GPU (stacked) ===
@@ -42,7 +42,7 @@ sketchybar --add item gpu_label right \
         icon.drawing=off \
         label=" GPU" \
         label.font="Iosevka Extended:Heavy:9.0" \
-        label.color=$STAT_LABEL \
+        label.color=$STAT_GPU \
         label.width=$STAT_WIDTH \
         padding_right=$STAT_PAD \
         y_offset=7 \
@@ -58,7 +58,7 @@ sketchybar --add item gpu right \
         padding_right=$STAT_PAD \
         y_offset=-5 \
         background.drawing=off \
-        update_freq=3 \
+        update_freq=5 \
         script="$PLUGIN_DIR/gpu.sh"
 
 # === Memory (stacked) ===
@@ -67,7 +67,7 @@ sketchybar --add item mem_label right \
         icon.drawing=off \
         label=" MEM" \
         label.font="Iosevka Extended:Heavy:9.0" \
-        label.color=$STAT_LABEL \
+        label.color=$STAT_MEM \
         label.width=$STAT_WIDTH \
         padding_right=$STAT_PAD \
         y_offset=7 \
@@ -94,7 +94,7 @@ sketchybar --add item disk_read right \
     --set disk_read \
         icon="R" \
         icon.font="Iosevka Extended:Heavy:9.0" \
-        icon.color=$STAT_LABEL \
+        icon.color=$STAT_DISK_READ \
         icon.padding_right=0 \
         label="0.00MB" \
         label.font="$MONO_FONT:Regular:9.0" \
@@ -110,7 +110,7 @@ sketchybar --add item disk_write right \
     --set disk_write \
         icon="W" \
         icon.font="Iosevka Extended:Heavy:9.0" \
-        icon.color=$STAT_LABEL \
+        icon.color=$STAT_DISK_WRITE \
         icon.padding_right=0 \
         label="0.00MB" \
         label.font="$MONO_FONT:Regular:9.0" \
@@ -120,7 +120,7 @@ sketchybar --add item disk_write right \
         padding_right=$STAT_PAD \
         y_offset=-5 \
         background.drawing=off \
-        update_freq=3 \
+        update_freq=5 \
         script="$PLUGIN_DIR/disk.sh"
 
 # === Network speeds (stacked) ===
@@ -129,7 +129,7 @@ sketchybar --add item net_up right \
     --set net_up \
         icon="U" \
         icon.font="Iosevka Extended:Heavy:9.0" \
-        icon.color=$STAT_LABEL \
+        icon.color=$STAT_NET_UP \
         icon.padding_right=0 \
         label="0.00MB" \
         label.font="$MONO_FONT:Regular:9.0" \
@@ -146,7 +146,7 @@ sketchybar --add item net_down right \
     --set net_down \
         icon="D" \
         icon.font="Iosevka Extended:Heavy:9.0" \
-        icon.color=$STAT_LABEL \
+        icon.color=$STAT_NET_DOWN \
         icon.padding_right=0 \
         label="0.00MB" \
         label.font="$MONO_FONT:Regular:9.0" \
@@ -157,7 +157,7 @@ sketchybar --add item net_down right \
         padding_right=$STAT_PAD \
         y_offset=-5 \
         background.drawing=off \
-        update_freq=2 \
+        update_freq=5 \
         script="$PLUGIN_DIR/network.sh" \
     --subscribe net_down system_woke
 
@@ -187,5 +187,5 @@ sketchybar --add graph net_graph right $GRAPH_WIDTH \
         graph.fill_color=0x00000000 \
         graph.line_width=1.0 \
         background.drawing=off \
-        update_freq=2 \
+        update_freq=5 \
         script="$PLUGIN_DIR/net_graph.sh"

@@ -1,0 +1,26 @@
+#!/bin/bash
+# Toggle all windows of the SAME APP on the FOCUSED MONITOR between floating and tiled
+
+# Get the focused window's app name and monitor
+APP=$(/opt/homebrew/bin/aerospace list-windows --focused --format '%{app-name}')
+MONITOR=$(/opt/homebrew/bin/aerospace list-monitors --focused --format '%{monitor-id}')
+
+if [ -z "$APP" ] || [ -z "$MONITOR" ]; then
+  exit 0
+fi
+
+# Check if any window of this app on this monitor is floating
+FLOATING=$(/opt/homebrew/bin/aerospace list-windows --monitor "$MONITOR" --format '%{app-name}|%{window-layout}' | grep "^${APP}|floating" | wc -l | tr -d ' ')
+
+if [ "$FLOATING" -gt 0 ]; then
+  # Some windows are floating, tile all
+  TARGET="tiling"
+else
+  # All tiled, float all  
+  TARGET="floating"
+fi
+
+# Apply to all windows of this app on this monitor
+for WID in $(/opt/homebrew/bin/aerospace list-windows --monitor "$MONITOR" --format '%{app-name}|%{window-id}' | grep "^${APP}|" | cut -d'|' -f2); do
+  /opt/homebrew/bin/aerospace layout --window-id "$WID" "$TARGET" 2>/dev/null
+done

@@ -27,44 +27,45 @@ Cheatsheet.config = {
 -- State
 Cheatsheet.canvas = nil
 Cheatsheet.dismissTap = nil
+Cheatsheet.fadeTimer = nil
 Cheatsheet.visible = false
 
 -- Shortcut data
 Cheatsheet.sections = {
   {
-    title = "HYPER (⌘⌃⌥⇧)",
+    title = "HYPER — Navigation",
     items = {
-      { "Q-P", "Summon workspace 1-0" },
-      { "A", "Toggle tiling mode" },
-      { "S", "Left half / Move left" },
-      { "D", "Center (cycle) / Pop-out" },
-      { "F", "Right half / Move right" },
-      { "G", "Move window to next monitor" },
-      { "X", "Focus left" },
-      { "C", "Focus next monitor" },
-      { "V", "Focus right" },
-      { "B", "Tiles horizontal (tiling)" },
-      { "N", "Tiles vertical (tiling)" },
-      { "H J K L", "Focus (vim-style)" },
+      { "Q", "Focus prev window" },
+      { "T", "Focus next window" },
+      { "W", "Focus next monitor" },
+      { "R", "Move window to monitor + follow" },
+      { "A", "Toggle tiling/floating" },
       { ";", "Service mode" },
       { "'", "Toggle SketchyBar" },
-      { "F10", "This cheatsheet" },
     }
   },
   {
-    title = "ALT (⌥)",
+    title = "HYPER — Positioning (Rectangle Pro)",
     items = {
-      { "Q-P", "Send window to workspace (stay)" },
-      { "S / F", "Resize smaller / larger" },
-      { "D", "Reset layout" },
-      { "G", "Move workspace to next monitor" },
+      { "S", "Left half (cycles)" },
+      { "D", "Center" },
+      { "F", "Right half (cycles)" },
+      { "E", "Maximize" },
+      { "X", "First third" },
+      { "V", "Last third" },
+      { "Z", "Cascade all" },
+    }
+  },
+  {
+    title = "ALT (⌥) — Workspaces",
+    items = {
+      { "Q-P", "Switch to workspace 1-0" },
     }
   },
   {
     title = "ALT+SHIFT (⌥⇧)",
     items = {
       { "Q-P", "Send window + follow" },
-      { "S / F", "Resize (large increment)" },
     }
   },
   {
@@ -75,6 +76,14 @@ Cheatsheet.sections = {
       { "D", "Enable/disable AeroSpace" },
       { "F", "Flatten workspace tree" },
       { "Q", "Close all but current" },
+    }
+  },
+  {
+    title = "HAMMERSPOON",
+    items = {
+      { "⌘Q hold", "Hold-to-quit" },
+      { "⌘W hold", "Hold-to-close" },
+      { "F10", "This cheatsheet" },
     }
   },
 }
@@ -176,25 +185,33 @@ function Cheatsheet:createCanvas()
   return canvas
 end
 
+function Cheatsheet:stopFadeTimer()
+  if self.fadeTimer then
+    self.fadeTimer:stop()
+    self.fadeTimer = nil
+  end
+end
+
 function Cheatsheet:show()
   if self.visible then return end
 
+  self:stopFadeTimer()
   self.canvas = self:createCanvas()
   self.canvas:alpha(0)
   self.canvas:show()
 
   -- Fade in
   local alpha = 0
-  hs.timer.doEvery(0.016, function(timer)
+  self.fadeTimer = hs.timer.doEvery(0.016, function(timer)
     alpha = alpha + 0.1
     if alpha >= 1 then
       alpha = 1
-      timer:stop()
+      self:stopFadeTimer()
     end
     if self.canvas then
       self.canvas:alpha(alpha)
     else
-      timer:stop()
+      self:stopFadeTimer()
     end
   end)
 
@@ -219,13 +236,15 @@ function Cheatsheet:hide()
     self.dismissTap = nil
   end
 
+  self:stopFadeTimer()
+
   if self.canvas then
     -- Fade out
     local alpha = 1
-    hs.timer.doEvery(0.016, function(timer)
+    self.fadeTimer = hs.timer.doEvery(0.016, function(timer)
       alpha = alpha - 0.15
       if alpha <= 0 then
-        timer:stop()
+        self:stopFadeTimer()
         if self.canvas then
           self.canvas:delete()
           self.canvas = nil
@@ -234,7 +253,7 @@ function Cheatsheet:hide()
         if self.canvas then
           self.canvas:alpha(alpha)
         else
-          timer:stop()
+          self:stopFadeTimer()
         end
       end
     end)

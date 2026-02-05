@@ -1,0 +1,10 @@
+#!/bin/bash
+LAYOUT=$(/opt/homebrew/bin/aerospace list-windows --focused --format '%{window-layout}')
+
+if [ "$LAYOUT" != "floating" ]; then
+  # Tiled: just detach (float)
+  /opt/homebrew/bin/aerospace layout floating
+else
+  # Floating: center
+  open -g 'rectangle-pro://execute-action?name=center'
+fi

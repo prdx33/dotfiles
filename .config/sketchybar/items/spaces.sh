@@ -10,8 +10,10 @@ FONT_SIZE=13.0
 WORKSPACE_GAP=14
 MONO_FONT="Iosevka Extended"
 
-# Workspaces 1-9, 0, then 10
-WORKSPACES="1 2 3 4 5 6 7 8 9 0 10"
+# Letter workspaces (matching Raycast app hotkeys + AeroSpace Alt bindings)
+# B=Bloom, C=Claude, D=Obsidian, F=Firefox, G=Ghostty
+# I=Info/Settings, K=Karabiner, L=LM Studio, R=Spark, S=Spotify, V=VS Code, W=WhatsApp
+WORKSPACES="B C D F G I K L R S V W"
 
 for sid in $WORKSPACES; do
     # Workspace number only
@@ -59,7 +61,7 @@ sketchybar --add bracket spaces '/space\..*/' spaces_spacer \
 # Workspace change events
 sketchybar --add event aerospace_workspace_change
 
-# Controller item - handles polling and event-driven refresh
+# Controller item - handles workspace changes and wake
 sketchybar --add item spaces_controller center \
     --set spaces_controller \
         drawing=off \

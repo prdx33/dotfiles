@@ -40,13 +40,3 @@ fi
 # ALL CAPS
 app_upper=$(echo "$app" | tr '[:lower:]' '[:upper:]')
 sketchybar --set "$NAME" label="$app_upper" 2>/dev/null
-
-# Refresh workspace icons when front app changes (use lockfile to prevent concurrent runs)
-LOCKFILE="/tmp/sketchybar_aerospace_refresh.lock"
-if ! [[ -f "$LOCKFILE" ]] || [[ $(($(date +%s) - $(stat -f%m "$LOCKFILE" 2>/dev/null || echo 0))) -gt 2 ]]; then
-    touch "$LOCKFILE"
-    ~/.config/sketchybar/plugins/aerospace_refresh.sh &
-fi
-
-# Update border color based on focused window layout
-~/.config/sketchybar/plugins/borders.sh 2>/dev/null &

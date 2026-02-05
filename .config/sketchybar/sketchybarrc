@@ -11,11 +11,11 @@ MONO_FONT="Iosevka Extended"
 
 export FONT MONO_FONT PLUGIN_DIR
 
-# Bar - 10% opacity background
+# Bar - 40% opacity background
 sketchybar --bar \
     position=top \
     height=35 \
-    color=0x1A000000 \
+    color=0x66000000 \
     blur_radius=50 \
     margin=0 \
     y_offset=0 \
@@ -41,13 +41,13 @@ sketchybar --add item app_icon left \
     --set app_icon \
         icon.drawing=off \
         label.drawing=off \
-        background.image.scale=0.60 \
+        background.image.scale=0.75 \
         background.image.drawing=on \
         background.drawing=on \
         background.color=0x00000000 \
-        padding_left=9 \
+        padding_left=11 \
         padding_right=4 \
-        width=26 \
+        width=20 \
         y_offset=0 \
         script="$PLUGIN_DIR/front_app_icon.sh" \
     --subscribe app_icon front_app_switched

@@ -37,15 +37,14 @@ if [[ -f "$CACHE" ]]; then
     [[ -z "$READ_MB" ]] && READ_MB="0.00"
     [[ -z "$WRITE_MB" ]] && WRITE_MB="0.00"
 
-    # Fixed width: "X NNN.NN MB" where X is glyph, number is 6 chars (padded)
-    READ_FMT=$(printf "R %6.2f MB" "$READ_MB")
-    WRITE_FMT=$(printf "W %6.2f MB" "$WRITE_MB")
+    READ_FMT=$(printf "%5.2fMB" "$READ_MB")
+    WRITE_FMT=$(printf "%5.2fMB" "$WRITE_MB")
 
     sketchybar --set disk_read label="$READ_FMT" \
                --set disk_write label="$WRITE_FMT" 2>/dev/null
 else
-    sketchybar --set disk_read label="R   0.00 MB" \
-               --set disk_write label="W   0.00 MB" 2>/dev/null
+    sketchybar --set disk_read label="0.00MB" \
+               --set disk_write label="0.00MB" 2>/dev/null
 fi
 
 echo "$READ_BYTES $WRITE_BYTES $NOW" > "$CACHE" 2>/dev/null

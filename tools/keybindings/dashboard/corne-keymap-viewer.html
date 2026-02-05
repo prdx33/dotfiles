@@ -1,0 +1,1659 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Corne Keymap Viewer</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600&display=swap');
+
+    :root {
+      /* Typography Scale - more breathing room */
+      --text-xs: 0.75rem;
+      --text-sm: 0.875rem;
+      --text-base: 1rem;
+      --text-lg: 1.125rem;
+      --text-xl: 1.5rem;
+      --text-2xl: 1.875rem;
+
+      /* Colours */
+      --bg-primary: #0a0a0a;
+      --bg-secondary: #141414;
+      --bg-key: #1e1e1e;
+      --bg-key-hover: #2a2a2a;
+      --text-primary: #e8e8e8;
+      --text-muted: #999999;
+      --text-dim: #666666;
+      --accent-mod-tap: #f59e0b;
+      --accent-layer-tap: #14b8a6;
+      --accent-tap-dance: #a855f7;
+      --accent-combo: #f87171;
+      --accent-transparent: #404040;
+      --border-default: #2a2a2a;
+      --border-emphasis: #444444;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'JetBrains Mono', ui-monospace, 'SF Mono', Monaco, monospace;
+      font-weight: 400;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      min-height: 100vh;
+      padding: 32px;
+      letter-spacing: 0.01em;
+    }
+
+    h1 {
+      font-size: var(--text-2xl);
+      font-weight: 500;
+      margin-bottom: 8px;
+      letter-spacing: -0.01em;
+    }
+
+    .subtitle {
+      color: var(--text-muted);
+      font-size: var(--text-sm);
+      font-weight: 400;
+      margin-bottom: 24px;
+    }
+
+    /* Header with file loader */
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 16px;
+    }
+
+    .file-loader {
+      font-size: var(--text-sm);
+      color: var(--text-dim);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .file-loader input[type="file"] {
+      display: none;
+    }
+
+    .file-link {
+      cursor: pointer;
+      text-decoration: underline;
+      text-underline-offset: 2px;
+      color: var(--text-dim);
+      transition: color 0.15s ease;
+    }
+
+    .file-link:hover {
+      color: var(--text-muted);
+    }
+
+    .file-name {
+      color: var(--text-dim);
+      font-size: var(--text-sm);
+    }
+
+    .file-name.loaded {
+      color: var(--accent-layer-tap);
+    }
+
+    .view-switcher {
+      display: flex;
+      gap: 8px;
+      margin-left: 16px;
+    }
+
+    .view-switcher a {
+      padding: 6px 14px;
+      font-size: var(--text-sm);
+      border-radius: 6px;
+      background: var(--bg-key);
+      border: 1px solid var(--border-default);
+      color: var(--text-muted);
+      text-decoration: none;
+      transition: all 0.15s ease;
+    }
+
+    .view-switcher a:hover {
+      background: var(--bg-key-hover);
+      color: var(--text-primary);
+    }
+
+    .view-switcher a.active {
+      background: var(--accent-layer-tap);
+      color: var(--bg-primary);
+      border-color: var(--accent-layer-tap);
+    }
+
+    /* Layer Tabs - inside keyboard container, centered */
+    .layer-tabs {
+      display: flex;
+      justify-content: center;
+      gap: 4px;
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border-default);
+    }
+
+    .layer-tab {
+      padding: 6px 14px;
+      font-size: var(--text-sm);
+      border-radius: 6px;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--text-dim);
+    }
+
+    .layer-tab:hover {
+      color: var(--text-muted);
+      background: var(--bg-key);
+    }
+
+    .layer-tab.active {
+      color: var(--text-primary);
+      background: var(--bg-key);
+    }
+
+    .layer-tab-number {
+      opacity: 0.5;
+    }
+
+    .layer-tab-name {
+      font-weight: 500;
+    }
+
+    /* Main Layout */
+    .main-layout {
+      margin-bottom: 32px;
+    }
+
+    /* Keyboard Container - holds tabs + keyboard + tooltip */
+    .keyboard-container {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-default);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    .keyboard-area {
+      position: relative;
+      padding: 32px;
+    }
+
+    /* Tooltip Panel - centered between keyboard halves */
+    .tooltip-panel {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      width: 200px;
+      background: var(--bg-key);
+      border: 1px solid var(--border-default);
+      border-radius: 8px;
+      padding: 16px;
+      z-index: 5;
+    }
+
+    .tooltip-panel-empty {
+      color: var(--text-dim);
+      font-size: var(--text-sm);
+      text-align: center;
+    }
+
+    .tooltip-title {
+      font-weight: 500;
+      font-size: var(--text-base);
+      margin-bottom: 10px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--border-default);
+      text-align: center;
+    }
+
+    .tooltip-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: var(--text-sm);
+      margin-bottom: 6px;
+    }
+
+    .tooltip-label {
+      color: var(--text-dim);
+    }
+
+    .tooltip-value {
+      color: var(--text-primary);
+      font-weight: 500;
+    }
+
+    .tooltip-timing {
+      margin-top: 10px;
+      padding-top: 10px;
+      border-top: 1px solid var(--border-default);
+      font-size: var(--text-xs);
+      text-align: center;
+    }
+
+    .tooltip-timing-icon {
+      margin-right: 4px;
+    }
+
+    .tooltip-feel {
+      color: var(--text-dim);
+      font-style: italic;
+      margin-top: 6px;
+      font-size: var(--text-xs);
+      line-height: 1.4;
+      text-align: center;
+    }
+
+    .tooltip-combos {
+      margin-top: 10px;
+      padding-top: 10px;
+      border-top: 1px solid var(--border-default);
+    }
+
+    .tooltip-combos-title {
+      font-size: var(--text-xs);
+      color: var(--text-dim);
+      margin-bottom: 6px;
+    }
+
+    .tooltip-combo-item {
+      font-size: var(--text-xs);
+      color: var(--accent-combo);
+      margin-bottom: 3px;
+    }
+
+    /* Keyboard Layout */
+    .keyboard {
+      display: flex;
+      gap: 220px;
+      justify-content: center;
+      padding: 24px 0;
+    }
+
+    .half {
+      display: grid;
+      grid-template-columns: repeat(6, 60px);
+      grid-template-rows: repeat(3, 60px) 68px;
+      gap: 8px;
+    }
+
+    /* Thumb keys positioning */
+    .half.left .key[data-thumb="true"] {
+      justify-self: end;
+    }
+
+    .half.right .key[data-thumb="true"] {
+      justify-self: start;
+    }
+
+    .half.left .thumb-row {
+      grid-column: 4 / 7;
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .half.right .thumb-row {
+      grid-column: 1 / 4;
+      display: flex;
+      justify-content: flex-start;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    /* Key Styling */
+    .key {
+      width: 60px;
+      height: 60px;
+      background: var(--bg-key);
+      border: none;
+      border-radius: 8px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      position: relative;
+      padding: 6px;
+    }
+
+    .key:hover {
+      background: var(--bg-key-hover);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    }
+
+    .key.combo-highlight {
+      animation: combo-pulse 0.6s ease-in-out infinite alternate;
+    }
+
+    @keyframes combo-pulse {
+      from { box-shadow: 0 0 0 0 var(--accent-combo); }
+      to { box-shadow: 0 0 10px 2px var(--accent-combo); }
+    }
+
+    /* Layer Activator Highlight (keys held to access current layer) */
+    .key.layer-activator {
+      background: rgba(20, 184, 166, 0.2);
+      box-shadow: inset 0 0 0 1px var(--accent-layer-tap);
+    }
+
+    /* Hold text colours by key type */
+    .key-hold.mod-tap {
+      color: var(--accent-mod-tap);
+    }
+
+    .key-hold.layer-tap {
+      color: var(--accent-layer-tap);
+    }
+
+    .key.transparent {
+      background: var(--bg-primary);
+      opacity: 0.4;
+    }
+
+    /* Timing Visual Weight:
+       - Instant (<100ms): no border, clean
+       - Quick (150-200ms): solid border stroke
+       - Deliberate (250-350ms): border + subtle glow
+    */
+    .key.timing-instant {
+      /* No border - clean look */
+    }
+
+    .key.timing-quick {
+      box-shadow: inset 0 0 0 2px var(--border-emphasis);
+    }
+
+    .key.timing-deliberate {
+      box-shadow: inset 0 0 0 2px var(--accent-tap-dance), 0 0 12px rgba(168, 85, 247, 0.15);
+    }
+
+    /* Key Labels */
+    .key-tap {
+      font-size: var(--text-sm);
+      font-weight: 500;
+      text-align: center;
+      line-height: 1.3;
+      color: var(--text-primary);
+    }
+
+    .key-hold {
+      font-size: var(--text-xs);
+      font-weight: 400;
+      color: var(--text-muted);
+      text-align: center;
+      margin-top: 3px;
+    }
+
+    /* Combo Indicator - just the number */
+    .combo-indicator {
+      position: absolute;
+      bottom: 3px;
+      right: 4px;
+      font-size: var(--text-xs);
+      font-weight: 500;
+      color: var(--accent-combo);
+    }
+
+    /* Tap Dance Depth Indicator */
+    .td-depth {
+      position: absolute;
+      top: 3px;
+      right: 4px;
+      font-size: var(--text-xs);
+      font-weight: 400;
+      color: var(--accent-tap-dance);
+      letter-spacing: 0;
+    }
+
+    /* SVG Overlay for Combo Lines */
+    .combo-svg {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 10;
+    }
+
+    .combo-line {
+      stroke: var(--accent-combo);
+      stroke-width: 2;
+      fill: none;
+      opacity: 0.7;
+    }
+
+    .combo-result {
+      position: absolute;
+      background: var(--accent-combo);
+      color: white;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: var(--text-sm);
+      font-weight: 500;
+      z-index: 20;
+      pointer-events: none;
+      white-space: nowrap;
+    }
+
+    /* Combo Reference Panel */
+    .combo-panel {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-default);
+      border-radius: 12px;
+      padding: 24px;
+      margin-bottom: 32px;
+    }
+
+    .combo-panel-title {
+      font-size: var(--text-lg);
+      font-weight: 500;
+      margin-bottom: 20px;
+      color: var(--text-muted);
+    }
+
+    .combo-categories {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 20px;
+    }
+
+    .combo-category {
+      background: var(--bg-key);
+      border-radius: 8px;
+      padding: 16px;
+    }
+
+    .combo-category-title {
+      font-size: var(--text-xs);
+      font-weight: 600;
+      color: var(--text-dim);
+      margin-bottom: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .combo-item {
+      display: flex;
+      align-items: baseline;
+      gap: 12px;
+      font-size: var(--text-sm);
+      cursor: pointer;
+      border-radius: 4px;
+      padding: 6px 8px;
+      margin: 0 -8px;
+      transition: background 0.1s ease;
+    }
+
+    .combo-item:hover {
+      background: var(--bg-key-hover);
+    }
+
+    .combo-item.highlight {
+      background: rgba(248, 113, 113, 0.15);
+    }
+
+    /* Action first, then keys */
+    .combo-output {
+      font-weight: 500;
+      font-size: var(--text-base);
+      color: var(--text-primary);
+      min-width: 60px;
+    }
+
+    .combo-keys {
+      color: var(--text-dim);
+      font-size: var(--text-sm);
+    }
+
+    /* Legend */
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 32px;
+      padding: 20px 24px;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-default);
+      border-radius: 12px;
+      font-size: var(--text-sm);
+    }
+
+    .legend-section {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .legend-title {
+      font-weight: 600;
+      font-size: var(--text-xs);
+      color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 4px;
+      font-size: var(--text-xs);
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* Keyboard Shortcuts Hint - subtle bottom-right */
+    .shortcuts-hint {
+      font-size: var(--text-xs);
+      color: var(--text-dim);
+      opacity: 0.7;
+      text-align: right;
+      margin-top: 12px;
+    }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <div>
+      <h1>Corne 42-Key Keymap</h1>
+      <p class="subtitle">Interactive visualisation with mod-taps, layer-taps, tap-dances, and combos</p>
+    </div>
+    <div style="display: flex; align-items: center;">
+      <div class="file-loader">
+        <input type="file" id="keymapFile" accept=".keymap">
+        <label for="keymapFile" class="file-link">Load keymap</label>
+        <span class="file-name" id="fileName"></span>
+      </div>
+      <div class="view-switcher">
+        <a href="index.html">Cheat Sheet</a>
+        <a href="corne-keymap-viewer.html" class="active">Corne</a>
+        <a href="window-management-keymap.html">Visual</a>
+      </div>
+    </div>
+  </header>
+
+  <div class="main-layout">
+    <div class="keyboard-container">
+      <div class="layer-tabs" id="layerTabs"></div>
+      <div class="keyboard-area" id="keyboardArea">
+        <div class="keyboard" id="keyboard"></div>
+        <div class="tooltip-panel" id="tooltipPanel">
+          <div class="tooltip-panel-empty">Hover a key</div>
+        </div>
+        <svg class="combo-svg" id="comboSvg"></svg>
+        <div id="comboResult" class="combo-result" style="display: none;"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="combo-panel">
+    <div class="combo-panel-title" id="comboPanelTitle">Combos</div>
+    <div class="combo-categories" id="comboPanel"></div>
+  </div>
+
+  <div class="legend">
+    <div class="legend-section">
+      <div class="legend-title">Timing</div>
+      <div class="legend-item">
+        <span style="color: var(--text-dim);">No border</span>
+        <span>Instant</span>
+      </div>
+      <div class="legend-item">
+        <span style="color: var(--text-dim);">Inner stroke</span>
+        <span>Quick (150-200ms)</span>
+      </div>
+      <div class="legend-item">
+        <span style="color: var(--accent-tap-dance);">Stroke + glow</span>
+        <span>Deliberate (250ms+)</span>
+      </div>
+    </div>
+    <div class="legend-section">
+      <div class="legend-title">Indicators</div>
+      <div class="legend-item">
+        <span style="color: var(--accent-combo);">3</span>
+        <span>Combo count</span>
+      </div>
+      <div class="legend-item">
+        <span style="color: var(--accent-tap-dance);">···</span>
+        <span>Tap-dance states</span>
+      </div>
+    </div>
+    <div class="legend-section">
+      <div class="legend-title">Hold Labels</div>
+      <div class="legend-item">
+        <span style="color: var(--accent-mod-tap);">Ctrl</span>
+        <span>Modifier</span>
+      </div>
+      <div class="legend-item">
+        <span style="color: var(--accent-layer-tap);">L1</span>
+        <span>Layer</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="shortcuts-hint">
+    Keys 1-5 switch layers
+  </div>
+
+  <script>
+    // ============================================================
+    // ZMK KEYMAP PARSER
+    // ============================================================
+
+    const KEY_LABELS = {
+      A: 'A', B: 'B', C: 'C', D: 'D', E: 'E', F: 'F', G: 'G', H: 'H',
+      I: 'I', J: 'J', K: 'K', L: 'L', M: 'M', N: 'N', O: 'O', P: 'P',
+      Q: 'Q', R: 'R', S: 'S', T: 'T', U: 'U', V: 'V', W: 'W', X: 'X',
+      Y: 'Y', Z: 'Z',
+      N0: '0', N1: '1', N2: '2', N3: '3', N4: '4',
+      N5: '5', N6: '6', N7: '7', N8: '8', N9: '9',
+      NUMBER_0: '0', NUMBER_1: '1', NUMBER_2: '2', NUMBER_3: '3', NUMBER_4: '4',
+      NUMBER_5: '5', NUMBER_6: '6', NUMBER_7: '7', NUMBER_8: '8', NUMBER_9: '9',
+      F1: 'F1', F2: 'F2', F3: 'F3', F4: 'F4', F5: 'F5', F6: 'F6',
+      F7: 'F7', F8: 'F8', F9: 'F9', F10: 'F10', F11: 'F11', F12: 'F12',
+      F13: 'F13', F14: 'F14', F15: 'F15', F16: 'F16', F17: 'F17', F18: 'F18',
+      F19: 'F19', F20: 'F20', F21: 'F21', F22: 'F22', F23: 'F23', F24: 'F24',
+      LSHFT: 'Shift', RSHFT: 'Shift', LEFT_SHIFT: 'Shift', RIGHT_SHIFT: 'Shift',
+      LCTRL: 'Ctrl', RCTRL: 'Ctrl', LEFT_CONTROL: 'Ctrl', RIGHT_CONTROL: 'Ctrl',
+      LALT: 'Alt', RALT: 'Alt', LEFT_ALT: 'Alt', RIGHT_ALT: 'Alt', RIGHT_ALT: 'RAlt',
+      LGUI: 'GUI', RGUI: 'GUI', LEFT_GUI: 'GUI', RIGHT_GUI: 'GUI',
+      LEFT: '←', RIGHT: '→', UP: '↑', DOWN: '↓',
+      HOME: 'Home', END: 'End', PG_UP: 'PgUp', PG_DN: 'PgDn',
+      PAGE_UP: 'PgUp', PAGE_DOWN: 'PgDn',
+      BACKSPACE: '⌫', BSPC: '⌫', DEL: 'Del', DELETE: 'Del',
+      ENTER: 'Enter', RET: 'Enter', RETURN: 'Enter',
+      TAB: 'Tab', ESC: 'Esc', ESCAPE: 'Esc',
+      SPACE: 'Space', SPC: 'Space',
+      COMMA: ',', DOT: '.', PERIOD: '.', SLASH: '/', FSLH: '/',
+      BACKSLASH: '\\', BSLH: '\\', SEMI: ';', SEMICOLON: ';',
+      APOS: "'", APOSTROPHE: "'", SQT: "'", SINGLE_QUOTE: "'",
+      GRAVE: '`', TILDE: '~', MINUS: '-', EQUAL: '=', EQUALS: '=',
+      LBKT: '[', RBKT: ']', LEFT_BRACKET: '[', RIGHT_BRACKET: ']',
+      LPAR: '(', RPAR: ')', LEFT_PARENTHESIS: '(', RIGHT_PARENTHESIS: ')',
+      UNDERSCORE: '_', UNDER: '_',
+      C_MUTE: 'Mute', C_VOL_DN: 'Vol-', C_VOL_UP: 'Vol+',
+      C_PREV: '⏮', C_NEXT: '⏭', C_PLAY_PAUSE: '⏯', C_PP: '⏯',
+      CAPS: 'Caps', CAPSLOCK: 'Caps', CAPS_LOCK: 'Caps',
+      INS: 'Ins', INSERT: 'Ins',
+      PSCRN: 'PrtSc', PRINTSCREEN: 'PrtSc',
+    };
+
+    const MOD_LABELS = {
+      LS: 'Shift', RS: 'Shift', LSHIFT: 'Shift', RSHIFT: 'Shift',
+      LC: 'Ctrl', RC: 'Ctrl', LCTRL: 'Ctrl', RCTRL: 'Ctrl',
+      LA: 'Alt', RA: 'Alt', LALT: 'Alt', RALT: 'Alt',
+      LG: 'GUI', RG: 'GUI', LGUI: 'GUI', RGUI: 'GUI',
+    };
+
+    function parseModifiedKey(expr) {
+      const modPattern = /^(LS|RS|LC|RC|LA|RA|LG|RG)\((.+)\)$/;
+      const match = expr.match(modPattern);
+      if (match) {
+        const mod = MOD_LABELS[match[1]] || match[1];
+        const inner = parseModifiedKey(match[2]);
+        return `${mod}+${inner}`;
+      }
+      return KEY_LABELS[expr] || expr;
+    }
+
+    function parseBinding(binding) {
+      binding = binding.trim();
+
+      if (binding === '&trans') {
+        return { tap: '▽', type: 'transparent' };
+      }
+
+      if (binding === '&none') {
+        return { tap: '', type: 'none' };
+      }
+
+      const kpMatch = binding.match(/^&kp\s+(.+)$/);
+      if (kpMatch) {
+        const key = kpMatch[1];
+        return { tap: parseModifiedKey(key), type: 'normal' };
+      }
+
+      const mtMatch = binding.match(/^&mt\s+(\S+)\s+(\S+)$/);
+      if (mtMatch) {
+        const hold = parseModifiedKey(mtMatch[1]);
+        const tap = KEY_LABELS[mtMatch[2]] || mtMatch[2];
+        return { tap, hold, type: 'mod-tap', timing: 175 };
+      }
+
+      const ltMatch = binding.match(/^&lt\s+(\d+)\s+(\S+)$/);
+      if (ltMatch) {
+        const tap = KEY_LABELS[ltMatch[2]] || ltMatch[2];
+        return { tap, hold: `L${ltMatch[1]}`, type: 'layer-tap', timing: 150 };
+      }
+
+      const moMatch = binding.match(/^&mo\s+(\d+)$/);
+      if (moMatch) {
+        return { tap: `L${moMatch[1]}`, type: 'momentary', hold: `Layer ${moMatch[1]}` };
+      }
+
+      const togMatch = binding.match(/^&tog\s+(\d+)$/);
+      if (togMatch) {
+        return { tap: `Tog L${togMatch[1]}`, type: 'normal' };
+      }
+
+      const btSelMatch = binding.match(/^&bt\s+BT_SEL\s+(\d+)$/);
+      if (btSelMatch) {
+        return { tap: `BT${btSelMatch[1]}`, type: 'normal', feel: `Bluetooth profile ${btSelMatch[1]}` };
+      }
+
+      const btDiscMatch = binding.match(/^&bt\s+BT_DISC\s+(\d+)$/);
+      if (btDiscMatch) {
+        return { tap: `Disc${btDiscMatch[1]}`, type: 'normal', feel: `Disconnect BT profile ${btDiscMatch[1]}` };
+      }
+
+      if (binding === '&bt BT_CLR') {
+        return { tap: 'BT Clr', type: 'normal', feel: 'Clear current BT profile' };
+      }
+      if (binding === '&bt BT_CLR_ALL') {
+        return { tap: 'BT All', type: 'normal', feel: 'Clear all BT profiles' };
+      }
+
+      if (binding === '&studio_unlock') {
+        return { tap: 'Studio', type: 'normal', feel: 'ZMK Studio unlock' };
+      }
+
+      if (binding === '&soft_off') {
+        return { tap: 'Soft Off', type: 'normal' };
+      }
+
+      if (binding.startsWith('&td_') || binding.startsWith('&')) {
+        const name = binding.slice(1);
+        return { tap: name, type: 'tap-dance', timing: 350, tdRef: name };
+      }
+
+      return { tap: binding, type: 'normal' };
+    }
+
+    function parseKeymapFile(content) {
+      const result = {
+        layers: [],
+        combos: [],
+        tapDances: {},
+        globalTiming: 175
+      };
+
+      const mtTimingMatch = content.match(/&mt\s*\{[^}]*tapping-term-ms\s*=\s*<(\d+)>/);
+      if (mtTimingMatch) {
+        result.globalTiming = parseInt(mtTimingMatch[1]);
+      }
+
+      // Extract tap-dance behaviors (support multi-state)
+      const tdPattern = /(\w+):\s*\1\s*\{[^}]*compatible\s*=\s*"zmk,behavior-tap-dance"[^}]*bindings\s*=\s*<([^>]+)>[^}]*tapping-term-ms\s*=\s*<(\d+)>/g;
+      let tdMatch;
+      while ((tdMatch = tdPattern.exec(content)) !== null) {
+        const name = tdMatch[1];
+        const bindings = tdMatch[2].split(/>,\s*</).map(b => b.replace(/[<>]/g, '').trim());
+        const timing = parseInt(tdMatch[3]);
+        const states = bindings.map(b => {
+          const parsed = parseBinding(b);
+          return parsed.tap;
+        });
+        result.tapDances[name] = { states, timing };
+      }
+
+      // Extract layers
+      const layerPattern = /(\w+)\s*\{[^{]*display-name\s*=\s*"([^"]+)"[^{]*bindings\s*=\s*<([^;]+)>;/g;
+      let layerMatch;
+      while ((layerMatch = layerPattern.exec(content)) !== null) {
+        const layerName = layerMatch[2];
+        const bindingsStr = layerMatch[3];
+
+        const bindings = [];
+        const bindingParts = bindingsStr.split(/(?=&)/).filter(b => b.trim());
+
+        for (const part of bindingParts) {
+          const binding = part.trim();
+          if (binding) {
+            const parsed = parseBinding(binding);
+
+            if (parsed.tdRef && result.tapDances[parsed.tdRef]) {
+              const td = result.tapDances[parsed.tdRef];
+              parsed.tap = td.states[0];
+              parsed.tdStates = td.states;
+              parsed.timing = td.timing;
+              parsed.type = 'tap-dance';
+            }
+
+            if ((parsed.type === 'mod-tap' || parsed.type === 'layer-tap') && !parsed.timing) {
+              parsed.timing = result.globalTiming;
+            }
+
+            bindings.push(parsed);
+          }
+        }
+
+        let purpose = '';
+        let access = ['Default layer'];
+        if (layerName === 'ALPHA') {
+          purpose = 'Base QWERTY + mods';
+        } else if (layerName === 'NUMNAV') {
+          purpose = 'Numbers · Arrows · Media';
+          access = ['hold L1'];
+        } else if (layerName === 'FUNCTION') {
+          purpose = 'F-Keys';
+          access = ['tap-dance L2'];
+        } else if (layerName === 'CONNECT') {
+          purpose = 'Bluetooth';
+          access = ['double-tap L2'];
+        } else if (layerName === 'COMMAND') {
+          purpose = 'GUI shortcuts';
+          access = ['triple-tap GUI'];
+        } else {
+          purpose = layerName;
+        }
+
+        result.layers.push({
+          name: layerName,
+          purpose,
+          access,
+          keys: bindings
+        });
+      }
+
+      // Also try layers without display-name
+      const layerPattern2 = /(\w+)\s*\{\s*bindings\s*=\s*<([^;]+)>;/g;
+      while ((layerMatch = layerPattern2.exec(content)) !== null) {
+        const layerName = layerMatch[1];
+        // Skip if already parsed
+        if (result.layers.find(l => l.name === layerName)) continue;
+
+        const bindingsStr = layerMatch[2];
+        const bindings = [];
+        const bindingParts = bindingsStr.split(/(?=&)/).filter(b => b.trim());
+
+        for (const part of bindingParts) {
+          const binding = part.trim();
+          if (binding) {
+            const parsed = parseBinding(binding);
+            if (parsed.tdRef && result.tapDances[parsed.tdRef]) {
+              const td = result.tapDances[parsed.tdRef];
+              parsed.tap = td.states[0];
+              parsed.tdStates = td.states;
+              parsed.timing = td.timing;
+              parsed.type = 'tap-dance';
+            }
+            bindings.push(parsed);
+          }
+        }
+
+        result.layers.push({
+          name: layerName,
+          purpose: layerName,
+          access: [],
+          keys: bindings
+        });
+      }
+
+      // Extract combos
+      const comboPattern = /combo_(\w+)\s*\{[^}]*bindings\s*=\s*<([^>]+)>[^}]*key-positions\s*=\s*<([^>]+)>(?:[^}]*layers\s*=\s*<(\d+)>)?/g;
+      let comboMatch;
+
+      // Category detection based on combo name
+      const categoryMap = {
+        'backspace': 'Editing', 'delete': 'Editing', 'return': 'Editing', 'esc': 'Editing',
+        'pgup': 'Navigation', 'pgdn': 'Navigation', 'home': 'Navigation', 'end': 'Navigation', 'tog': 'System',
+        'grave': 'Left Ops', 'tilde': 'Left Ops',
+        'paren': 'Right Ops', 'bracket': 'Right Ops', 'minus': 'Right Ops', 'underscore': 'Right Ops',
+        'equal': 'Right Ops', 'zero': 'Right Ops', 'f20': 'Left Ops',
+        'gui': 'Modifiers', 'alt': 'Modifiers', 'ctrl': 'Modifiers', 'shift': 'Modifiers',
+        'soft': 'System', 'setting': 'System'
+      };
+
+      while ((comboMatch = comboPattern.exec(content)) !== null) {
+        const id = comboMatch[1];
+        const binding = comboMatch[2];
+        const positions = comboMatch[3].split(/\s+/).map(p => parseInt(p.trim()));
+        const layer = comboMatch[4] ? parseInt(comboMatch[4]) : null;
+
+        const parsed = parseBinding(binding);
+
+        let category = 'Other';
+        for (const [key, cat] of Object.entries(categoryMap)) {
+          if (id.toLowerCase().includes(key)) {
+            category = cat;
+            break;
+          }
+        }
+
+        result.combos.push({
+          id: `combo_${id}`,
+          positions,
+          result: parsed.tap,
+          category,
+          keys: positions.map(p => `[${p}]`).join('+'),
+          layer
+        });
+      }
+
+      return result;
+    }
+
+    // ============================================================
+    // KEYMAP DATA (built-in default - new keymap)
+    // ============================================================
+
+    let KEYMAP_DATA = {
+      layers: [
+        {
+          name: "ALPHA",
+          purpose: "Base QWERTY + mods",
+          access: ["Default layer"],
+          activatorPositions: [],  // Base layer - no activators
+          keys: [
+            // Row 1 (indices 0-11)
+            { tap: "Esc", type: "normal" },
+            { tap: "Q", type: "normal" },
+            { tap: "W", type: "normal" },
+            { tap: "E", type: "normal" },
+            { tap: "R", type: "normal" },
+            { tap: "T", type: "normal" },
+            { tap: "Y", type: "normal" },
+            { tap: "U", type: "normal" },
+            { tap: "I", type: "normal" },
+            { tap: "O", type: "normal" },
+            { tap: "P", type: "normal" },
+            { tap: "⌫", type: "normal" },
+            // Row 2 (indices 12-23)
+            { tap: "Tab", hold: "Hyper", type: "mod-tap", timing: 175, feel: "Your hyper key lives here." },
+            { tap: "A", type: "normal" },
+            { tap: "S", type: "normal" },
+            { tap: "D", type: "normal" },
+            { tap: "F", type: "normal" },
+            { tap: "G", type: "normal" },
+            { tap: "H", type: "normal" },
+            { tap: "J", type: "normal" },
+            { tap: "K", type: "normal" },
+            { tap: "L", type: "normal" },
+            { tap: ";", type: "normal" },
+            { tap: "'", type: "normal" },
+            // Row 3 (indices 24-35)
+            { tap: "Shift", type: "normal" },
+            { tap: "Z", hold: "Ctrl", type: "mod-tap", timing: 175 },
+            { tap: "X", type: "normal" },
+            { tap: "C", type: "normal" },
+            { tap: "V", type: "normal" },
+            { tap: "B", type: "normal" },
+            { tap: "N", type: "normal" },
+            { tap: "M", type: "normal" },
+            { tap: ",", type: "normal" },
+            { tap: ".", type: "normal" },
+            { tap: "/", type: "normal" },
+            { tap: "\\", type: "normal" },
+            // Thumb row (indices 36-41)
+            { tap: "Alt", type: "tap-dance", timing: 350, tdStates: ["Alt", "Meh"], feel: "Double-tap for Meh (Ctrl+Alt+Shift)" },
+            { tap: "GUI", type: "tap-dance", timing: 350, tdStates: ["GUI", "L1", "L4"], feel: "Single: ⌘, Double: NUMNAV, Triple: COMMAND" },
+            { tap: "Space", type: "normal" },
+            { tap: "Enter", type: "normal" },
+            { tap: "L1", type: "momentary", hold: "NUMNAV" },
+            { tap: "L2", type: "tap-dance", timing: 350, tdStates: ["L2", "L3"], feel: "Single: FUNCTION, Double: CONNECT" }
+          ]
+        },
+        {
+          name: "NUMNAV",
+          purpose: "Numbers · Arrows · Media",
+          access: ["hold L1", "double-tap GUI"],
+          activatorPositions: [37, 40],  // Double-tap GUI thumb, or hold L1 thumb
+          keys: [
+            { tap: "▽", type: "transparent" },
+            { tap: "1", type: "normal" },
+            { tap: "2", type: "normal" },
+            { tap: "3", type: "normal" },
+            { tap: "4", type: "normal" },
+            { tap: "5", type: "normal" },
+            { tap: "6", type: "normal" },
+            { tap: "7", type: "normal" },
+            { tap: "8", type: "normal" },
+            { tap: "9", type: "normal" },
+            { tap: "0", type: "normal" },
+            { tap: "▽", type: "transparent" },
+            { tap: "▽", type: "transparent" },
+            { tap: "←", type: "normal" },
+            { tap: "↓", type: "normal" },
+            { tap: "↑", type: "normal" },
+            { tap: "→", type: "normal" },
+            { tap: "Mute", type: "normal" },
+            { tap: "←", type: "normal" },
+            { tap: "↓", type: "normal" },
+            { tap: "↑", type: "normal" },
+            { tap: "→", type: "normal" },
+            { tap: "▽", type: "transparent" },
+            { tap: "▽", type: "transparent" },
+            { tap: "▽", type: "transparent" },
+            { tap: "⏮", type: "normal" },
+            { tap: "Vol-", type: "normal" },
+            { tap: "Vol+", type: "normal" },
+            { tap: "⏭", type: "normal" },
+            { tap: "⏯", type: "normal" },
+            { tap: "▽", type: "transparent" },
+            { tap: "▽", type: "transparent" },
+            { tap: "▽", type: "transparent" },
+            { tap: "▽", type: "transparent" },
+            { tap: "▽", type: "transparent" },
+            { tap: "▽", type: "transparent" },
+            { tap: "▽", type: "transparent" },
+            { tap: "GUI", type: "normal" },
+            { tap: "▽", type: "transparent" },
+            { tap: "▽", type: "transparent" },
+            { tap: "▽", type: "transparent" },
+            { tap: "▽", type: "transparent" }
+          ]
+        },
+        {
+          name: "FUNCTION",
+          purpose: "F-Keys",
+          access: ["tap-dance L2"],
+          activatorPositions: [41],  // Tap-dance L2 thumb
+          keys: [
+            { tap: "▽", type: "transparent" },
+            { tap: "F1", type: "normal" },
+            { tap: "F2", type: "normal" },
+            { tap: "F3", type: "normal" },
+            { tap: "F4", type: "normal" },
+            { tap: "F5", type: "normal" },
+            { tap: "F1", type: "normal" },
+            { tap: "F2", type: "normal" },
+            { tap: "F3", type: "normal" },
+            { tap: "F4", type: "normal" },
+            { tap: "F5", type: "normal" },
+            { tap: "▽", type: "transparent" },
+            { tap: "▽", type: "transparent" },
+            { tap: "F6", type: "normal" },
+            { tap: "F7", type: "normal" },
+            { tap: "F8", type: "normal" },
+            { tap: "F9", type: "normal" },
+            { tap: "F10", type: "normal" },
+            { tap: "F6", type: "normal" },
+            { tap: "F7", type: "normal" },
+            { tap: "F8", type: "normal" },
+            { tap: "F9", type: "normal" },
+            { tap: "F10", type: "normal" },
+            { tap: "▽", type: "transparent" },
+            { tap: "▽", type: "transparent" },
+            { tap: "F11", type: "normal" },
+            { tap: "F12", type: "normal" },
+            { tap: "F13", type: "normal" },
+            { tap: "F14", type: "normal" },
+            { tap: "F15", type: "normal" },
+            { tap: "F11", type: "normal" },
+            { tap: "F12", type: "normal" },
+            { tap: "F13", type: "normal" },
+            { tap: "F14", type: "normal" },
+            { tap: "F15", type: "normal" },
+            { tap: "▽", type: "transparent" },
+            { tap: "▽", type: "transparent" },
+            { tap: "▽", type: "transparent" },
+            { tap: "▽", type: "transparent" },
+            { tap: "▽", type: "transparent" },
+            { tap: "▽", type: "transparent" },
+            { tap: "▽", type: "transparent" }
+          ]
+        },
+        {
+          name: "CONNECT",
+          purpose: "Bluetooth",
+          access: ["double-tap L2"],
+          activatorPositions: [41],  // Double-tap L2 thumb
+          keys: [
+            { tap: "▽", type: "transparent" },
+            { tap: "▽", type: "transparent" },
+            { tap: "▽", type: "transparent" },
+            { tap: "▽", type: "transparent" },
+            { tap: "▽", type: "transparent" },
+            { tap: "▽", type: "transparent" },
+            { tap: "▽", type: "transparent" },
+            { tap: "Disc0", type: "normal", feel: "Disconnect BT profile 0" },
+            { tap: "Disc1", type: "normal", feel: "Disconnect BT profile 1" },
+            { tap: "Disc2", type: "normal", feel: "Disconnect BT profile 2" },
+            { tap: "▽", type: "transparent" },
+            { tap: "Studio", type: "normal", feel: "ZMK Studio unlock" },
+            { tap: "▽", type: "transparent" },
+            { tap: "▽", type: "transparent" },
+            { tap: "▽", type: "transparent" },
+            { tap: "▽", type: "transparent" },
+            { tap: "▽", type: "transparent" },
+            { tap: "▽", type: "transparent" },
+            { tap: "▽", type: "transparent" },
+            { tap: "BT0", type: "normal", feel: "Bluetooth profile 0" },
+            { tap: "BT1", type: "normal", feel: "Bluetooth profile 1" },
+            { tap: "BT2", type: "normal", feel: "Bluetooth profile 2" },
+            { tap: "▽", type: "transparent" },
+            { tap: "▽", type: "transparent" },
+            { tap: "▽", type: "transparent" },
+            { tap: "▽", type: "transparent" },
+            { tap: "▽", type: "transparent" },
+            { tap: "▽", type: "transparent" },
+            { tap: "▽", type: "transparent" },
+            { tap: "▽", type: "transparent" },
+            { tap: "▽", type: "transparent" },
+            { tap: "▽", type: "transparent" },
+            { tap: "▽", type: "transparent" },
+            { tap: "▽", type: "transparent" },
+            { tap: "▽", type: "transparent" },
+            { tap: "▽", type: "transparent" },
+            { tap: "▽", type: "transparent" },
+            { tap: "▽", type: "transparent" },
+            { tap: "▽", type: "transparent" },
+            { tap: "▽", type: "transparent" },
+            { tap: "▽", type: "transparent" },
+            { tap: "▽", type: "transparent" }
+          ]
+        },
+        {
+          name: "COMMAND",
+          purpose: "GUI shortcuts",
+          access: ["triple-tap GUI"],
+          activatorPositions: [37],  // Triple-tap GUI thumb
+          keys: [
+            { tap: "▽", type: "transparent" },
+            { tap: "⌘1", type: "normal" },
+            { tap: "⌘2", type: "normal" },
+            { tap: "⌘3", type: "normal" },
+            { tap: "⌘4", type: "normal" },
+            { tap: "⌘5", type: "normal" },
+            { tap: "⌘6", type: "normal" },
+            { tap: "⌘7", type: "normal" },
+            { tap: "⌘8", type: "normal" },
+            { tap: "⌘9", type: "normal" },
+            { tap: "⌘0", type: "normal" },
+            { tap: "▽", type: "transparent" },
+            { tap: "▽", type: "transparent" },
+            { tap: "▽", type: "transparent" },
+            { tap: "▽", type: "transparent" },
+            { tap: "▽", type: "transparent" },
+            { tap: "▽", type: "transparent" },
+            { tap: "▽", type: "transparent" },
+            { tap: "▽", type: "transparent" },
+            { tap: "▽", type: "transparent" },
+            { tap: "▽", type: "transparent" },
+            { tap: "▽", type: "transparent" },
+            { tap: "▽", type: "transparent" },
+            { tap: "▽", type: "transparent" },
+            { tap: "▽", type: "transparent" },
+            { tap: "▽", type: "transparent" },
+            { tap: "▽", type: "transparent" },
+            { tap: "▽", type: "transparent" },
+            { tap: "▽", type: "transparent" },
+            { tap: "▽", type: "transparent" },
+            { tap: "▽", type: "transparent" },
+            { tap: "▽", type: "transparent" },
+            { tap: "▽", type: "transparent" },
+            { tap: "▽", type: "transparent" },
+            { tap: "▽", type: "transparent" },
+            { tap: "▽", type: "transparent" },
+            { tap: "▽", type: "transparent" },
+            { tap: "▽", type: "transparent" },
+            { tap: "▽", type: "transparent" },
+            { tap: "▽", type: "transparent" },
+            { tap: "▽", type: "transparent" },
+            { tap: "▽", type: "transparent" }
+          ]
+        }
+      ],
+      combos: [
+        // EDITING
+        { id: "lh_backspace", positions: [4, 5], result: "⌫", category: "Editing", keys: "R+T" },
+        { id: "lh_delete", positions: [16, 17], result: "Del", category: "Editing", keys: "F+G" },
+        { id: "return", positions: [15, 16, 37], result: "Enter", category: "Editing", keys: "D+F+GUI" },
+        { id: "esc", positions: [14, 15], result: "Esc", category: "Editing", keys: "S+D" },
+        // NAVIGATION
+        { id: "pgup", positions: [3, 4, 14], result: "PgUp", category: "Navigation", keys: "E+R+S" },
+        { id: "pgdn", positions: [14, 15, 16], result: "PgDn", category: "Navigation", keys: "S+D+F" },
+        { id: "home", positions: [15, 16, 26], result: "Home", category: "Navigation", keys: "D+F+X" },
+        { id: "end", positions: [26, 27, 28], result: "End", category: "Navigation", keys: "X+C+V" },
+        // LEFT OPERATORS
+        { id: "f20", positions: [15, 16], result: "F20", category: "Left Ops", keys: "D+F" },
+        { id: "grave", positions: [15, 28], result: "`", category: "Left Ops", keys: "D+V" },
+        { id: "tilde", positions: [15, 26], result: "~", category: "Left Ops", keys: "D+X" },
+        // RIGHT OPERATORS
+        { id: "left_paren", positions: [20, 31], result: "(", category: "Right Ops", keys: "K+M" },
+        { id: "right_paren", positions: [20, 33], result: ")", category: "Right Ops", keys: "K+." },
+        { id: "left_bracket", positions: [31, 32], result: "[", category: "Right Ops", keys: "M+," },
+        { id: "right_bracket", positions: [32, 33], result: "]", category: "Right Ops", keys: ",+." },
+        { id: "minus", positions: [19, 20], result: "-", category: "Right Ops", keys: "J+K" },
+        { id: "underscore", positions: [8, 19], result: "_", category: "Right Ops", keys: "I+J" },
+        { id: "equal", positions: [20, 21], result: "=", category: "Right Ops", keys: "K+L" },
+        { id: "zero", positions: [22, 23], result: "0", category: "Right Ops", keys: ";+'" },
+        // MODIFIERS
+        { id: "rgui", positions: [40, 41], result: "RGUI", category: "Modifiers", keys: "L1+L2" },
+        { id: "ralt", positions: [32, 33], result: "RAlt", category: "Modifiers", keys: ",+." },
+        { id: "rctrl", positions: [34, 35], result: "RCtrl", category: "Modifiers", keys: "/+\\" },
+        // SYSTEM
+        { id: "settings", positions: [27, 28], result: "⌘,", category: "System", keys: "C+V" },
+        { id: "toggone", positions: [0, 37], result: "Tog L1", category: "System", keys: "Esc+GUI" },
+        { id: "toggtwo", positions: [0, 36], result: "Tog L2", category: "System", keys: "Esc+Alt" },
+        { id: "softoff", positions: [0, 11], result: "Soft Off", category: "System", keys: "Esc+⌫" }
+      ],
+      tapDances: {
+        "td_altmeh": { states: ["Alt", "Meh"], timing: 350 },
+        "td_guinumgui": { states: ["GUI", "L1", "L4"], timing: 350 },
+        "td_twothree": { states: ["L2", "L3"], timing: 350 }
+      }
+    };
+
+    // ============================================================
+    // STATE
+    // ============================================================
+
+    let currentLayer = 0;
+    let combosByPosition = {};
+
+    function rebuildComboLookup() {
+      combosByPosition = {};
+      KEYMAP_DATA.combos.forEach(combo => {
+        combo.positions.forEach(pos => {
+          if (!combosByPosition[pos]) combosByPosition[pos] = [];
+          combosByPosition[pos].push(combo);
+        });
+      });
+    }
+
+    rebuildComboLookup();
+
+    // ============================================================
+    // FILE LOADING
+    // ============================================================
+
+    document.getElementById('keymapFile').addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      try {
+        const content = await file.text();
+        const parsed = parseKeymapFile(content);
+
+        if (parsed.layers.length === 0) {
+          alert('Could not parse any layers from the file.');
+          return;
+        }
+
+        KEYMAP_DATA = {
+          layers: parsed.layers,
+          combos: parsed.combos,
+          tapDances: parsed.tapDances
+        };
+
+        rebuildComboLookup();
+        currentLayer = 0;
+
+        document.getElementById('fileName').textContent = file.name;
+        document.getElementById('fileName').classList.add('loaded');
+
+        renderAll();
+      } catch (err) {
+        console.error('Error parsing keymap:', err);
+        alert('Error parsing keymap file: ' + err.message);
+      }
+    });
+
+    // ============================================================
+    // RENDERING
+    // ============================================================
+
+    function renderLayerTabs() {
+      const container = document.getElementById('layerTabs');
+      container.innerHTML = KEYMAP_DATA.layers.map((layer, i) => `
+        <div class="layer-tab ${i === currentLayer ? 'active' : ''}" data-layer="${i}">
+          <span class="layer-tab-number">${i + 1}</span>
+          <span class="layer-tab-name">${layer.name}</span>
+        </div>
+      `).join('');
+
+      container.querySelectorAll('.layer-tab').forEach(tab => {
+        tab.addEventListener('click', () => {
+          currentLayer = parseInt(tab.dataset.layer);
+          renderLayerTabs();
+          renderKeyboard();
+        });
+      });
+    }
+
+    function getKeyClasses(key, index) {
+      const classes = ['key'];
+
+      if (key.type === 'transparent') classes.push('transparent');
+
+      if (key.timing) {
+        if (key.timing < 100) classes.push('timing-instant');
+        else if (key.timing <= 200) classes.push('timing-quick');
+        else classes.push('timing-deliberate');
+      }
+
+      // Add layer activator highlight for non-base layers
+      const layer = KEYMAP_DATA.layers[currentLayer];
+      if (currentLayer > 0 && layer.activatorPositions && layer.activatorPositions.includes(index)) {
+        classes.push('layer-activator');
+      }
+
+      return classes.join(' ');
+    }
+
+    function getHoldClass(key) {
+      if (key.type === 'mod-tap') return 'mod-tap';
+      if (key.type === 'layer-tap' || key.type === 'momentary') return 'layer-tap';
+      return '';
+    }
+
+    function getComboIndicator(index) {
+      const combos = combosByPosition[index];
+      if (!combos || combos.length === 0) return '';
+      return `<span class="combo-indicator">${combos.length}</span>`;
+    }
+
+    function getTdDepthIndicator(key) {
+      if (key.type !== 'tap-dance' || !key.tdStates) return '';
+      const dots = '·'.repeat(key.tdStates.length);
+      return `<span class="td-depth">${dots}</span>`;
+    }
+
+    function renderKeyboard() {
+      const keyboard = document.getElementById('keyboard');
+      const layer = KEYMAP_DATA.layers[currentLayer];
+
+      if (!layer || !layer.keys) {
+        keyboard.innerHTML = '<div style="color: var(--text-muted); padding: 40px;">No keys defined for this layer</div>';
+        return;
+      }
+
+      const leftMain = [0,1,2,3,4,5, 12,13,14,15,16,17, 24,25,26,27,28,29];
+      const rightMain = [6,7,8,9,10,11, 18,19,20,21,22,23, 30,31,32,33,34,35];
+      const leftThumb = [36,37,38];
+      const rightThumb = [39,40,41];
+
+      function renderKey(idx) {
+        const key = layer.keys[idx];
+        if (!key) return `<div class="key" data-index="${idx}"><span class="key-tap">?</span></div>`;
+
+        const isThumb = idx >= 36;
+        const classes = getKeyClasses(key, idx);
+        const comboIndicator = getComboIndicator(idx);
+        const tdIndicator = getTdDepthIndicator(key);
+        const holdClass = getHoldClass(key);
+
+        return `
+          <div class="${classes}"
+               data-index="${idx}"
+               ${isThumb ? 'data-thumb="true"' : ''}>
+            ${tdIndicator}
+            <span class="key-tap">${key.tap}</span>
+            ${key.hold ? `<span class="key-hold ${holdClass}">${key.hold}</span>` : ''}
+            ${comboIndicator}
+          </div>
+        `;
+      }
+
+      keyboard.innerHTML = `
+        <div class="half left">
+          ${leftMain.map(renderKey).join('')}
+          <div class="thumb-row">${leftThumb.map(renderKey).join('')}</div>
+        </div>
+        <div class="half right">
+          ${rightMain.map(renderKey).join('')}
+          <div class="thumb-row">${rightThumb.map(renderKey).join('')}</div>
+        </div>
+      `;
+
+      keyboard.querySelectorAll('.key').forEach(keyEl => {
+        const idx = parseInt(keyEl.dataset.index);
+
+        keyEl.addEventListener('mouseenter', () => {
+          updateTooltipPanel(layer.keys[idx], idx);
+          highlightCombos(idx);
+        });
+
+        keyEl.addEventListener('mouseleave', () => {
+          clearTooltipPanel();
+          clearComboHighlights();
+        });
+      });
+    }
+
+    function updateTooltipPanel(key, index) {
+      if (!key) return;
+
+      const panel = document.getElementById('tooltipPanel');
+      const combos = combosByPosition[index] || [];
+
+      let timingHtml = '';
+      if (key.timing) {
+        const icon = key.timing < 100 ? '⚡' : key.timing <= 200 ? '⏱' : '🎯';
+        const desc = key.timing < 100 ? 'Instant response' :
+                     key.timing <= 200 ? 'Quick but considered' :
+                     'Take your time';
+        timingHtml = `
+          <div class="tooltip-timing">
+            <span class="tooltip-timing-icon">${icon}</span>
+            ${key.timing}ms window
+            <div class="tooltip-feel">${desc}</div>
+          </div>
+        `;
+      }
+
+      let tdHtml = '';
+      if (key.type === 'tap-dance' && key.tdStates) {
+        tdHtml = key.tdStates.map((state, i) => `
+          <div class="tooltip-row">
+            <span class="tooltip-label">${i + 1}× tap</span>
+            <span class="tooltip-value">${state}</span>
+          </div>
+        `).join('');
+      }
+
+      let combosHtml = '';
+      if (combos.length > 0) {
+        combosHtml = `
+          <div class="tooltip-combos">
+            <div class="tooltip-combos-title">Combos</div>
+            ${combos.map(c => `
+              <div class="tooltip-combo-item">
+                ${c.keys} → ${c.result}
+              </div>
+            `).join('')}
+          </div>
+        `;
+      }
+
+      let feelHtml = '';
+      if (key.feel) {
+        feelHtml = `<div class="tooltip-feel">${key.feel}</div>`;
+      }
+
+      panel.innerHTML = `
+        <div class="tooltip-title">${key.tap}${key.hold ? ` / ${key.hold}` : ''}</div>
+        ${key.type !== 'normal' && key.type !== 'transparent' ? `
+          <div class="tooltip-row">
+            <span class="tooltip-label">Type</span>
+            <span class="tooltip-value">${key.type}</span>
+          </div>
+        ` : ''}
+        ${tdHtml}
+        ${timingHtml}
+        ${feelHtml}
+        ${combosHtml}
+      `;
+    }
+
+    function clearTooltipPanel() {
+      document.getElementById('tooltipPanel').innerHTML =
+        '<div class="tooltip-panel-empty">Hover over a key to see details</div>';
+    }
+
+    function highlightCombos(index) {
+      const combos = combosByPosition[index] || [];
+      if (combos.length === 0) return;
+
+      const keyboard = document.getElementById('keyboard');
+      const svg = document.getElementById('comboSvg');
+      const resultEl = document.getElementById('comboResult');
+
+      svg.innerHTML = '';
+      resultEl.style.display = 'none';
+
+      combos.forEach(combo => {
+        combo.positions.forEach(pos => {
+          const keyEl = keyboard.querySelector(`[data-index="${pos}"]`);
+          if (keyEl) keyEl.classList.add('combo-highlight');
+        });
+      });
+
+      if (combos.length > 0) {
+        drawComboLines(combos[0]);
+      }
+    }
+
+    function drawComboLines(combo) {
+      const keyboard = document.getElementById('keyboard');
+      const svg = document.getElementById('comboSvg');
+      const container = document.getElementById('keyboardArea');
+      const resultEl = document.getElementById('comboResult');
+
+      const containerRect = container.getBoundingClientRect();
+      svg.setAttribute('width', containerRect.width);
+      svg.setAttribute('height', containerRect.height);
+
+      const positions = combo.positions.map(pos => {
+        const keyEl = keyboard.querySelector(`[data-index="${pos}"]`);
+        if (!keyEl) return null;
+        const rect = keyEl.getBoundingClientRect();
+        return {
+          x: rect.left - containerRect.left + rect.width / 2,
+          y: rect.top - containerRect.top + rect.height / 2
+        };
+      }).filter(p => p);
+
+      if (positions.length < 2) return;
+
+      const centroid = {
+        x: positions.reduce((sum, p) => sum + p.x, 0) / positions.length,
+        y: positions.reduce((sum, p) => sum + p.y, 0) / positions.length
+      };
+
+      positions.forEach(pos => {
+        const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        line.setAttribute('x1', pos.x);
+        line.setAttribute('y1', pos.y);
+        line.setAttribute('x2', centroid.x);
+        line.setAttribute('y2', centroid.y);
+        line.classList.add('combo-line');
+        svg.appendChild(line);
+      });
+
+      resultEl.textContent = combo.result;
+      resultEl.style.left = `${centroid.x - 20}px`;
+      resultEl.style.top = `${centroid.y - 12}px`;
+      resultEl.style.display = 'block';
+    }
+
+    function clearComboHighlights() {
+      document.querySelectorAll('.key.combo-highlight').forEach(el => {
+        el.classList.remove('combo-highlight');
+      });
+      document.getElementById('comboSvg').innerHTML = '';
+      document.getElementById('comboResult').style.display = 'none';
+    }
+
+    function renderComboPanel() {
+      const panel = document.getElementById('comboPanel');
+      const titleEl = document.getElementById('comboPanelTitle');
+      const categories = {};
+
+      // Define category order
+      const categoryOrder = ['Editing', 'Navigation', 'Left Ops', 'Right Ops', 'Modifiers', 'System'];
+
+      KEYMAP_DATA.combos.forEach(combo => {
+        if (!categories[combo.category]) categories[combo.category] = [];
+        categories[combo.category].push(combo);
+      });
+
+      titleEl.textContent = `Combos (${KEYMAP_DATA.combos.length})`;
+
+      // Sort categories by predefined order
+      const sortedCategories = Object.entries(categories).sort((a, b) => {
+        const aIdx = categoryOrder.indexOf(a[0]);
+        const bIdx = categoryOrder.indexOf(b[0]);
+        if (aIdx === -1 && bIdx === -1) return 0;
+        if (aIdx === -1) return 1;
+        if (bIdx === -1) return -1;
+        return aIdx - bIdx;
+      });
+
+      panel.innerHTML = sortedCategories.map(([cat, combos]) => `
+        <div class="combo-category">
+          <div class="combo-category-title">${cat}</div>
+          ${combos.map(c => `
+            <div class="combo-item" data-combo-id="${c.id}">
+              <span class="combo-output">${c.result}</span>
+              <span class="combo-keys">${c.keys}</span>
+            </div>
+          `).join('')}
+        </div>
+      `).join('');
+
+      panel.querySelectorAll('.combo-item').forEach(item => {
+        const comboId = item.dataset.comboId;
+        const combo = KEYMAP_DATA.combos.find(c => c.id === comboId);
+
+        item.addEventListener('mouseenter', () => {
+          item.classList.add('highlight');
+          if (combo) {
+            combo.positions.forEach(pos => {
+              const keyEl = document.querySelector(`[data-index="${pos}"]`);
+              if (keyEl) keyEl.classList.add('combo-highlight');
+            });
+            drawComboLines(combo);
+          }
+        });
+
+        item.addEventListener('mouseleave', () => {
+          item.classList.remove('highlight');
+          clearComboHighlights();
+        });
+      });
+    }
+
+    function renderAll() {
+      renderLayerTabs();
+      renderKeyboard();
+      renderComboPanel();
+    }
+
+    // ============================================================
+    // KEYBOARD SHORTCUTS
+    // ============================================================
+
+    document.addEventListener('keydown', (e) => {
+      const num = parseInt(e.key);
+      if (num >= 1 && num <= KEYMAP_DATA.layers.length) {
+        currentLayer = num - 1;
+        renderLayerTabs();
+        renderKeyboard();
+      }
+    });
+
+    // ============================================================
+    // INIT
+    // ============================================================
+
+    renderAll();
+  </script>
+</body>
+</html>

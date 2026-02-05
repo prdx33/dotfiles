@@ -1,0 +1,8 @@
+#!/bin/bash
+LAYOUT=$(/opt/homebrew/bin/aerospace list-windows --focused --format '%{window-layout}')
+
+if [ "$LAYOUT" = "floating" ]; then
+  open -g 'rectangle-pro://execute-action?name=right-half'
+else
+  /opt/homebrew/bin/aerospace move right
+fi

@@ -5,12 +5,42 @@
 # ============================================================================
 
 # ────────────────────────────────────────────────────────────────────────────
-# PROUDEXOS PROJECT
+# REPO NAVIGATION (Quick jumps to main projects)
 # ────────────────────────────────────────────────────────────────────────────
 
-# Navigation - Get to ProudexOS quickly from anywhere
-alias cdp='cd ~/Dev/proudexos'                    # Jump to ProudexOS root
-alias cddev='cd ~/Dev'                            # Jump to Dev directory
+# Core ecosystem
+alias dev='cd ~/Dev'                              # Dev root
+alias n0id='cd ~/Dev/n0idOS'                      # Personal vault/OS
+alias dots='cd ~/Dev/dotfiles'                    # Dotfiles
+alias tools='cd ~/Dev/_tools'                     # Tools directory
+
+# Proudex projects
+alias cdp='cd ~/Dev/proudexos'                    # ProudexOS (legacy alias)
+alias prdx='cd ~/Dev/proudexos'                   # ProudexOS (short)
+alias pmap='cd ~/Dev/proudex-map'                 # Operations mapping
+
+# Origin-A
+alias oa='cd ~/Dev/origin-a_web'                  # Origin-A website
+
+# Active dev
+alias claw='cd ~/Dev/openclaw'                    # Openclaw project
+
+# Keyboards
+alias zmk='cd ~/Dev/zmk_corne'                    # ZMK Corne config
+alias kmap='cd ~/Dev/keymap-editor'               # Keymap editor
+
+# Learning/experiments
+alias vman='cd ~/Dev/vim-man'                     # VimMan game
+alias gym='cd ~/Dev/vimgym'                       # VimGym trainer
+
+# Quick open in VS Code (cd + code .)
+cdev() { cd ~/Dev/"$1" && code . ; }
+
+# ────────────────────────────────────────────────────────────────────────────
+# PROUDEXOS PROJECT (Development workflows)
+# ────────────────────────────────────────────────────────────────────────────
+
+alias cddev='cd ~/Dev'                            # Jump to Dev directory (legacy)
 
 # Development workflow - Start dev server with one command
 alias pdev='cd ~/Dev/proudexos && npm run dev'    # Start Next.js dev server
@@ -187,6 +217,17 @@ alias npmupdateall='npm update'                   # Update all packages
 alias cl='claude'                                 # Start Claude in current directory
 alias clhelp='claude --help'                      # Show Claude help
 alias clhistory='cat ~/.claude/history.jsonl | tail -20' # Recent Claude history
+
+# ────────────────────────────────────────────────────────────────────────────
+# TUI DASHBOARDS (Go + Bubbletea)
+# ────────────────────────────────────────────────────────────────────────────
+
+# Startup dashboard
+alias startup='startup-tui'                     # Daily startup rundown TUI
+
+# Homelab service manager
+alias hlt='homelab-tui'                         # Homelab service dashboard
+alias homelab='homelab-tui'                     # Homelab service dashboard (long form)
 
 # ────────────────────────────────────────────────────────────────────────────
 # PROJECT LAUNCHER (themed Ghostty terminals)

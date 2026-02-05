@@ -11,14 +11,14 @@ mem_free=$(memory_pressure 2>/dev/null | grep "System-wide memory free percentag
 mem_used=$((100 - mem_free))
 [[ $mem_used -gt 99 ]] && mem_used=99
 
-# Colour based on threshold
-if [[ $mem_used -ge 90 ]]; then
+# Colour based on threshold (memory: 70% warn, 85% crit)
+if [[ $mem_used -ge 85 ]]; then
     color=$STAT_CRIT
-elif [[ $mem_used -ge 75 ]]; then
+elif [[ $mem_used -ge 70 ]]; then
     color=$STAT_WARN
 else
     color=$STAT_NORMAL
 fi
 
-label=$(printf "%2d%%" "$mem_used")
+label=$(printf "%3d%%" "$mem_used")
 sketchybar --set "$NAME" label="$label" label.color="$color" 2>/dev/null
