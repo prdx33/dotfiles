@@ -29,12 +29,15 @@ m2_ws=$(aerospace list-workspaces --monitor 2 --visible 2>/dev/null | xargs)
 # Get focused workspace
 focused_ws=$(aerospace list-workspaces --focused 2>/dev/null | xargs)
 
+# Single aerospace query for all window data (~22ms instead of ~264ms)
+cache_all_workspace_apps
+
 # Build batched sketchybar command
 BATCH_CMD="sketchybar"
 
 for space_id in $WORKSPACES; do
-    # Get bundle IDs for apps on this workspace
-    bundle_ids=$(get_workspace_apps "$space_id")
+    # Get bundle IDs from cache (no subprocess)
+    bundle_ids=$(get_cached_workspace_apps "$space_id")
     IFS=' ' read -ra BUNDLES <<< "$bundle_ids"
     num_apps=${#BUNDLES[@]}
 
@@ -67,7 +70,7 @@ for space_id in $WORKSPACES; do
     fi
 
     # Update icon slots
-    for i in $(seq 0 $((MAX_ICONS - 1))); do
+    for i in 0 1 2 3; do
         item_name="space.$space_id.icon.$i"
 
         if [[ $i -lt $num_apps ]]; then

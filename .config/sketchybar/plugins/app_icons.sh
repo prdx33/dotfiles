@@ -59,3 +59,14 @@ get_workspace_apps() {
     local workspace="$1"
     aerospace list-windows --workspace "$workspace" --format "%{app-bundle-id}" 2>/dev/null | sort -u | tr '\n' ' ' | xargs
 }
+
+# Batch query: fetch all windows once (~22ms), then filter in bash (free)
+# Call cache_all_workspace_apps once, then get_cached_workspace_apps per workspace
+_ALL_WINDOWS_CACHE=""
+cache_all_workspace_apps() {
+    _ALL_WINDOWS_CACHE=$(aerospace list-windows --all --format '%{workspace}|%{app-bundle-id}' 2>/dev/null)
+}
+get_cached_workspace_apps() {
+    local workspace="$1"
+    echo "$_ALL_WINDOWS_CACHE" | awk -F'|' -v ws="$workspace" '$1==ws{print $2}' | sort -u | tr '\n' ' ' | xargs
+}

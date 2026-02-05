@@ -8,8 +8,8 @@ source "$HOME/.config/sketchybar/plugins/app_icons.sh"
 ICON_SCALE=0.75
 ICON_WIDTH=20
 
-# Get bundle ID of frontmost app
-bundle=$(osascript -e 'tell application "System Events" to get bundle identifier of first application process whose frontmost is true' 2>/dev/null)
+# Get bundle ID of frontmost app (aerospace: ~22ms vs osascript: ~141ms)
+bundle=$(aerospace list-windows --focused --format '%{app-bundle-id}' 2>/dev/null | head -1)
 
 if [[ -n "$bundle" ]]; then
     # Try custom icon first

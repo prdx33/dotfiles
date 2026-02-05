@@ -30,15 +30,12 @@ if [[ -f "$CACHE" ]]; then
     [[ $READ_RATE -lt 0 ]] && READ_RATE=0
     [[ $WRITE_RATE -lt 0 ]] && WRITE_RATE=0
 
-    # Convert bytes/s to MB/s
-    READ_MB=$(echo "scale=2; $READ_RATE / 1048576" | bc 2>/dev/null) || READ_MB="0.00"
-    WRITE_MB=$(echo "scale=2; $WRITE_RATE / 1048576" | bc 2>/dev/null) || WRITE_MB="0.00"
+    # Convert bytes/s to MB/s using integer math (no bc subprocess)
+    READ_H=$((READ_RATE * 100 / 1048576))
+    WRITE_H=$((WRITE_RATE * 100 / 1048576))
 
-    [[ -z "$READ_MB" ]] && READ_MB="0.00"
-    [[ -z "$WRITE_MB" ]] && WRITE_MB="0.00"
-
-    READ_FMT=$(printf "%5.2fMB" "$READ_MB")
-    WRITE_FMT=$(printf "%5.2fMB" "$WRITE_MB")
+    READ_FMT=$(printf "%2d.%02dMB" $((READ_H / 100)) $((READ_H % 100)))
+    WRITE_FMT=$(printf "%2d.%02dMB" $((WRITE_H / 100)) $((WRITE_H % 100)))
 
     sketchybar --set disk_read label="$READ_FMT" \
                --set disk_write label="$WRITE_FMT" 2>/dev/null

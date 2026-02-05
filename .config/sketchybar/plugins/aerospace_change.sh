@@ -34,24 +34,29 @@ m1_ws=$(aerospace list-workspaces --monitor 1 --visible 2>/dev/null | xargs)
 m2_ws=$(aerospace list-workspaces --monitor 2 --visible 2>/dev/null | xargs)
 focused_ws=$(aerospace list-workspaces --focused 2>/dev/null | xargs)
 
-# Function to update a single workspace
-update_workspace() {
-    local space_id="$1"
-    [[ -z "$space_id" ]] && return
+# Single aerospace query for all window data (~22ms instead of ~22ms per workspace)
+cache_all_workspace_apps
 
-    # Get apps on this workspace
-    local bundle_ids=$(get_workspace_apps "$space_id")
-    local -a BUNDLES
-    IFS=' ' read -ra BUNDLES <<< "$bundle_ids"
-    local num_apps=${#BUNDLES[@]}
+# Build single batched sketchybar command for ALL workspace updates
+BATCH_CMD="sketchybar"
+
+# Dedupe touched + visible workspaces (pure bash, no pipeline)
+declare -A _seen
+for ws in $TOUCHED_WS $m1_ws $m2_ws; do
+    [[ -z "$ws" || -n "${_seen[$ws]}" ]] && continue
+    _seen[$ws]=1
+
+    # Get apps from cache (no subprocess)
+    local_bundles=$(get_cached_workspace_apps "$ws")
+    IFS=' ' read -ra BUNDLES <<< "$local_bundles"
+    num_apps=${#BUNDLES[@]}
 
     # Determine state
-    local icon_font icon_color icon_state
-    if [[ "$space_id" == "$focused_ws" ]]; then
+    if [[ "$ws" == "$focused_ws" ]]; then
         icon_font="$MONO_FONT:Heavy:$FONT_SIZE"
         icon_color=$WS_FOCUSED
         icon_state="focused"
-    elif [[ "$space_id" == "$m1_ws" || "$space_id" == "$m2_ws" ]]; then
+    elif [[ "$ws" == "$m1_ws" || "$ws" == "$m2_ws" ]]; then
         icon_font="$MONO_FONT:Regular:$FONT_SIZE"
         icon_color=$WS_FOCUSED
         icon_state="unfocused"
@@ -61,39 +66,29 @@ update_workspace() {
         icon_state="unfocused"
     fi
 
-    # Build batch command for this workspace
-    local cmd="sketchybar"
-
-    # Workspace number visibility
-    if [[ $num_apps -eq 0 && "$space_id" != "$focused_ws" && "$space_id" != "$m1_ws" && "$space_id" != "$m2_ws" ]]; then
-        cmd="$cmd --set space.$space_id icon.drawing=off icon.padding_left=0 icon.padding_right=0"
+    # Workspace visibility
+    if [[ $num_apps -eq 0 && "$ws" != "$focused_ws" && "$ws" != "$m1_ws" && "$ws" != "$m2_ws" ]]; then
+        BATCH_CMD="$BATCH_CMD --set space.$ws icon.drawing=off icon.padding_left=0 icon.padding_right=0"
     else
-        cmd="$cmd --set space.$space_id icon.drawing=on icon.font=\"$icon_font\" icon.color=$icon_color icon.padding_left=$WORKSPACE_GAP icon.padding_right=$WS_ICON_GAP"
+        BATCH_CMD="$BATCH_CMD --set space.$ws icon.drawing=on icon.font=\"$icon_font\" icon.color=$icon_color icon.padding_left=$WORKSPACE_GAP icon.padding_right=$WS_ICON_GAP"
     fi
 
-    # Update icon slots
-    for i in $(seq 0 $((MAX_ICONS - 1))); do
-        local item_name="space.$space_id.icon.$i"
+    # Update icon slots (literal loop, no seq subprocess)
+    for i in 0 1 2 3; do
+        item_name="space.$ws.icon.$i"
         if [[ $i -lt $num_apps ]]; then
-            local bundle="${BUNDLES[$i]}"
-            local custom_icon=$(get_custom_icon_dimmed "$bundle" "$icon_state")
+            bundle="${BUNDLES[$i]}"
+            custom_icon=$(get_custom_icon_dimmed "$bundle" "$icon_state")
             if [[ -n "$custom_icon" && -f "$custom_icon" ]]; then
-                cmd="$cmd --set $item_name icon.drawing=off background.image=\"$custom_icon\" background.image.scale=$ICON_SCALE background.image.drawing=on width=$(($ICON_WIDTH + $ICON_GAP))"
+                BATCH_CMD="$BATCH_CMD --set $item_name icon.drawing=off background.image=\"$custom_icon\" background.image.scale=$ICON_SCALE background.image.drawing=on width=$(($ICON_WIDTH + $ICON_GAP))"
             else
-                cmd="$cmd --set $item_name icon.drawing=off background.image=\"app.$bundle\" background.image.scale=$ICON_SCALE background.image.drawing=on width=$(($ICON_WIDTH + $ICON_GAP))"
+                BATCH_CMD="$BATCH_CMD --set $item_name icon.drawing=off background.image=\"app.$bundle\" background.image.scale=$ICON_SCALE background.image.drawing=on width=$(($ICON_WIDTH + $ICON_GAP))"
             fi
         else
-            cmd="$cmd --set $item_name icon.drawing=off background.image.drawing=off width=0"
+            BATCH_CMD="$BATCH_CMD --set $item_name icon.drawing=off background.image.drawing=off width=0"
         fi
     done
-
-    eval "$cmd"
-}
-
-# Update only touched workspaces (debounced from burst) + currently visible
-# Visible workspaces need updating for focus/unfocus styling
-VISIBLE_WS="$m1_ws $m2_ws"
-UPDATE_WS=$(echo "$TOUCHED_WS $VISIBLE_WS" | tr ' ' '\n' | sort -u | tr '\n' ' ' | xargs)
-for ws in $UPDATE_WS; do
-    update_workspace "$ws"
 done
+
+# Single sketchybar IPC call for all updates
+eval "$BATCH_CMD"
