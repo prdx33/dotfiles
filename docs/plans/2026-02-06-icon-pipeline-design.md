@@ -4,119 +4,172 @@ Semi-automatic icon management for SketchyBar workspaces.
 
 ## Problem
 
-- macOS app icons have squircle masks that render poorly at 16px
-- Manually sourcing clean dark-mode icons from Google is tedious
+- macOS app icons have squircle masks that render poorly at small sizes
+- Manually sourcing clean dark-mode icons is tedious
 - Need focused (full opacity) and unfocused (50% dim) variants
-- Adding new apps requires updating multiple files
+- Want consistent, recognisable icons across the bar
 
 ## Solution
 
-A script that reads a YAML config, downloads icons, resizes to 16x16, generates dim variants, and auto-updates the SketchyBar icon mapping.
+LLM-assisted icon generation from reference images, plus a script for dim variants.
 
-## File Structure
+## Architecture
+
+### Icon Sizing
+
+| Source | Scale | Display |
+|--------|-------|---------|
+| 32px   | × 0.5 | 16pt    |
+
+32px source provides retina-sharp rendering at 16pt display size.
+
+### File Structure
 
 ```
-~/.config/sketchybar/
-├── icons/
-│   ├── icons.yaml           # Config: bundle ID → URL mapping
-│   ├── update-icons.sh      # The automation script
-│   └── 16px/
-│       ├── spotify.png      # Focused (full opacity)
-│       ├── ghostty.png
-│       └── dim50/
-│           ├── spotify.png  # Unfocused (50% opacity)
-│           └── ghostty.png
+~/.config/sketchybar/icons/
+├── 32px/                           # Generated icons
+│   ├── com.spotify.client.png
+│   ├── com.mitchellh.ghostty.png
+│   └── dim50/                      # Auto-generated dim variants
+│       ├── com.spotify.client.png
+│       └── com.mitchellh.ghostty.png
+├── generate-dim.sh                 # Dim variant generator
+└── tinyicon/                       # Legacy (24px, to be migrated)
 ```
 
-## Config Format (icons.yaml)
+### Naming Convention
+
+Icons named by **bundle ID** — no mapping file needed.
+
+```bash
+# Get bundle ID for any app
+osascript -e 'id of app "Spotify"'
+# → com.spotify.client
+```
+
+## Icon Generation (LLM)
+
+### Workflow
+
+1. Screenshot the macOS app icon (or find source image)
+2. Feed to vision-capable LLM with the prompt below
+3. Save output as `32px/{bundle_id}.png`
+4. Run `generate-dim.sh` to create dim variants
+
+### Generation Prompt
+
+```
+Reference: [attached app icon]
+App: {app_name}
+
+Generate a 32×32 pixel icon:
+
+- Extract ONLY the logomark/symbol — no background, no container, no squircle
+- Faithful to original style: preserve gradients, colours, and shape if present
+- Remove macOS mask, shadows, gloss, and any background
+- Transparent background
+- Sharp, pixel-aligned edges
+- Must be instantly recognisable as {app_name} at 16pt on dark UI (#1e1e2e)
+
+Output: Clean logomark, true to brand, readable at small size.
+```
+
+### Style Parameters
 
 ```yaml
-icons:
-  com.spotify.client:
-    name: spotify
-    url: https://example.com/spotify-dark.png
-  com.mitchellh.ghostty:
-    name: ghostty
-    url: https://raw.githubusercontent.com/mitchellh/ghostty/main/assets/icon.png
+icon_style:
+  content: logomark_only
+  background: transparent
+  treatment: faithful         # gradients if source has them, flat if source is flat
+  colours: original
+  edges: sharp
+  size: 32x32
+  optimised_for: 16pt on #1e1e2e
 ```
 
-- `name`: Output filename (without .png)
-- `url`: Direct link to clean dark-mode icon (PNG preferred)
+## Dim Variant Generator
 
-## Dependencies
+### Dependencies
 
-- `curl` — downloading icons (pre-installed)
-- `imagemagick` — resize + opacity (`brew install imagemagick`)
-- `yq` — YAML parsing (`brew install yq`)
+- `imagemagick` (`brew install imagemagick`)
 
-## Processing Pipeline
-
-```
-1. Parse icons.yaml
-2. For each entry:
-   a. Download icon to temp file
-   b. Validate it's a real image
-   c. Resize to 16x16 (preserve transparency)
-   d. Save to 16px/{name}.png
-   e. Apply 50% opacity
-   f. Save to 16px/dim50/{name}.png
-3. Update app_icons.sh with new mappings
-4. Report success/failures
-```
-
-### ImageMagick Commands
+### Script: generate-dim.sh
 
 ```bash
-# Resize to 16x16 (fit within bounds, center, transparent background)
-magick input.png -resize 16x16 -gravity center -extent 16x16 -background none output.png
+#!/bin/bash
+# Generate 50% opacity dim variants for all icons in 32px/
 
-# Generate 50% dim version
-magick input.png -alpha set -channel A -evaluate multiply 0.5 +channel dim.png
+ICONS_DIR="$HOME/.config/sketchybar/icons/32px"
+DIM_DIR="$ICONS_DIR/dim50"
+
+mkdir -p "$DIM_DIR"
+
+for icon in "$ICONS_DIR"/*.png; do
+    [[ -f "$icon" ]] || continue
+    name=$(basename "$icon")
+    magick "$icon" -alpha set -channel A -evaluate multiply 0.5 +channel "$DIM_DIR/$name"
+    echo "Generated: $DIM_DIR/$name"
+done
+
+echo "Done. $(ls -1 "$DIM_DIR"/*.png 2>/dev/null | wc -l | tr -d ' ') dim variants."
 ```
-
-## Auto-updating app_icons.sh
-
-The script scans `plugins/app_icons.sh` and inserts missing bundle ID → name mappings into the `get_icon_name()` case statement.
-
-```bash
-# Before the catch-all *) line, insert:
-com.linear) echo "linear.png" ;;
-```
-
-Safety:
-- Only adds, never removes existing entries
-- Preserves manual customisations
-- Reports what was added
 
 ## Integration Changes
 
-1. **app_icons.sh** — Update paths:
-   ```bash
-   CUSTOM_ICONS="$HOME/.config/sketchybar/icons/16px"
-   CUSTOM_ICONS_DIM="$HOME/.config/sketchybar/icons/16px/dim50"
-   ```
+### app_icons.sh
 
-2. **aerospace_refresh.sh** — Adjust `ICON_SCALE` if needed for 16px
+Replace case statement with filesystem lookup:
+
+```bash
+CUSTOM_ICONS="$HOME/.config/sketchybar/icons/32px"
+CUSTOM_ICONS_DIM="$HOME/.config/sketchybar/icons/32px/dim50"
+
+# Get icon path by bundle ID (returns empty if not found)
+get_icon_path() {
+    local bundle="$1"
+    local icon="$CUSTOM_ICONS/${bundle}.png"
+    [[ -f "$icon" ]] && echo "$icon" || echo ""
+}
+
+get_icon_path_dimmed() {
+    local bundle="$1"
+    local state="$2"
+    local icon
+
+    case "$state" in
+        focused) icon="$CUSTOM_ICONS/${bundle}.png" ;;
+        *)       icon="$CUSTOM_ICONS_DIM/${bundle}.png" ;;
+    esac
+
+    [[ -f "$icon" ]] && echo "$icon" || echo ""
+}
+```
+
+### aerospace_refresh.sh / aerospace_change.sh
+
+Update `ICON_SCALE` from `0.5` to match new 32px icons (already correct).
 
 ## Usage
 
 ```bash
-# Find bundle ID
+# 1. Get bundle ID
 osascript -e 'id of app "Linear"'
+# → com.linear
 
-# Add to icons.yaml
-# (manually find a clean dark-mode icon URL)
+# 2. Generate icon via LLM (using prompt above)
+# Save to: ~/.config/sketchybar/icons/32px/com.linear.png
 
-# Run the script
-~/.config/sketchybar/icons/update-icons.sh
+# 3. Generate dim variant
+~/.config/sketchybar/icons/generate-dim.sh
 
-# Reload SketchyBar
+# 4. Reload SketchyBar
 sketchybar --reload
 ```
 
-## Error Handling
+## Migration from tinyicon/
 
-- Skip if URL returns non-200
-- Skip if downloaded file isn't a valid image
-- Continue processing remaining icons
-- Report all failures at the end
+Existing 24px icons in `tinyicon/` can be:
+1. Regenerated at 32px using the LLM workflow
+2. Or resized: `magick input.png -resize 32x32 output.png` (may lose quality)
+
+The `tinyicon/` directory remains as legacy until all icons are migrated.
