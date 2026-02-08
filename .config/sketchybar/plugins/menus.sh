@@ -50,11 +50,14 @@ i=0
 while read -r menu_name && [[ $i -lt $MAX_MENUS ]]; do
     menu_name=$(echo "$menu_name" | xargs)
     if [[ -n "$menu_name" ]]; then
-        # Store original for click, display uppercase
+        # Store original for click, display uppercase — keep hidden until hover
         menu_upper=$(echo "$menu_name" | tr '[:lower:]' '[:upper:]')
         sketchybar --set "menu.$i" \
             label="$menu_upper" \
-            label.drawing=on \
+            label.drawing=off \
+            label.padding_left=9 \
+            label.padding_right=11 \
+            width=0 \
             click_script="osascript -e 'tell application \"System Events\" to tell process \"$PROC_NAME\" to click menu bar item \"$menu_name\" of menu bar 1'" \
             2>/dev/null
     fi
@@ -63,7 +66,7 @@ done < "$TMPFILE"
 
 # Hide unused slots
 while [[ $i -lt $MAX_MENUS ]]; do
-    sketchybar --set "menu.$i" label="" label.drawing=off 2>/dev/null
+    sketchybar --set "menu.$i" label="" label.drawing=off width=0 2>/dev/null
     i=$((i + 1))
 done
 

@@ -22,10 +22,10 @@ source "$CONFIG_DIR/colours.sh" 2>/dev/null || exit 0
 source "$CONFIG_DIR/plugins/app_icons.sh" 2>/dev/null
 
 MAX_ICONS=4
-FONT_SIZE=13.0
+FONT_SIZE=10.0
 ICON_SCALE=0.5
 ICON_WIDTH=16
-ICON_GAP=3
+ICON_GAP=1
 WS_ICON_GAP=5
 WORKSPACE_GAP=14
 
@@ -40,18 +40,28 @@ cache_all_workspace_apps
 # Build single batched sketchybar command for ALL workspace updates
 BATCH_CMD="sketchybar"
 
-# Dedupe touched + visible workspaces (pure bash, no pipeline)
-declare -A _seen
+# Dedupe touched + visible workspaces (bash 3.2 compatible)
+_seen=" "
 for ws in $TOUCHED_WS $m1_ws $m2_ws; do
-    [[ -z "$ws" || -n "${_seen[$ws]}" ]] && continue
-    _seen[$ws]=1
+    [[ -z "$ws" ]] && continue
+    case "$_seen" in *" $ws "*) continue ;; esac
+    _seen="$_seen$ws "
 
     # Get apps from cache (no subprocess)
     local_bundles=$(get_cached_workspace_apps "$ws")
     IFS=' ' read -ra BUNDLES <<< "$local_bundles"
     num_apps=${#BUNDLES[@]}
 
-    # Determine state
+    # Determine icon prefix: ◂X = M1 (left), M2 arrow handled separately
+    icon_prefix=""
+    if [[ "$ws" == "$m1_ws" ]]; then
+        icon_prefix="◂"
+    fi
+
+    # Determine state:
+    # - Focused monitor: Heavy + 100%
+    # - Other visible monitor: Regular + 100%
+    # - Has apps but hidden: Regular + 50%
     if [[ "$ws" == "$focused_ws" ]]; then
         icon_font="$MONO_FONT:Heavy:$FONT_SIZE"
         icon_color=$WS_FOCUSED
@@ -59,7 +69,7 @@ for ws in $TOUCHED_WS $m1_ws $m2_ws; do
     elif [[ "$ws" == "$m1_ws" || "$ws" == "$m2_ws" ]]; then
         icon_font="$MONO_FONT:Regular:$FONT_SIZE"
         icon_color=$WS_FOCUSED
-        icon_state="unfocused"
+        icon_state="focused"
     else
         icon_font="$MONO_FONT:Regular:$FONT_SIZE"
         icon_color=$WS_UNFOCUSED
@@ -70,7 +80,7 @@ for ws in $TOUCHED_WS $m1_ws $m2_ws; do
     if [[ $num_apps -eq 0 && "$ws" != "$focused_ws" && "$ws" != "$m1_ws" && "$ws" != "$m2_ws" ]]; then
         BATCH_CMD="$BATCH_CMD --set space.$ws icon.drawing=off icon.padding_left=0 icon.padding_right=0"
     else
-        BATCH_CMD="$BATCH_CMD --set space.$ws icon.drawing=on icon.font=\"$icon_font\" icon.color=$icon_color icon.padding_left=$WORKSPACE_GAP icon.padding_right=$WS_ICON_GAP"
+        BATCH_CMD="$BATCH_CMD --set space.$ws icon=\"${icon_prefix}${ws}\" icon.drawing=on icon.font=\"$icon_font\" icon.color=$icon_color icon.padding_left=$WORKSPACE_GAP icon.padding_right=$WS_ICON_GAP"
     fi
 
     # Update icon slots (literal loop, no seq subprocess)
@@ -89,6 +99,13 @@ for ws in $TOUCHED_WS $m1_ws $m2_ws; do
         fi
     done
 done
+
+# M2 arrow: show after last icon of M2 workspace
+if [[ -n "$m2_ws" ]]; then
+    BATCH_CMD="$BATCH_CMD --set space_m2_arrow icon.drawing=on"
+else
+    BATCH_CMD="$BATCH_CMD --set space_m2_arrow icon.drawing=off"
+fi
 
 # Single sketchybar IPC call for all updates
 eval "$BATCH_CMD"

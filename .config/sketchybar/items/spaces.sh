@@ -6,24 +6,23 @@
 source "$CONFIG_DIR/colours.sh"
 
 MAX_ICONS=4
-FONT_SIZE=13.0
+FONT_SIZE=10.0
 WORKSPACE_GAP=14
 MONO_FONT="Iosevka Extended"
 
-# Letter workspaces (matching Raycast app hotkeys + AeroSpace Alt bindings)
-# B=Bloom, C=Claude, D=Obsidian, F=Firefox, G=Ghostty
-# I=Info/Settings, K=Karabiner, L=LM Studio, R=Spark, S=Spotify, V=VS Code, W=WhatsApp
-WORKSPACES="B C D F G I K L R S V W"
+# All letter workspaces (QWERTY layout)
+WORKSPACES="Q W E R T Y U I O P A S D F G H J K L Z X C V B N M"
 
 for sid in $WORKSPACES; do
-    # Workspace number only
+    # Workspace letter (hidden by default, shown after refresh)
     sketchybar --add item space.$sid center \
         --set space.$sid \
             icon="$sid" \
             icon.font="$MONO_FONT:Heavy:$FONT_SIZE" \
             icon.color=$WS_EMPTY \
-            icon.padding_left=$WORKSPACE_GAP \
-            icon.padding_right=4 \
+            icon.drawing=off \
+            icon.padding_left=0 \
+            icon.padding_right=0 \
             label.drawing=off \
             background.drawing=off \
             click_script="aerospace workspace $sid"
@@ -45,6 +44,28 @@ for sid in $WORKSPACES; do
     done
 done
 
+# Corne split spacer (left shield | right shield)
+# Hidden by default, shown by refresh when both sides have visible workspaces
+# Pure empty space — no visible character
+sketchybar --add item space_div center \
+    --set space_div \
+        icon.drawing=off \
+        label.drawing=off \
+        background.drawing=off \
+        width=0
+
+# M2 (right monitor) arrow — positioned after last icon of M2 workspace by reorder
+sketchybar --add item space_m2_arrow center \
+    --set space_m2_arrow \
+        icon="▸" \
+        icon.font="$MONO_FONT:Regular:$FONT_SIZE" \
+        icon.color=$WS_FOCUSED \
+        icon.drawing=off \
+        icon.padding_left=2 \
+        icon.padding_right=2 \
+        label.drawing=off \
+        background.drawing=off
+
 # Right spacer to balance left padding
 sketchybar --add item spaces_spacer center \
     --set spaces_spacer \
@@ -61,12 +82,25 @@ sketchybar --add bracket spaces '/space\..*/' spaces_spacer \
 # Workspace change events
 sketchybar --add event aerospace_workspace_change
 
-# Controller item - handles workspace changes and wake
+# Controller for workspace switches (fast partial update via PREV/FOCUSED vars)
 sketchybar --add item spaces_controller center \
     --set spaces_controller \
         drawing=off \
-        script="$PLUGIN_DIR/aerospace_refresh.sh" \
-    --subscribe spaces_controller aerospace_workspace_change system_woke
+        script="$PLUGIN_DIR/aerospace_change.sh" \
+    --subscribe spaces_controller aerospace_workspace_change
 
-# Initial update
-"$PLUGIN_DIR/aerospace_refresh.sh" &
+# Controller for full refresh on wake, app changes, and space changes
+sketchybar --add item spaces_refresh center \
+    --set spaces_refresh \
+        drawing=off \
+        script="$PLUGIN_DIR/aerospace_refresh.sh" \
+    --subscribe spaces_refresh system_woke front_app_switched space_change
+
+# Initial update - retry until aerospace is ready
+(for i in 1 2 3 5; do
+    sleep "$i"
+    aerospace list-workspaces --focused 2>/dev/null | grep -q . && {
+        "$PLUGIN_DIR/aerospace_refresh.sh"
+        break
+    }
+done) &

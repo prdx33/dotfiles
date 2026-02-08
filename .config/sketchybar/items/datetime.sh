@@ -5,16 +5,16 @@
 
 source "$CONFIG_DIR/colours.sh"
 
-DATETIME_WIDTH=55
+DATETIME_WIDTH=48
 
 # Date (top) - same padding_right as time for alignment
 sketchybar --add item date right \
     --set date \
         icon.drawing=off \
-        label.font="Iosevka Extended:Heavy:9.0" \
+        label.font="Iosevka Extended:Bold:9.0" \
         label.color=$STAT_DATE \
         label.width=$DATETIME_WIDTH \
-        padding_right=0 \
+        padding_right=3 \
         y_offset=7 \
         width=0 \
         background.drawing=off
@@ -23,10 +23,10 @@ sketchybar --add item date right \
 sketchybar --add item time right \
     --set time \
         icon.drawing=off \
-        label.font="$MONO_FONT:Regular:9.0" \
+        label.font="$MONO_FONT:Light:9.0" \
         label.color=$LABEL_COLOR \
         label.width=$DATETIME_WIDTH \
-        padding_right=0 \
+        padding_right=3 \
         y_offset=-5 \
         background.drawing=off \
         update_freq=30 \

@@ -2,25 +2,37 @@
 
 # Refresh all workspace items (batched for performance)
 # States:
-# - Focused: Heavy + 100% + dot prefix
-# - Other monitor visible: Regular + 50% + dot prefix
+# - Focused monitor: Heavy + 100%
+# - Other visible monitor: Regular + 100%
 # - Has apps but hidden: Regular + 50%
-# Dots: ·1 = M1 (left), 2·· = M2 (right)
+# Arrows: X⟵ = M1 (left), X⟶ = M2 (right)
+# Layout: left shield (QWERTASDFGZXCVB) │ right shield (YUIOPHJKLNM)
+
+# Debounce rapid calls (front_app_switched fires frequently)
+DEBOUNCE="/tmp/aerospace_refresh.ts"
+NOW=$(date +%s%3N)
+echo "$NOW" > "$DEBOUNCE"
+sleep 0.05
+[[ "$(cat "$DEBOUNCE" 2>/dev/null)" != "$NOW" ]] && exit 0
 
 CONFIG_DIR="$HOME/.config/sketchybar"
 source "$CONFIG_DIR/colours.sh" 2>/dev/null || exit 0
 source "$CONFIG_DIR/plugins/app_icons.sh" 2>/dev/null
 
 MAX_ICONS=4
-FONT_SIZE=13.0
+FONT_SIZE=10.0
 ICON_SCALE=0.5
 ICON_WIDTH=16
-ICON_GAP=3
+ICON_GAP=1
 WS_ICON_GAP=5
 WORKSPACE_GAP=14
 
-# Letter workspaces (matching AeroSpace Alt bindings)
-WORKSPACES="B C D F G I K L R S V W"
+# All letter workspaces
+WORKSPACES="Q W E R T Y U I O P A S D F G H J K L Z X C V B N M"
+
+# Corne shield groups
+LEFT_SHIELD=" Q W E R T A S D F G Z X C V B "
+RIGHT_SHIELD=" Y U I O P H J K L N M "
 
 # Get visible workspace for each monitor
 m1_ws=$(aerospace list-workspaces --monitor 1 --visible 2>/dev/null | xargs)
@@ -34,6 +46,8 @@ cache_all_workspace_apps
 
 # Build batched sketchybar command
 BATCH_CMD="sketchybar"
+has_left=0
+has_right=0
 
 for space_id in $WORKSPACES; do
     # Get bundle IDs from cache (no subprocess)
@@ -41,19 +55,22 @@ for space_id in $WORKSPACES; do
     IFS=' ' read -ra BUNDLES <<< "$bundle_ids"
     num_apps=${#BUNDLES[@]}
 
-    # Determine icon prefix/suffix (dots for monitor-visible workspaces)
-    # ·1 = M1 (left), 2·· = M2 (right)
+    # Determine icon prefix: ◂X = M1 (left), M2 arrow handled separately
     icon_prefix=""
-    icon_suffix=""
     if [[ "$space_id" == "$m1_ws" ]]; then
-        icon_prefix="·"
-    elif [[ "$space_id" == "$m2_ws" ]]; then
-        icon_suffix="··"
+        icon_prefix="◂"
     fi
 
-    # Determine state: focused = Heavy + bright, everything else = Regular + dim
+    # Determine state:
+    # - Focused monitor: Heavy + 100%
+    # - Other visible monitor: Regular + 100%
+    # - Has apps but hidden: Regular + 50%
     if [[ "$space_id" == "$focused_ws" ]]; then
         icon_font="$MONO_FONT:Heavy:$FONT_SIZE"
+        icon_color=$WS_FOCUSED
+        icon_state="focused"
+    elif [[ "$space_id" == "$m1_ws" || "$space_id" == "$m2_ws" ]]; then
+        icon_font="$MONO_FONT:Regular:$FONT_SIZE"
         icon_color=$WS_FOCUSED
         icon_state="focused"
     else
@@ -66,7 +83,10 @@ for space_id in $WORKSPACES; do
     if [[ $num_apps -eq 0 && "$space_id" != "$focused_ws" && "$space_id" != "$m1_ws" && "$space_id" != "$m2_ws" ]]; then
         BATCH_CMD="$BATCH_CMD --set space.$space_id icon.drawing=off icon.padding_left=0 icon.padding_right=0"
     else
-        BATCH_CMD="$BATCH_CMD --set space.$space_id icon=\"${icon_prefix}${space_id}${icon_suffix}\" icon.drawing=on icon.font=\"$icon_font\" icon.color=$icon_color icon.padding_left=$WORKSPACE_GAP icon.padding_right=$WS_ICON_GAP"
+        BATCH_CMD="$BATCH_CMD --set space.$space_id icon=\"${icon_prefix}${space_id}\" icon.drawing=on icon.font=\"$icon_font\" icon.color=$icon_color icon.padding_left=$WORKSPACE_GAP icon.padding_right=$WS_ICON_GAP"
+        # Track which shield has visible workspaces
+        case "$LEFT_SHIELD" in *" $space_id "*) has_left=1 ;; esac
+        case "$RIGHT_SHIELD" in *" $space_id "*) has_right=1 ;; esac
     fi
 
     # Update icon slots
@@ -88,19 +108,33 @@ for space_id in $WORKSPACES; do
     done
 done
 
+# Show spacer between shields only when both have visible workspaces
+if [[ $has_left -eq 1 && $has_right -eq 1 ]]; then
+    BATCH_CMD="$BATCH_CMD --set space_div width=$WORKSPACE_GAP"
+else
+    BATCH_CMD="$BATCH_CMD --set space_div width=0"
+fi
+
+# M2 arrow: show after last icon of M2 workspace
+if [[ -n "$m2_ws" ]]; then
+    BATCH_CMD="$BATCH_CMD --set space_m2_arrow icon.drawing=on"
+else
+    BATCH_CMD="$BATCH_CMD --set space_m2_arrow icon.drawing=off"
+fi
+
 # Execute batched command
 eval "$BATCH_CMD"
 
-# Ensure order: letters alphabetical (B-W)
-sketchybar --reorder space.B space.B.icon.0 space.B.icon.1 space.B.icon.2 space.B.icon.3 \
-                     space.C space.C.icon.0 space.C.icon.1 space.C.icon.2 space.C.icon.3 \
-                     space.D space.D.icon.0 space.D.icon.1 space.D.icon.2 space.D.icon.3 \
-                     space.F space.F.icon.0 space.F.icon.1 space.F.icon.2 space.F.icon.3 \
-                     space.G space.G.icon.0 space.G.icon.1 space.G.icon.2 space.G.icon.3 \
-                     space.I space.I.icon.0 space.I.icon.1 space.I.icon.2 space.I.icon.3 \
-                     space.K space.K.icon.0 space.K.icon.1 space.K.icon.2 space.K.icon.3 \
-                     space.L space.L.icon.0 space.L.icon.1 space.L.icon.2 space.L.icon.3 \
-                     space.R space.R.icon.0 space.R.icon.1 space.R.icon.2 space.R.icon.3 \
-                     space.S space.S.icon.0 space.S.icon.1 space.S.icon.2 space.S.icon.3 \
-                     space.V space.V.icon.0 space.V.icon.1 space.V.icon.2 space.V.icon.3 \
-                     space.W space.W.icon.0 space.W.icon.1 space.W.icon.2 space.W.icon.3
+# Ensure order: Corne layout — left shield │ right shield
+# M2 arrow placed after M2 workspace's icon slots
+REORDER=""
+for ws in Q W E R T A S D F G Z X C V B; do
+    REORDER="$REORDER space.$ws space.$ws.icon.0 space.$ws.icon.1 space.$ws.icon.2 space.$ws.icon.3"
+    [[ "$ws" == "$m2_ws" ]] && REORDER="$REORDER space_m2_arrow"
+done
+REORDER="$REORDER space_div"
+for ws in Y U I O P H J K L N M; do
+    REORDER="$REORDER space.$ws space.$ws.icon.0 space.$ws.icon.1 space.$ws.icon.2 space.$ws.icon.3"
+    [[ "$ws" == "$m2_ws" ]] && REORDER="$REORDER space_m2_arrow"
+done
+sketchybar --reorder $REORDER

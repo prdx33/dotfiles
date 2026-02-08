@@ -14,7 +14,7 @@ export FONT MONO_FONT PLUGIN_DIR
 # Bar - 40% opacity background
 sketchybar --bar \
     position=top \
-    height=35 \
+    height=30 \
     color=0x66000000 \
     blur_radius=50 \
     margin=0 \
@@ -52,7 +52,7 @@ sketchybar --add item app_icon left \
         script="$PLUGIN_DIR/front_app_icon.sh" \
     --subscribe app_icon front_app_switched
 
-# === LEFT: App name ===
+# === LEFT: App name (hover to show menus) ===
 sketchybar --add item app_name left \
     --set app_name \
         icon.drawing=off \
@@ -63,7 +63,10 @@ sketchybar --add item app_name left \
         label.drawing=on \
         label="APP"
 
-# === LEFT: Menu bar items (clickable) ===
+sketchybar --set app_name script="$PLUGIN_DIR/menus_toggle.sh" \
+    --subscribe app_name mouse.entered mouse.exited
+
+# === LEFT: Menu bar items (clickable, hidden by default) ===
 MAX_MENUS=8
 for i in $(seq 0 $((MAX_MENUS - 1))); do
     sketchybar --add item menu.$i left \
@@ -71,16 +74,19 @@ for i in $(seq 0 $((MAX_MENUS - 1))); do
             icon.drawing=off \
             label.font="Iosevka Extended:SemiBold:12.0" \
             label.color=0x99ffffff \
-            label.padding_left=9 \
-            label.padding_right=11 \
+            label.padding_left=0 \
+            label.padding_right=0 \
             label.drawing=off \
-            background.drawing=off
+            background.drawing=off \
+            width=0 \
+            script="$PLUGIN_DIR/menus_toggle.sh" \
+        --subscribe menu.$i mouse.entered mouse.exited
 done
 
-# First menu item triggers the update script
+# First menu item also triggers the update script on app switch
 sketchybar --set menu.0 \
     script="$PLUGIN_DIR/menus.sh" \
-    --subscribe menu.0 front_app_switched
+    --subscribe menu.0 front_app_switched mouse.entered mouse.exited
 
 # === CENTER: App (M1) | Workspaces | App (M2) ===
 source "$ITEM_DIR/spaces.sh"
@@ -92,6 +98,3 @@ source "$ITEM_DIR/datetime.sh"
 source "$ITEM_DIR/system.sh"
 
 sketchybar --update
-
-# Force refresh all items after bar loads
-(sleep 1 && "$PLUGIN_DIR/aerospace_refresh.sh") &
