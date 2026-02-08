@@ -8,142 +8,100 @@
     @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600&display=swap');
 
     :root {
-      --text-xs: 0.75rem;
-      --text-sm: 0.875rem;
-      --text-base: 1rem;
-      --text-lg: 1.125rem;
-      --text-xl: 1.5rem;
-      --text-2xl: 1.875rem;
-
-      --bg-primary: #0a0a0a;
-      --bg-secondary: #141414;
+      --bg: #0a0a0a;
+      --bg-card: #141414;
+      --bg-row: #1a1a1a;
+      --bg-row-alt: #1e1e1e;
       --bg-key: #1e1e1e;
       --bg-key-hover: #2a2a2a;
-      --text-primary: #e8e8e8;
-      --text-muted: #999999;
-      --text-dim: #666666;
+      --text: #e8e8e8;
+      --text-muted: #888;
+      --text-dim: #555;
+      --border: #2a2a2a;
 
-      /* Source colors */
-      --source-karabiner: #a78bfa;
-      --source-aerospace: #38bdf8;
-      --source-raycast: #ff6363;
+      --hyper: #4a9d9a;
+      --alt: #7b9f5c;
+      --alt-shift: #c98a4b;
+      --service: #9a7bb8;
 
-      /* Layer accent */
-      --layer-hyper: #14b8a6;
-      --layer-alt: #f59e0b;
-      --layer-service: #a855f7;
-
-      /* Action type colors (for icons) */
-      --type-workspace: #a78bfa;
-      --type-position: #60a5fa;
-      --type-focus: #4ade80;
-      --type-mode: #fbbf24;
-      --type-system: #94a3b8;
-      --type-resize: #f472b6;
-
-      --accent-edit: #4ade80;
-      --border-default: #2a2a2a;
+      --karabiner: #8b7bc7;
+      --aerospace: #5ba3c9;
+      --rectangle: #c77da0;
     }
 
     * { margin: 0; padding: 0; box-sizing: border-box; }
 
     body {
-      font-family: 'JetBrains Mono', ui-monospace, 'SF Mono', Monaco, monospace;
-      font-weight: 400;
-      background: var(--bg-primary);
-      color: var(--text-primary);
+      font-family: 'JetBrains Mono', monospace;
+      background: var(--bg);
+      color: var(--text);
       min-height: 100vh;
-      padding: 32px;
-      letter-spacing: 0.01em;
+      padding: 32px 48px;
+      font-size: 14px;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--border);
     }
 
     h1 {
-      font-size: var(--text-2xl);
+      font-size: 1.75rem;
       font-weight: 500;
-      margin-bottom: 8px;
-      letter-spacing: -0.01em;
     }
 
     .subtitle {
       color: var(--text-muted);
-      font-size: var(--text-sm);
+      font-size: 0.8rem;
+      margin-top: 4px;
+    }
+
+    .nav {
+      display: flex;
+      gap: 8px;
       margin-bottom: 24px;
     }
 
-    .header {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      margin-bottom: 16px;
-    }
-
-    .header-right {
-      display: flex;
-      align-items: center;
-      gap: 16px;
-    }
-
-    .view-switcher {
-      display: flex;
-      gap: 8px;
-    }
-
-    .view-switcher a, .view-switcher button {
-      padding: 6px 14px;
-      font-size: var(--text-sm);
+    .nav a {
+      padding: 10px 20px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
       border-radius: 6px;
-      background: var(--bg-key);
-      border: 1px solid var(--border-default);
       color: var(--text-muted);
       text-decoration: none;
-      cursor: pointer;
-      font-family: inherit;
+      font-size: 0.9rem;
       transition: all 0.15s;
     }
 
-    .view-switcher a:hover, .view-switcher button:hover {
-      background: var(--bg-key-hover);
-      color: var(--text-primary);
-    }
+    .nav a:hover { background: var(--bg-row); color: var(--text); }
+    .nav a.active { background: var(--bg-row); color: var(--text); border-color: #444; }
 
-    .view-switcher a.active {
-      background: var(--layer-hyper);
-      color: var(--bg-primary);
-      border-color: var(--layer-hyper);
-    }
-
-    .view-switcher button.edit-active {
-      background: var(--accent-edit);
-      color: var(--bg-primary);
-      border-color: var(--accent-edit);
-    }
-
-    /* Main Layout */
-    .main-layout { margin-bottom: 32px; }
-
+    /* Keyboard container */
     .keyboard-container {
-      background: var(--bg-secondary);
-      border: 1px solid var(--border-default);
-      border-radius: 12px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
       overflow: hidden;
+      margin-bottom: 20px;
     }
 
-    body.edit-mode .keyboard-container {
-      border-color: var(--accent-edit);
-    }
-
-    /* Layer Tabs */
+    /* Layer tabs */
     .layer-tabs {
       display: flex;
       justify-content: center;
       gap: 4px;
       padding: 12px 16px;
-      border-bottom: 1px solid var(--border-default);
+      border-bottom: 1px solid var(--border);
     }
 
     .layer-tab {
       padding: 6px 14px;
-      font-size: var(--text-sm);
+      font-size: 0.85rem;
+      font-family: inherit;
       border-radius: 6px;
       background: transparent;
       border: none;
@@ -161,20 +119,24 @@
     }
 
     .layer-tab.active {
-      color: var(--text-primary);
-      background: var(--bg-key);
+      color: var(--bg);
+      font-weight: 500;
     }
 
-    .layer-tab-number { opacity: 0.5; }
+    .layer-tab.active[data-layer="hyper"] { background: var(--hyper); }
+    .layer-tab.active[data-layer="alt"] { background: var(--alt); }
+    .layer-tab.active[data-layer="alt-shift"] { background: var(--alt-shift); }
+    .layer-tab.active[data-layer="service"] { background: var(--service); }
+
+    .layer-tab-number { opacity: 0.5; font-size: 0.75rem; }
     .layer-tab-name { font-weight: 500; }
 
-    /* Keyboard Area */
+    /* Keyboard area */
     .keyboard-area {
       position: relative;
       padding: 32px;
     }
 
-    /* Keyboard Layout - matches Corne viewer */
     .keyboard {
       display: flex;
       gap: 220px;
@@ -184,16 +146,16 @@
 
     .half {
       display: grid;
-      grid-template-columns: repeat(6, 60px);
-      grid-template-rows: repeat(3, 60px) 68px;
-      gap: 8px;
+      grid-template-columns: repeat(6, 64px);
+      grid-template-rows: repeat(3, 64px) 72px;
+      gap: 6px;
     }
 
     .half.left .thumb-row {
       grid-column: 4 / 7;
       display: flex;
       justify-content: flex-end;
-      gap: 8px;
+      gap: 6px;
       margin-top: 12px;
     }
 
@@ -201,11 +163,11 @@
       grid-column: 1 / 4;
       display: flex;
       justify-content: flex-start;
-      gap: 8px;
+      gap: 6px;
       margin-top: 12px;
     }
 
-    /* Tooltip Panel - centered between halves */
+    /* Tooltip panel between halves */
     .tooltip-panel {
       position: absolute;
       left: 50%;
@@ -213,7 +175,7 @@
       transform: translate(-50%, -50%);
       width: 200px;
       background: var(--bg-key);
-      border: 1px solid var(--border-default);
+      border: 1px solid var(--border);
       border-radius: 8px;
       padding: 16px;
       z-index: 5;
@@ -221,34 +183,34 @@
 
     .tooltip-empty {
       color: var(--text-dim);
-      font-size: var(--text-sm);
+      font-size: 0.8rem;
       text-align: center;
     }
 
     .tooltip-title {
-      font-weight: 500;
-      font-size: var(--text-base);
+      font-weight: 600;
+      font-size: 1rem;
       margin-bottom: 10px;
       padding-bottom: 10px;
-      border-bottom: 1px solid var(--border-default);
+      border-bottom: 1px solid var(--border);
       text-align: center;
     }
 
     .tooltip-row {
       display: flex;
       justify-content: space-between;
-      font-size: var(--text-sm);
+      font-size: 0.8rem;
       margin-bottom: 6px;
     }
 
     .tooltip-label { color: var(--text-dim); }
-    .tooltip-value { color: var(--text-primary); font-weight: 500; }
+    .tooltip-value { color: var(--text); font-weight: 500; }
 
     .tooltip-desc {
       margin-top: 10px;
       padding-top: 10px;
-      border-top: 1px solid var(--border-default);
-      font-size: var(--text-xs);
+      border-top: 1px solid var(--border);
+      font-size: 0.7rem;
       color: var(--text-dim);
       line-height: 1.4;
       text-align: center;
@@ -257,164 +219,33 @@
     .tooltip-others {
       margin-top: 10px;
       padding-top: 10px;
-      border-top: 1px solid var(--border-default);
+      border-top: 1px solid var(--border);
     }
 
     .tooltip-others-title {
-      font-size: var(--text-xs);
+      font-size: 0.7rem;
       color: var(--text-dim);
       margin-bottom: 6px;
     }
 
     .tooltip-other-item {
-      font-size: var(--text-xs);
+      font-size: 0.7rem;
       color: var(--text-muted);
       margin-bottom: 3px;
     }
 
     .tooltip-locked {
       margin-top: 8px;
-      font-size: var(--text-xs);
+      font-size: 0.7rem;
       color: var(--text-dim);
       text-align: center;
       font-style: italic;
     }
 
-    .tooltip-source-link {
-      display: block;
-      margin-top: 8px;
-      padding-top: 8px;
-      border-top: 1px solid var(--border-default);
-      text-align: center;
-    }
-
-    .tooltip-source-link a {
-      font-size: var(--text-xs);
-      color: var(--text-dim);
-      text-decoration: none;
-      transition: color 0.15s;
-    }
-
-    .tooltip-source-link a:hover {
-      color: var(--accent-edit);
-    }
-
-    /* Toast notification */
-    .toast {
-      position: fixed;
-      bottom: 24px;
-      left: 50%;
-      transform: translateX(-50%) translateY(100px);
-      background: var(--bg-key);
-      border: 1px solid var(--accent-edit);
-      border-radius: 8px;
-      padding: 12px 20px;
-      font-size: var(--text-sm);
-      color: var(--accent-edit);
-      opacity: 0;
-      transition: all 0.3s ease;
-      z-index: 200;
-    }
-
-    .toast.visible {
-      transform: translateX(-50%) translateY(0);
-      opacity: 1;
-    }
-
-    /* Edit Panel - replaces tooltip in edit mode */
-    .edit-panel {
-      position: absolute;
-      left: 50%;
-      top: 50%;
-      transform: translate(-50%, -50%);
-      width: 240px;
-      background: var(--bg-key);
-      border: 1px solid var(--accent-edit);
-      border-radius: 8px;
-      padding: 16px;
-      z-index: 10;
-      display: none;
-    }
-
-    body.edit-mode .edit-panel.visible { display: block; }
-    body.edit-mode .tooltip-panel { display: none; }
-
-    .edit-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 12px;
-      padding-bottom: 8px;
-      border-bottom: 1px solid var(--border-default);
-    }
-
-    .edit-title {
-      font-weight: 500;
-      font-size: var(--text-sm);
-      color: var(--accent-edit);
-    }
-
-    .edit-close {
-      background: none;
-      border: none;
-      color: var(--text-dim);
-      font-size: var(--text-lg);
-      cursor: pointer;
-      padding: 0;
-    }
-
-    .edit-close:hover { color: var(--text-primary); }
-
-    .edit-field { margin-bottom: 10px; }
-
-    .edit-label {
-      display: block;
-      font-size: var(--text-xs);
-      color: var(--text-dim);
-      margin-bottom: 4px;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-    }
-
-    .edit-input, .edit-select {
-      width: 100%;
-      padding: 6px 8px;
-      font-size: var(--text-sm);
-      font-family: inherit;
-      background: var(--bg-secondary);
-      border: 1px solid var(--border-default);
-      border-radius: 4px;
-      color: var(--text-primary);
-    }
-
-    .edit-input:focus, .edit-select:focus {
-      outline: none;
-      border-color: var(--accent-edit);
-    }
-
-    .edit-btns {
-      display: flex;
-      gap: 8px;
-      margin-top: 12px;
-    }
-
-    .edit-btn {
-      flex: 1;
-      padding: 6px 10px;
-      font-size: var(--text-sm);
-      font-family: inherit;
-      border-radius: 4px;
-      border: none;
-      cursor: pointer;
-    }
-
-    .edit-btn.save { background: var(--accent-edit); color: var(--bg-primary); }
-    .edit-btn.clear { background: var(--bg-secondary); color: var(--text-muted); border: 1px solid var(--border-default); }
-
-    /* Key Styling - matches Corne viewer */
+    /* Key styling */
     .key {
-      width: 60px;
-      height: 60px;
+      width: 64px;
+      height: 64px;
       background: var(--bg-key);
       border: none;
       border-radius: 8px;
@@ -425,7 +256,8 @@
       cursor: pointer;
       transition: all 0.15s;
       position: relative;
-      padding: 6px;
+      padding: 4px;
+      gap: 2px;
     }
 
     .key:hover {
@@ -438,397 +270,294 @@
       box-shadow: 0 0 0 2px var(--text-muted);
     }
 
-    .key.selected {
-      box-shadow: 0 0 0 2px var(--accent-edit);
-    }
+    .key.unbound { opacity: 0.3; }
 
-    .key.unbound { opacity: 0.4; }
-
-    body.edit-mode .key.unbound {
-      opacity: 0.6;
-      border: 1px dashed var(--border-default);
-    }
-
-    /* Layer activator highlight */
     .key.layer-activator {
-      background: rgba(20, 184, 166, 0.15);
-      box-shadow: inset 0 0 0 2px var(--layer-hyper);
+      background: rgba(74, 157, 154, 0.15);
+      box-shadow: inset 0 0 0 2px var(--hyper);
     }
 
-    .key.layer-activator.alt-layer {
-      background: rgba(245, 158, 11, 0.15);
-      box-shadow: inset 0 0 0 2px var(--layer-alt);
+    .key.layer-activator.alt-activator {
+      background: rgba(123, 159, 92, 0.15);
+      box-shadow: inset 0 0 0 2px var(--alt);
     }
 
-    .key.layer-activator.service-layer {
-      background: rgba(168, 85, 247, 0.15);
-      box-shadow: inset 0 0 0 2px var(--layer-service);
+    .key.layer-activator.service-activator {
+      background: rgba(154, 123, 184, 0.15);
+      box-shadow: inset 0 0 0 2px var(--service);
     }
 
-    /* Source indicator - small dot */
+    /* Source dot on key */
     .key.has-binding::before {
       content: '';
       position: absolute;
-      bottom: 4px;
-      right: 4px;
+      bottom: 3px;
+      right: 3px;
       width: 5px;
       height: 5px;
       border-radius: 50%;
     }
 
-    .key.source-karabiner::before { background: var(--source-karabiner); }
-    .key.source-aerospace::before { background: var(--source-aerospace); }
-    .key.source-raycast::before { background: var(--source-raycast); }
-
-    .key.has-draft::after {
-      content: '';
-      position: absolute;
-      top: 4px;
-      right: 4px;
-      width: 5px;
-      height: 5px;
-      border-radius: 50%;
-      background: var(--accent-edit);
-    }
+    .key.source-karabiner::before { background: var(--karabiner); }
+    .key.source-aerospace::before { background: var(--aerospace); }
+    .key.source-rectangle::before { background: var(--rectangle); }
 
     .key-label {
-      font-size: var(--text-xs);
+      font-size: 0.65rem;
       color: var(--text-dim);
-      margin-bottom: 2px;
+      line-height: 1;
     }
 
-    .key-icon { margin-bottom: 2px; }
-
     .key-action {
-      font-size: var(--text-sm);
+      font-size: 0.8rem;
       font-weight: 500;
-      color: var(--text-primary);
+      color: var(--text);
       text-align: center;
       line-height: 1.1;
     }
 
-    /* Icons - colored by type */
-    .icon-ws {
-      width: 16px; height: 16px;
-      border: 1.5px solid var(--type-workspace);
-      border-radius: 3px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 10px;
+    .key-action-secondary {
+      font-size: 0.6rem;
+      font-weight: 400;
+      color: var(--text-dim);
+      text-align: center;
+      line-height: 1;
+    }
+
+    .key-dual {
+      font-size: 0.55rem;
+      color: var(--text-dim);
+      text-align: center;
+      line-height: 1;
+      margin-top: 1px;
+    }
+
+    /* Reference panel below keyboard */
+    .ref-panel {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+      margin-bottom: 20px;
+    }
+
+    .ref-panel-header {
+      padding: 12px 20px;
+      border-radius: 9px 9px 0 0;
       font-weight: 600;
-      color: var(--type-workspace);
+      font-size: 0.9rem;
+      color: var(--bg);
     }
 
-    .icon-pos {
+    .ref-panel-header.hyper { background: var(--hyper); }
+    .ref-panel-header.alt { background: var(--alt); }
+    .ref-panel-header.alt-shift { background: var(--alt-shift); }
+    .ref-panel-header.service { background: var(--service); }
+
+    .ref-panel-body {
+      padding: 8px 0;
+    }
+
+    .ref-row {
       display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 1px;
-      width: 16px; height: 10px;
+      align-items: center;
+      padding: 8px 20px;
+      gap: 16px;
+      font-size: 0.85rem;
     }
-    .icon-pos span { background: rgba(255,255,255,0.12); border-radius: 1px; }
-    .icon-pos.left span:first-child { background: var(--type-position); }
-    .icon-pos.right span:last-child { background: var(--type-position); }
-    .icon-pos.center { grid-template-columns: 1fr 1.5fr 1fr; }
-    .icon-pos.center span:nth-child(2) { background: var(--type-position); }
 
-    .icon-focus { font-size: 12px; color: var(--type-focus); line-height: 1; }
+    .ref-row:nth-child(odd) { background: var(--bg-row); }
+    .ref-row:nth-child(even) { background: var(--bg-row-alt); }
 
-    .icon-mode {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 1px;
-      width: 12px; height: 12px;
+    .ref-row.three-col {
+      grid-template-columns: 48px 1fr 1fr auto;
     }
-    .icon-mode span { background: var(--type-mode); border-radius: 1px; }
 
-    .icon-resize {
-      width: 12px; height: 12px;
-      border: 1px solid rgba(255,255,255,0.15);
-      border-radius: 2px;
-      position: relative;
+    .ref-row.two-col {
+      grid-template-columns: 48px 1fr auto;
     }
-    .icon-resize::before, .icon-resize::after {
-      content: '';
-      position: absolute;
-      width: 4px; height: 4px;
-      border-color: var(--type-resize);
-      border-style: solid;
-    }
-    .icon-resize.grow::before { top: -1px; left: -1px; border-width: 1.5px 0 0 1.5px; }
-    .icon-resize.grow::after { bottom: -1px; right: -1px; border-width: 0 1.5px 1.5px 0; }
-    .icon-resize.shrink::before { top: 1px; left: 1px; border-width: 0 1.5px 1.5px 0; }
-    .icon-resize.shrink::after { bottom: 1px; right: 1px; border-width: 1.5px 0 0 1.5px; }
 
-    .icon-sys {
-      width: 12px; height: 8px;
-      border: 1px solid rgba(255,255,255,0.15);
-      border-radius: 2px;
-      position: relative;
+    .ref-key {
+      font-weight: 600;
+      color: var(--text);
+      background: var(--bg);
+      padding: 4px 8px;
+      border-radius: 5px;
+      text-align: center;
+      font-size: 0.75rem;
     }
-    .icon-sys::before {
-      content: '';
-      position: absolute;
-      left: 2px; right: 2px;
-      height: 1.5px;
-      background: var(--type-system);
-      top: 1px;
+
+    .ref-action {
+      color: var(--text);
+      font-weight: 500;
     }
+
+    .ref-tile {
+      color: var(--text-muted);
+      font-size: 0.8rem;
+    }
+
+    .ref-source-dots {
+      display: flex;
+      gap: 3px;
+      justify-content: flex-end;
+    }
+
+    .ref-source-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+    }
+
+    .ref-source-dot.karabiner { background: var(--karabiner); }
+    .ref-source-dot.aerospace { background: var(--aerospace); }
+    .ref-source-dot.rectangle { background: var(--rectangle); }
 
     /* Legend */
-    .legend {
+    .legend-top {
       display: flex;
       flex-wrap: wrap;
-      gap: 32px;
-      padding: 20px 24px;
-      background: var(--bg-secondary);
-      border: 1px solid var(--border-default);
-      border-radius: 12px;
-      font-size: var(--text-sm);
-      margin-top: 24px;
-    }
-
-    .legend-section { display: flex; flex-direction: column; gap: 8px; }
-
-    .legend-title {
-      font-weight: 600;
-      font-size: var(--text-xs);
-      color: var(--text-dim);
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      margin-bottom: 4px;
-    }
-
-    .legend-item { display: flex; align-items: center; gap: 8px; }
-    .legend-dot { width: 8px; height: 8px; border-radius: 50%; }
-
-    /* Drafts */
-    .drafts-panel {
-      display: none;
-      background: var(--bg-secondary);
-      border: 1px solid var(--accent-edit);
-      border-radius: 12px;
+      gap: 40px;
       padding: 16px 20px;
-      margin-top: 16px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      margin-bottom: 20px;
+      font-size: 0.85rem;
     }
 
-    .drafts-panel.has-drafts { display: block; }
-
-    .drafts-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
-    .drafts-title { font-size: var(--text-sm); font-weight: 500; color: var(--accent-edit); }
-
-    .drafts-list { display: flex; flex-wrap: wrap; gap: 8px; }
-
-    .draft-chip {
-      padding: 4px 10px;
-      background: var(--bg-key);
-      border-radius: 4px;
-      font-size: var(--text-xs);
+    .legend-group {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 20px;
+      flex-wrap: wrap;
     }
 
-    .draft-chip-key { color: var(--accent-edit); font-weight: 500; }
-    .draft-chip-action { color: var(--text-muted); }
-    .draft-chip-remove { background: none; border: none; color: var(--text-dim); cursor: pointer; }
+    .legend-label {
+      color: var(--text-muted);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      font-size: 0.7rem;
+      min-width: 50px;
+    }
 
-    /* Reference Modal */
-    .modal-overlay {
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.85);
-      display: none;
-      justify-content: center;
+    .legend-item {
+      display: inline-flex;
       align-items: center;
-      z-index: 100;
+      gap: 6px;
+      color: var(--text);
+      padding: 5px 12px;
+      border-radius: 20px;
+      background: var(--bg);
     }
 
-    .modal-overlay.visible { display: flex; }
-
-    .modal {
-      background: var(--bg-secondary);
-      border: 1px solid var(--border-default);
-      border-radius: 12px;
-      padding: 24px;
-      max-width: 700px;
-      width: 90%;
-      max-height: 80vh;
-      overflow: auto;
+    .source-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--text);
     }
 
-    .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
-    .modal-title { font-size: var(--text-lg); font-weight: 500; }
-    .modal-close { background: none; border: none; color: var(--text-dim); font-size: 1.5rem; cursor: pointer; }
-
-    .ref-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-      gap: 8px;
+    .source-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      flex-shrink: 0;
     }
 
-    .ref-item {
-      padding: 8px 12px;
-      background: var(--bg-key);
+    .source-dot.karabiner { background: var(--karabiner); }
+    .source-dot.aerospace { background: var(--aerospace); }
+    .source-dot.rectangle { background: var(--rectangle); }
+
+    .layer-pill {
+      padding: 6px 14px;
       border-radius: 6px;
-      font-size: var(--text-sm);
+      font-weight: 500;
+      color: var(--bg);
     }
 
-    .ref-item-action { font-weight: 500; }
-    .ref-item-desc { font-size: var(--text-xs); color: var(--text-dim); margin-top: 2px; }
+    .layer-pill.hyper { background: var(--hyper); }
+    .layer-pill.alt { background: var(--alt); }
+    .layer-pill.alt-shift { background: var(--alt-shift); }
+    .layer-pill.service { background: var(--service); }
 
     .shortcuts-hint {
-      font-size: var(--text-xs);
+      font-size: 0.7rem;
       color: var(--text-dim);
       text-align: right;
       margin-top: 12px;
     }
+
+    @media (max-width: 900px) {
+      body { padding: 16px; }
+      .keyboard { gap: 100px; }
+      .half { grid-template-columns: repeat(6, 52px); grid-template-rows: repeat(3, 52px) 60px; }
+      .key { width: 52px; height: 52px; }
+    }
   </style>
 </head>
 <body>
-  <header class="header">
+  <header>
     <div>
       <h1>Window Management Keymap</h1>
-      <p class="subtitle">AeroSpace + Raycast (+ Hammerspoon safety)</p>
-    </div>
-    <div class="header-right">
-      <div class="view-switcher">
-        <a href="index.html">Cheat Sheet</a>
-        <a href="corne-keymap-viewer.html">Corne</a>
-        <a href="window-management-keymap.html" class="active">Visual</a>
-      </div>
-      <div class="view-switcher">
-        <button id="refBtn">Reference</button>
-        <button id="editBtn">Edit</button>
-      </div>
+      <p class="subtitle">AeroSpace + Karabiner + Rectangle (float default, tile opt-in)</p>
     </div>
   </header>
 
-  <div class="main-layout">
-    <div class="keyboard-container">
-      <div class="layer-tabs">
-        <div class="layer-tab active" data-layer="hyper">
-          <span class="layer-tab-number">1</span>
-          <span class="layer-tab-name">Hyper</span>
-        </div>
-        <div class="layer-tab" data-layer="alt">
-          <span class="layer-tab-number">2</span>
-          <span class="layer-tab-name">Alt</span>
-        </div>
-        <div class="layer-tab" data-layer="alt-shift">
-          <span class="layer-tab-number">3</span>
-          <span class="layer-tab-name">Alt+Shift</span>
-        </div>
-        <div class="layer-tab" data-layer="service">
-          <span class="layer-tab-number">4</span>
-          <span class="layer-tab-name">Service</span>
-        </div>
+  <nav class="nav">
+    <a href="index.html">Cheat Sheet</a>
+    <a href="window-management-keymap.html" class="active">Visual</a>
+    <a href="corne-keymap-viewer.html">Corne</a>
+  </nav>
+
+  <div class="legend-top">
+    <div class="legend-group">
+      <span class="legend-label">Layer</span>
+      <span class="layer-pill hyper">Hyper</span>
+      <span class="layer-pill alt">Alt</span>
+      <span class="layer-pill alt-shift">Alt+Shift</span>
+      <span class="layer-pill service">Service</span>
+    </div>
+    <div class="legend-group">
+      <span class="legend-label">Source</span>
+      <span class="source-item"><span class="source-dot karabiner"></span>Karabiner</span>
+      <span class="source-item"><span class="source-dot aerospace"></span>AeroSpace</span>
+      <span class="source-item"><span class="source-dot rectangle"></span>Rectangle</span>
+    </div>
+  </div>
+
+  <div class="keyboard-container">
+    <div class="layer-tabs" id="layerTabs">
+      <div class="layer-tab active" data-layer="hyper">
+        <span class="layer-tab-number">1</span>
+        <span class="layer-tab-name">Hyper</span>
       </div>
+      <div class="layer-tab" data-layer="alt">
+        <span class="layer-tab-number">2</span>
+        <span class="layer-tab-name">Alt</span>
+      </div>
+      <div class="layer-tab" data-layer="alt-shift">
+        <span class="layer-tab-number">3</span>
+        <span class="layer-tab-name">Alt+Shift</span>
+      </div>
+      <div class="layer-tab" data-layer="service">
+        <span class="layer-tab-number">4</span>
+        <span class="layer-tab-name">Service</span>
+      </div>
+    </div>
 
-      <div class="keyboard-area">
-        <div class="keyboard" id="keyboard"></div>
-
-        <div class="tooltip-panel" id="tooltipPanel">
-          <div class="tooltip-empty">Hover a key</div>
-        </div>
-
-        <div class="edit-panel" id="editPanel">
-          <div class="edit-header">
-            <span class="edit-title">Edit Binding</span>
-            <button class="edit-close" id="editClose">&times;</button>
-          </div>
-          <div class="edit-field">
-            <label class="edit-label">Key</label>
-            <input class="edit-input" id="editKey" readonly>
-          </div>
-          <div class="edit-field">
-            <label class="edit-label">Action</label>
-            <input class="edit-input" id="editAction" placeholder="Display label">
-          </div>
-          <div class="edit-field">
-            <label class="edit-label">Type</label>
-            <select class="edit-select" id="editType">
-              <option value="">--</option>
-              <option value="workspace">workspace</option>
-              <option value="position">position</option>
-              <option value="focus">focus</option>
-              <option value="mode">mode</option>
-              <option value="system">system</option>
-              <option value="resize">resize</option>
-            </select>
-          </div>
-          <div class="edit-field">
-            <label class="edit-label">Source</label>
-            <select class="edit-select" id="editSource">
-              <option value="">--</option>
-              <option value="karabiner">Karabiner</option>
-              <option value="aerospace">AeroSpace</option>
-            </select>
-          </div>
-          <div class="edit-field">
-            <label class="edit-label">Description</label>
-            <input class="edit-input" id="editDesc" placeholder="What it does">
-          </div>
-          <div class="edit-btns">
-            <button class="edit-btn save" id="editSave">Save</button>
-            <button class="edit-btn clear" id="editClear">Clear</button>
-          </div>
-        </div>
+    <div class="keyboard-area">
+      <div class="keyboard" id="keyboard"></div>
+      <div class="tooltip-panel" id="tooltipPanel">
+        <div class="tooltip-empty">Hover a key</div>
       </div>
     </div>
   </div>
 
-  <div class="drafts-panel" id="draftsPanel">
-    <div class="drafts-header">
-      <span class="drafts-title">Drafts (<span id="draftCount">0</span>)</span>
-      <div style="display:flex;gap:8px">
-        <button class="edit-btn clear" id="clearDrafts">Clear</button>
-        <button class="edit-btn save" id="exportDrafts">Export</button>
-      </div>
-    </div>
-    <div class="drafts-list" id="draftsList"></div>
-  </div>
+  <div id="refPanel"></div>
 
-  <div class="legend">
-    <div class="legend-section">
-      <div class="legend-title">Source</div>
-      <div class="legend-item"><span class="legend-dot" style="background:var(--source-karabiner)"></span> Karabiner</div>
-      <div class="legend-item"><span class="legend-dot" style="background:var(--source-aerospace)"></span> AeroSpace</div>
-      <div class="legend-item"><span class="legend-dot" style="background:var(--source-raycast)"></span> Raycast (GUI)</div>
-    </div>
-    <div class="legend-section">
-      <div class="legend-title">Layer Activator</div>
-      <div class="legend-item"><span class="legend-dot" style="background:var(--layer-hyper)"></span> Hyper (Caps hold)</div>
-      <div class="legend-item"><span class="legend-dot" style="background:var(--layer-alt)"></span> Alt / Alt+Shift</div>
-      <div class="legend-item"><span class="legend-dot" style="background:var(--layer-service)"></span> Service (Caps+;)</div>
-    </div>
-  </div>
-
-  <div class="modal-overlay" id="refModal">
-    <div class="modal">
-      <div class="modal-header">
-        <span class="modal-title">Command Reference</span>
-        <button class="modal-close" id="closeRef">&times;</button>
-      </div>
-      <div class="ref-grid" id="refContent"></div>
-    </div>
-  </div>
-
-  <div class="modal-overlay" id="exportModal">
-    <div class="modal">
-      <div class="modal-header">
-        <span class="modal-title">Claude Prompt</span>
-        <button class="modal-close" id="closeExport">&times;</button>
-      </div>
-      <p style="font-size:var(--text-xs);color:var(--text-dim);margin-bottom:12px">Paste this into Claude Code to apply changes</p>
-      <pre id="exportContent" style="background:var(--bg-primary);padding:16px;border-radius:8px;overflow:auto;font-size:var(--text-sm);max-height:50vh"></pre>
-      <button id="copyPrompt" style="margin-top:12px;padding:8px 16px;background:var(--accent-edit);color:var(--bg-primary);border:none;border-radius:6px;font-family:inherit;cursor:pointer">Copy to Clipboard</button>
-    </div>
-  </div>
-
-  <div class="shortcuts-hint">Keys 1-4 switch layers | E edit | Click to lock</div>
-
-  <div class="toast" id="toast"></div>
+  <div class="shortcuts-hint">Keys 1-4 switch layers | Click key to lock tooltip</div>
 
   <script>
     // ============================================================
@@ -838,172 +567,124 @@
     const LAYERS = {
       hyper: {
         name: "Hyper",
-        activatorKeys: ["caps"],
-        layerClass: "",
+        activator: "Tab (hold)",
+        activatorKeys: ["tab"],
         bindings: {
-          q: { action: "WS 1", type: "workspace", source: "karabiner", desc: "Summon workspace 1 to current monitor", icon: "ws", iconData: "1" },
-          w: { action: "WS 2", type: "workspace", source: "karabiner", desc: "Summon workspace 2", icon: "ws", iconData: "2" },
-          e: { action: "WS 3", type: "workspace", source: "karabiner", desc: "Summon workspace 3", icon: "ws", iconData: "3" },
-          r: { action: "WS 4", type: "workspace", source: "karabiner", desc: "Summon workspace 4", icon: "ws", iconData: "4" },
-          t: { action: "WS 5", type: "workspace", source: "karabiner", desc: "Summon workspace 5", icon: "ws", iconData: "5" },
-          y: { action: "WS 6", type: "workspace", source: "karabiner", desc: "Summon workspace 6", icon: "ws", iconData: "6" },
-          u: { action: "WS 7", type: "workspace", source: "karabiner", desc: "Summon workspace 7", icon: "ws", iconData: "7" },
-          i: { action: "WS 8", type: "workspace", source: "karabiner", desc: "Summon workspace 8", icon: "ws", iconData: "8" },
-          o: { action: "WS 9", type: "workspace", source: "karabiner", desc: "Summon workspace 9", icon: "ws", iconData: "9" },
-          p: { action: "WS 0", type: "workspace", source: "karabiner", desc: "Summon workspace 0", icon: "ws", iconData: "0" },
-          a: { action: "Float All", type: "mode", source: "karabiner", desc: "Toggle workspace float/tile", icon: "mode" },
-          g: { action: "Mon+Win", type: "position", source: "karabiner", desc: "Move window to next monitor + follow", icon: "pos", iconData: "center" },
-          h: { action: "Foc L", type: "focus", source: "karabiner", desc: "Focus window to left", icon: "focus", iconData: "◂" },
-          j: { action: "Foc D", type: "focus", source: "karabiner", desc: "Focus window below", icon: "focus", iconData: "▾" },
-          k: { action: "Foc U", type: "focus", source: "karabiner", desc: "Focus window above", icon: "focus", iconData: "▴" },
-          l: { action: "Foc R", type: "focus", source: "karabiner", desc: "Focus window to right", icon: "focus", iconData: "▸" },
-          z: { action: "Block", type: "system", source: "karabiner", desc: "Blocked key", icon: "sys" },
-          x: { action: "Foc L", type: "focus", source: "karabiner", desc: "Focus left (alt)", icon: "focus", iconData: "◂" },
-          c: { action: "Float", type: "mode", source: "karabiner", desc: "Toggle window float/tile", icon: "mode" },
-          v: { action: "Foc R", type: "focus", source: "karabiner", desc: "Focus right (alt)", icon: "focus", iconData: "▸" },
-          b: { action: "Mon", type: "focus", source: "karabiner", desc: "Focus next monitor", icon: "focus", iconData: "▸" },
-          n: { action: "H/V", type: "mode", source: "karabiner", desc: "Toggle h/v tiles", icon: "mode" },
-          semicolon: { action: "Svc", type: "mode", source: "karabiner", desc: "Enter service mode", icon: "mode" },
-          quote: { action: "Bar", type: "system", source: "karabiner", desc: "Toggle SketchyBar", icon: "sys" },
-          backslash: { action: "Menu", type: "system", source: "karabiner", desc: "Toggle menu bar", icon: "sys" },
+          q: { action: "Cascade", floatAction: "Cascade", tileAction: null, source: "karabiner", sources: ["karabiner", "rectangle"], desc: "Cascade all floating windows" },
+          w: { action: "Foc Prev", floatAction: "Focus prev", tileAction: "Focus prev", source: "karabiner", sources: ["karabiner", "aerospace"], desc: "Focus previous window" },
+          e: { action: "Max", floatAction: "Maximize", tileAction: "Move up", source: "karabiner", sources: ["karabiner", "rectangle", "aerospace"], desc: "Maximize (float) or move up (tiled)" },
+          r: { action: "Foc Next", floatAction: "Focus next", tileAction: "Focus next", source: "karabiner", sources: ["karabiner", "aerospace"], desc: "Focus next window" },
+          t: { action: "Foc Mon", floatAction: "Focus monitor", tileAction: "Focus monitor", source: "karabiner", sources: ["karabiner", "aerospace"], desc: "Focus next monitor" },
+          a: { action: "All F/T", floatAction: "All float/tile", tileAction: "All float/tile", source: "karabiner", sources: ["karabiner", "aerospace"], desc: "Toggle ALL windows float/tile" },
+          s: { action: "\u2153 L", floatAction: "Left \u2153", tileAction: "Move left", source: "karabiner", sources: ["karabiner", "rectangle", "aerospace"], desc: "Left third (float) or move left (tiled)" },
+          d: { action: "\u2153 C", floatAction: "Center \u2153", tileAction: "Move down", source: "karabiner", sources: ["karabiner", "rectangle", "aerospace"], desc: "Center third (float) or move down (tiled)" },
+          f: { action: "\u2153 R", floatAction: "Right \u2153", tileAction: "Move right", source: "karabiner", sources: ["karabiner", "rectangle", "aerospace"], desc: "Right third (float) or move right (tiled)" },
+          g: { action: "Win\u2192Mon", floatAction: "Win to mon", tileAction: "Win to mon", source: "karabiner", sources: ["karabiner", "aerospace"], desc: "Move window to next monitor + follow" },
+          z: { action: "Float", floatAction: "Toggle float", tileAction: "Toggle float", source: "karabiner", sources: ["karabiner", "aerospace"], desc: "Toggle float/tile for focused window" },
+          x: { action: "\u2154 L", floatAction: "Left \u2154", tileAction: "Shrink", source: "karabiner", sources: ["karabiner", "rectangle", "aerospace"], desc: "Left two-thirds (float) or shrink (tiled)" },
+          c: { action: "\u2154 C", floatAction: "Center \u2154", tileAction: "Flatten+h", source: "karabiner", sources: ["karabiner", "rectangle", "aerospace"], desc: "Center two-thirds (float) or flatten + h-tiles (tiled)" },
+          v: { action: "\u2154 R", floatAction: "Right \u2154", tileAction: "Grow", source: "karabiner", sources: ["karabiner", "rectangle", "aerospace"], desc: "Right two-thirds (float) or grow (tiled)" },
+          b: { action: "Swap Mon", floatAction: "Swap monitors", tileAction: "Swap monitors", source: "karabiner", sources: ["karabiner", "aerospace"], desc: "Swap workspaces between monitors" },
+          semicolon: { action: "Svc", floatAction: "Service mode", tileAction: "Service mode", source: "karabiner", sources: ["karabiner", "aerospace"], desc: "Enter AeroSpace service mode" },
+          quote: { action: "Bar", floatAction: "Toggle bar", tileAction: "Toggle bar", source: "karabiner", sources: ["karabiner"], desc: "Toggle SketchyBar visibility" },
+          slash: { action: "Sort", floatAction: "Sort windows", tileAction: "Sort windows", source: "karabiner", sources: ["karabiner", "aerospace"], desc: "Sort windows by app into workspaces" }
         }
       },
       alt: {
         name: "Alt",
+        activator: "Option",
         activatorKeys: ["alt"],
-        layerClass: "alt-layer",
         bindings: {
-          q: { action: "Send 1", type: "workspace", source: "aerospace", desc: "Send window to WS 1 (stay)", icon: "ws", iconData: "1" },
-          w: { action: "Send 2", type: "workspace", source: "aerospace", desc: "Send to WS 2", icon: "ws", iconData: "2" },
-          e: { action: "Send 3", type: "workspace", source: "aerospace", desc: "Send to WS 3", icon: "ws", iconData: "3" },
-          r: { action: "Send 4", type: "workspace", source: "aerospace", desc: "Send to WS 4", icon: "ws", iconData: "4" },
-          t: { action: "Send 5", type: "workspace", source: "aerospace", desc: "Send to WS 5", icon: "ws", iconData: "5" },
-          y: { action: "Send 6", type: "workspace", source: "aerospace", desc: "Send to WS 6", icon: "ws", iconData: "6" },
-          u: { action: "Send 7", type: "workspace", source: "aerospace", desc: "Send to WS 7", icon: "ws", iconData: "7" },
-          i: { action: "Send 8", type: "workspace", source: "aerospace", desc: "Send to WS 8", icon: "ws", iconData: "8" },
-          o: { action: "Send 9", type: "workspace", source: "aerospace", desc: "Send to WS 9", icon: "ws", iconData: "9" },
-          p: { action: "Send 0", type: "workspace", source: "aerospace", desc: "Send to WS 0", icon: "ws", iconData: "0" },
-          s: { action: "-50", type: "resize", source: "aerospace", desc: "Shrink window", icon: "resize", iconData: "shrink" },
-          d: { action: "Reset", type: "mode", source: "aerospace", desc: "Flatten + h-tiles + balance", icon: "mode" },
-          f: { action: "+50", type: "resize", source: "aerospace", desc: "Grow window", icon: "resize", iconData: "grow" },
-          g: { action: "Mon WS", type: "position", source: "aerospace", desc: "Move workspace to monitor", icon: "pos", iconData: "center" },
+          b: { action: "B", app: "Bloom", source: "aerospace", sources: ["aerospace"], desc: "Workspace B (Bloom)" },
+          c: { action: "C", app: "Claude", source: "aerospace", sources: ["aerospace"], desc: "Workspace C (Claude)" },
+          d: { action: "D", app: "Obsidian", source: "aerospace", sources: ["aerospace"], desc: "Workspace D (Obsidian)" },
+          f: { action: "F", app: "Firefox", source: "aerospace", sources: ["aerospace"], desc: "Workspace F (Firefox)" },
+          g: { action: "G", app: "Ghostty", source: "aerospace", sources: ["aerospace"], desc: "Workspace G (Ghostty)" },
+          i: { action: "I", app: "Sys Info", source: "aerospace", sources: ["aerospace"], desc: "Workspace I (System Info)" },
+          k: { action: "K", app: "Karabiner", source: "aerospace", sources: ["aerospace"], desc: "Workspace K (Karabiner)" },
+          l: { action: "L", app: "LM Studio", source: "aerospace", sources: ["aerospace"], desc: "Workspace L (LM Studio)" },
+          r: { action: "R", app: "Spark", source: "aerospace", sources: ["aerospace"], desc: "Workspace R (Spark)" },
+          s: { action: "S", app: "Spotify", source: "aerospace", sources: ["aerospace"], desc: "Workspace S (Spotify)" },
+          v: { action: "V", app: "VS Code", source: "aerospace", sources: ["aerospace"], desc: "Workspace V (VS Code)" },
+          w: { action: "W", app: "WhatsApp", source: "aerospace", sources: ["aerospace"], desc: "Workspace W (WhatsApp)" }
         }
       },
       "alt-shift": {
         name: "Alt+Shift",
+        activator: "Opt+Shift",
         activatorKeys: ["alt", "shift"],
-        layerClass: "alt-layer",
         bindings: {
-          q: { action: "Go 1", type: "workspace", source: "aerospace", desc: "Send + follow to WS 1", icon: "ws", iconData: "1" },
-          w: { action: "Go 2", type: "workspace", source: "aerospace", desc: "Send + follow to WS 2", icon: "ws", iconData: "2" },
-          e: { action: "Go 3", type: "workspace", source: "aerospace", desc: "Send + follow to WS 3", icon: "ws", iconData: "3" },
-          r: { action: "Go 4", type: "workspace", source: "aerospace", desc: "Send + follow to WS 4", icon: "ws", iconData: "4" },
-          t: { action: "Go 5", type: "workspace", source: "aerospace", desc: "Send + follow to WS 5", icon: "ws", iconData: "5" },
-          y: { action: "Go 6", type: "workspace", source: "aerospace", desc: "Send + follow to WS 6", icon: "ws", iconData: "6" },
-          u: { action: "Go 7", type: "workspace", source: "aerospace", desc: "Send + follow to WS 7", icon: "ws", iconData: "7" },
-          i: { action: "Go 8", type: "workspace", source: "aerospace", desc: "Send + follow to WS 8", icon: "ws", iconData: "8" },
-          o: { action: "Go 9", type: "workspace", source: "aerospace", desc: "Send + follow to WS 9", icon: "ws", iconData: "9" },
-          p: { action: "Go 0", type: "workspace", source: "aerospace", desc: "Send + follow to WS 0", icon: "ws", iconData: "0" },
-          s: { action: "-150", type: "resize", source: "aerospace", desc: "Shrink (large)", icon: "resize", iconData: "shrink" },
-          f: { action: "+150", type: "resize", source: "aerospace", desc: "Grow (large)", icon: "resize", iconData: "grow" },
+          b: { action: "\u2192B", app: "Bloom", source: "aerospace", sources: ["aerospace"], desc: "Move window to B + follow" },
+          c: { action: "\u2192C", app: "Claude", source: "aerospace", sources: ["aerospace"], desc: "Move window to C + follow" },
+          d: { action: "\u2192D", app: "Obsidian", source: "aerospace", sources: ["aerospace"], desc: "Move window to D + follow" },
+          f: { action: "\u2192F", app: "Firefox", source: "aerospace", sources: ["aerospace"], desc: "Move window to F + follow" },
+          g: { action: "\u2192G", app: "Ghostty", source: "aerospace", sources: ["aerospace"], desc: "Move window to G + follow" },
+          i: { action: "\u2192I", app: "Sys Info", source: "aerospace", sources: ["aerospace"], desc: "Move window to I + follow" },
+          k: { action: "\u2192K", app: "Karabiner", source: "aerospace", sources: ["aerospace"], desc: "Move window to K + follow" },
+          l: { action: "\u2192L", app: "LM Studio", source: "aerospace", sources: ["aerospace"], desc: "Move window to L + follow" },
+          r: { action: "\u2192R", app: "Spark", source: "aerospace", sources: ["aerospace"], desc: "Move window to R + follow" },
+          s: { action: "\u2192S", app: "Spotify", source: "aerospace", sources: ["aerospace"], desc: "Move window to S + follow" },
+          v: { action: "\u2192V", app: "VS Code", source: "aerospace", sources: ["aerospace"], desc: "Move window to V + follow" },
+          w: { action: "\u2192W", app: "WhatsApp", source: "aerospace", sources: ["aerospace"], desc: "Move window to W + follow" }
         }
       },
       service: {
         name: "Service",
-        activatorKeys: ["caps", "semicolon"],
-        layerClass: "service-layer",
+        activator: "Hyper+;",
+        activatorKeys: ["tab", "semicolon"],
         bindings: {
-          q: { action: "Close", type: "system", source: "aerospace", desc: "Close all but current", icon: "sys" },
-          r: { action: "Reload", type: "system", source: "aerospace", desc: "Reload config", icon: "sys" },
-          d: { action: "Toggle", type: "mode", source: "aerospace", desc: "Enable/disable AeroSpace", icon: "mode" },
-          f: { action: "Flatten", type: "mode", source: "aerospace", desc: "Flatten workspace tree", icon: "mode" },
+          esc: { action: "Back", source: "aerospace", sources: ["aerospace"], desc: "Back to main mode" },
+          r: { action: "Reload", source: "aerospace", sources: ["aerospace"], desc: "Reload AeroSpace config" },
+          q: { action: "Close", source: "aerospace", sources: ["aerospace"], desc: "Close all windows but current" },
+          d: { action: "Toggle", source: "aerospace", sources: ["aerospace"], desc: "Enable/disable AeroSpace" },
+          f: { action: "Flatten", source: "aerospace", sources: ["aerospace"], desc: "Flatten workspace tree" }
         }
       }
     };
 
+    // Corne physical layout - keys by position
     const CORNE = {
-      left: [['tab','q','w','e','r','t'],['caps','a','s','d','f','g'],['shift','z','x','c','v','b']],
+      left: [
+        ['tab','q','w','e','r','t'],
+        ['esc','a','s','d','f','g'],
+        ['shift','z','x','c','v','b']
+      ],
       leftThumb: ['alt','cmd','space'],
-      right: [['y','u','i','o','p','backslash'],['h','j','k','l','semicolon','quote'],['n','m','comma','period','slash','enter']],
+      right: [
+        ['y','u','i','o','p','backslash'],
+        ['h','j','k','l','semicolon','quote'],
+        ['n','m','comma','period','slash','enter']
+      ],
       rightThumb: ['backspace','layer','ctrl']
     };
 
     const KEY_LABELS = {
-      tab:'Tab',caps:'Caps',shift:'Shift',alt:'Alt',cmd:'Cmd',space:'Spc',
-      backspace:'Bksp',layer:'L1',ctrl:'Ctrl',backslash:'\\',semicolon:';',
-      quote:"'",comma:',',period:'.',slash:'/',enter:'Ent',
-      q:'Q',w:'W',e:'E',r:'R',t:'T',y:'Y',u:'U',i:'I',o:'O',p:'P',
-      a:'A',s:'S',d:'D',f:'F',g:'G',h:'H',j:'J',k:'K',l:'L',
-      z:'Z',x:'X',c:'C',v:'V',b:'B',n:'N',m:'M'
+      tab:'Tab', esc:'Esc', shift:'Shift', alt:'Alt', cmd:'Cmd', space:'Spc',
+      backspace:'Bksp', layer:'L1', ctrl:'Ctrl', backslash:'\\', semicolon:';',
+      quote:"'", comma:',', period:'.', slash:'/', enter:'Ent',
+      q:'Q', w:'W', e:'E', r:'R', t:'T', y:'Y', u:'U', i:'I', o:'O', p:'P',
+      a:'A', s:'S', d:'D', f:'F', g:'G', h:'H', j:'J', k:'K', l:'L',
+      z:'Z', x:'X', c:'C', v:'V', b:'B', n:'N', m:'M'
     };
 
-    const COMMANDS = [
-      { action: "WS 1-0", desc: "Summon workspace to monitor" },
-      { action: "Send 1-0", desc: "Send window (stay)" },
-      { action: "Go 1-0", desc: "Send window + follow" },
-      { action: "Left/Center/Right", desc: "Position (mode-aware)" },
-      { action: "Foc L/R/U/D", desc: "Focus adjacent window" },
-      { action: "Mon+Win", desc: "Window to next monitor" },
-      { action: "Mon WS", desc: "Workspace to next monitor" },
-      { action: "Float", desc: "Toggle window float/tile" },
-      { action: "Float All", desc: "Toggle workspace float/tile" },
-      { action: "H/V", desc: "Toggle horizontal/vertical" },
-      { action: "Reset", desc: "Flatten + h-tiles + balance" },
-      { action: "+/-50/150", desc: "Resize window" },
-      { action: "Bar", desc: "Toggle SketchyBar" },
-      { action: "Menu", desc: "Toggle macOS menu bar" },
-      { action: "Service", desc: "Enter service mode" },
-    ];
-
-    // Source file paths for VS Code deep links
-    const SOURCE_FILES = {
-      karabiner: '/Users/n0id/Dev/dotfiles/.config/karabiner/karabiner.json',
-      aerospace: '/Users/n0id/Dev/dotfiles/.config/aerospace/aerospace.toml',
-      hammerspoon: '/Users/n0id/Dev/dotfiles/hammerspoon/',
-      raycast: null  // GUI-configured
-    };
+    const LAYER_ORDER = ['hyper', 'alt', 'alt-shift', 'service'];
+    const QWERTY_ORDER = 'qwertyuiopasdfghjklzxcvbnm';
 
     // ============================================================
     // STATE
     // ============================================================
 
-    let currentLayer = "hyper";
-    let editMode = false;
-    let selectedKey = null;
+    let currentLayer = 'hyper';
     let lockedKey = null;
-    let drafts = {};
-
-    // ============================================================
-    // ICONS
-    // ============================================================
-
-    function renderIcon(b) {
-      if (!b?.icon) return '';
-      switch (b.icon) {
-        case 'ws': return `<div class="icon-ws">${b.iconData||''}</div>`;
-        case 'pos': return `<div class="icon-pos ${b.iconData||''}"><span></span><span></span><span></span></div>`;
-        case 'focus': return `<div class="icon-focus">${b.iconData||'▸'}</div>`;
-        case 'mode': return `<div class="icon-mode"><span></span><span></span><span></span><span></span></div>`;
-        case 'resize': return `<div class="icon-resize ${b.iconData||'grow'}"></div>`;
-        case 'sys': return `<div class="icon-sys"></div>`;
-        default: return '';
-      }
-    }
 
     // ============================================================
     // RENDER
     // ============================================================
 
-    function getDK(l, k) { return `${l}:${k}`; }
-
-    function getBinding(l, k) {
-      const dk = getDK(l, k);
-      if (drafts[dk]) return { ...drafts[dk], isDraft: true };
-      return LAYERS[l].bindings[k] || null;
-    }
-
     function renderTabs() {
-      document.querySelectorAll('.layer-tab').forEach(t => t.classList.toggle('active', t.dataset.layer === currentLayer));
+      document.querySelectorAll('.layer-tab').forEach(t => {
+        t.classList.toggle('active', t.dataset.layer === currentLayer);
+      });
     }
 
     function renderKeyboard() {
@@ -1011,285 +692,241 @@
       const layer = LAYERS[currentLayer];
 
       function renderKey(k) {
-        const b = getBinding(currentLayer, k);
-        const hasDraft = !!drafts[getDK(currentLayer, k)];
+        const b = layer.bindings[k] || null;
         const label = KEY_LABELS[k] || k.toUpperCase();
         const isActivator = layer.activatorKeys.includes(k);
 
         let cls = ['key'];
-        if (b) { cls.push('has-binding', `source-${b.source}`); }
-        else { cls.push('unbound'); }
-        if (hasDraft) cls.push('has-draft');
-        if (selectedKey === k) cls.push('selected');
+        if (b) {
+          cls.push('has-binding', 'source-' + b.source);
+        } else {
+          cls.push('unbound');
+        }
         if (lockedKey === k) cls.push('locked');
-        if (isActivator) cls.push('layer-activator', layer.layerClass);
+        if (isActivator) {
+          cls.push('layer-activator');
+          if (currentLayer === 'alt' || currentLayer === 'alt-shift') cls.push('alt-activator');
+          if (currentLayer === 'service') cls.push('service-activator');
+        }
 
-        return `
-          <div class="${cls.join(' ')}" data-key="${k}">
-            <span class="key-label">${label}</span>
-            ${b ? `<div class="key-icon">${renderIcon(b)}</div><span class="key-action">${b.action}</span>` : ''}
-          </div>
-        `;
+        let actionHtml = '';
+        if (b) {
+          actionHtml = '<span class="key-action">' + b.action + '</span>';
+          // Show app name for workspace layers
+          if (b.app) {
+            actionHtml += '<span class="key-action-secondary">' + b.app + '</span>';
+          }
+          // Show dual-mode hint for hyper layer
+          if (b.tileAction && b.floatAction && b.tileAction !== b.floatAction) {
+            actionHtml += '<span class="key-dual">tile: ' + b.tileAction + '</span>';
+          }
+        }
+
+        return '<div class="key ' + cls.join(' ') + '" data-key="' + k + '">' +
+          '<span class="key-label">' + label + '</span>' +
+          actionHtml +
+          '</div>';
       }
 
       function renderHalf(rows, thumb, side) {
-        return `<div class="half ${side}">${rows.map(r => r.map(renderKey).join('')).join('')}<div class="thumb-row">${thumb.map(renderKey).join('')}</div></div>`;
+        let html = '<div class="half ' + side + '">';
+        for (const row of rows) {
+          html += row.map(renderKey).join('');
+        }
+        html += '<div class="thumb-row">' + thumb.map(renderKey).join('') + '</div>';
+        html += '</div>';
+        return html;
       }
 
-      kb.innerHTML = renderHalf(CORNE.left, CORNE.leftThumb, 'left') + renderHalf(CORNE.right, CORNE.rightThumb, 'right');
+      kb.innerHTML = renderHalf(CORNE.left, CORNE.leftThumb, 'left') +
+                     renderHalf(CORNE.right, CORNE.rightThumb, 'right');
 
       kb.querySelectorAll('.key').forEach(el => {
         const k = el.dataset.key;
-        el.addEventListener('mouseenter', () => { if (!lockedKey && !editMode) updateTooltip(k); });
-        el.addEventListener('mouseleave', () => { if (!lockedKey && !editMode) clearTooltip(); });
+        el.addEventListener('mouseenter', () => {
+          if (!lockedKey) updateTooltip(k);
+        });
+        el.addEventListener('mouseleave', () => {
+          if (!lockedKey) clearTooltip();
+        });
         el.addEventListener('click', () => {
-          if (editMode) { selectKey(k); }
-          else { lockedKey = lockedKey === k ? null : k; renderKeyboard(); if (lockedKey) updateTooltip(k); else clearTooltip(); }
+          lockedKey = lockedKey === k ? null : k;
+          renderKeyboard();
+          if (lockedKey) updateTooltip(k); else clearTooltip();
         });
       });
     }
 
-    function getSourceLink(source) {
-      const path = SOURCE_FILES[source];
-      if (!path) return null;
-      return `vscode://file${path}`;
-    }
-
     function updateTooltip(k) {
       const panel = document.getElementById('tooltipPanel');
-      const b = getBinding(currentLayer, k);
+      const layer = LAYERS[currentLayer];
+      const b = layer.bindings[k];
 
       if (!b) {
-        panel.innerHTML = `<div class="tooltip-empty">No binding</div>`;
+        panel.innerHTML = '<div class="tooltip-empty">No binding</div>';
         return;
       }
 
-      const others = Object.entries(LAYERS).filter(([n]) => n !== currentLayer)
-        .map(([n, l]) => ({ name: n, b: getBinding(n, k) })).filter(x => x.b);
+      // Source dots
+      const dotsHtml = (b.sources || [b.source]).map(s =>
+        '<span class="ref-source-dot ' + s + '"></span>'
+      ).join('');
 
-      const othersHtml = others.length ? `
-        <div class="tooltip-others">
-          <div class="tooltip-others-title">Other layers</div>
-          ${others.map(x => `<div class="tooltip-other-item">${LAYERS[x.name].name}: ${x.b.action}</div>`).join('')}
-        </div>
-      ` : '';
+      // Other layers
+      const others = LAYER_ORDER.filter(n => n !== currentLayer)
+        .map(n => ({ name: n, b: LAYERS[n].bindings[k] }))
+        .filter(x => x.b);
 
-      const lockedHtml = lockedKey === k ? `<div class="tooltip-locked">Click to unlock</div>` : '';
+      const othersHtml = others.length ? '<div class="tooltip-others">' +
+        '<div class="tooltip-others-title">Other layers</div>' +
+        others.map(x => '<div class="tooltip-other-item">' + LAYERS[x.name].name + ': ' + x.b.action + '</div>').join('') +
+        '</div>' : '';
 
-      // Source file link
-      const sourceLink = getSourceLink(b.source);
-      const sourceLinkHtml = sourceLink && !b.isDraft ? `
-        <div class="tooltip-source-link">
-          <a href="${sourceLink}" title="Open config in VS Code">📁 Edit in VS Code</a>
-        </div>
-      ` : '';
+      // Dual mode detail for hyper
+      let dualHtml = '';
+      if (b.floatAction && b.tileAction && b.floatAction !== b.tileAction) {
+        dualHtml = '<div class="tooltip-row"><span class="tooltip-label">Float</span><span class="tooltip-value">' + b.floatAction + '</span></div>' +
+                   '<div class="tooltip-row"><span class="tooltip-label">Tile</span><span class="tooltip-value">' + b.tileAction + '</span></div>';
+      }
 
-      panel.innerHTML = `
-        <div class="tooltip-title">${b.action}</div>
-        <div class="tooltip-row"><span class="tooltip-label">Type</span><span class="tooltip-value">${b.type}</span></div>
-        <div class="tooltip-row"><span class="tooltip-label">Source</span><span class="tooltip-value">${b.source}</span></div>
-        ${b.isDraft ? `<div class="tooltip-row"><span class="tooltip-label">Status</span><span class="tooltip-value" style="color:var(--accent-edit)">draft</span></div>` : ''}
-        <div class="tooltip-desc">${b.desc || ''}</div>
-        ${othersHtml}
-        ${sourceLinkHtml}
-        ${lockedHtml}
-      `;
+      const lockedHtml = lockedKey === k ? '<div class="tooltip-locked">Click to unlock</div>' : '';
+
+      panel.innerHTML =
+        '<div class="tooltip-title">' + b.action + '</div>' +
+        '<div class="tooltip-row"><span class="tooltip-label">Source</span><span class="tooltip-value" style="display:flex;gap:3px;align-items:center">' + dotsHtml + '</span></div>' +
+        dualHtml +
+        (b.app ? '<div class="tooltip-row"><span class="tooltip-label">App</span><span class="tooltip-value">' + b.app + '</span></div>' : '') +
+        '<div class="tooltip-desc">' + (b.desc || '') + '</div>' +
+        othersHtml +
+        lockedHtml;
     }
 
     function clearTooltip() {
-      document.getElementById('tooltipPanel').innerHTML = `<div class="tooltip-empty">Hover a key</div>`;
+      document.getElementById('tooltipPanel').innerHTML = '<div class="tooltip-empty">Hover a key</div>';
     }
 
-    function selectKey(k) {
-      selectedKey = k;
-      renderKeyboard();
-      const b = getBinding(currentLayer, k);
-      document.getElementById('editKey').value = KEY_LABELS[k] || k.toUpperCase();
-      document.getElementById('editAction').value = b?.action || '';
-      document.getElementById('editType').value = b?.type || '';
-      document.getElementById('editSource').value = b?.source || '';
-      document.getElementById('editDesc').value = b?.desc || '';
-      document.getElementById('editPanel').classList.add('visible');
-    }
+    function renderRefPanel() {
+      const container = document.getElementById('refPanel');
+      const layer = LAYERS[currentLayer];
+      const bindings = Object.entries(layer.bindings);
 
-    function deselectKey() {
-      selectedKey = null;
-      document.getElementById('editPanel').classList.remove('visible');
-      renderKeyboard();
-    }
-
-    function renderDrafts() {
-      const panel = document.getElementById('draftsPanel');
-      const list = document.getElementById('draftsList');
-      const entries = Object.entries(drafts);
-      document.getElementById('draftCount').textContent = entries.length;
-      if (!entries.length) { panel.classList.remove('has-drafts'); return; }
-      panel.classList.add('has-drafts');
-      list.innerHTML = entries.map(([dk, d]) => {
-        const [l, k] = dk.split(':');
-        return `<div class="draft-chip"><span class="draft-chip-key">${LAYERS[l].name}+${KEY_LABELS[k]||k}</span><span class="draft-chip-action">${d.action}</span><button class="draft-chip-remove" data-dk="${dk}">&times;</button></div>`;
-      }).join('');
-      list.querySelectorAll('.draft-chip-remove').forEach(btn => {
-        btn.addEventListener('click', () => { delete drafts[btn.dataset.dk]; renderDrafts(); renderKeyboard(); });
+      // Sort by QWERTY position
+      bindings.sort((a, b) => {
+        const aKey = a[0].toLowerCase();
+        const bKey = b[0].toLowerCase();
+        const aIdx = QWERTY_ORDER.indexOf(aKey);
+        const bIdx = QWERTY_ORDER.indexOf(bKey);
+        const aPos = aIdx === -1 ? 100 : aIdx;
+        const bPos = bIdx === -1 ? 100 : bIdx;
+        return aPos - bPos;
       });
-    }
 
-    function renderRef() {
-      document.getElementById('refContent').innerHTML = COMMANDS.map(c =>
-        `<div class="ref-item"><div class="ref-item-action">${c.action}</div><div class="ref-item-desc">${c.desc}</div></div>`
-      ).join('');
+      const layerClass = currentLayer === 'alt-shift' ? 'alt-shift' : currentLayer;
+      let html = '<div class="ref-panel">';
+      html += '<div class="ref-panel-header ' + layerClass + '">' + layer.name + ' <span style="font-weight:300;opacity:0.7">- ' + layer.activator + '</span></div>';
+      html += '<div class="ref-panel-body">';
+
+      // Hyper layer gets 3-column layout (float/tile)
+      if (currentLayer === 'hyper') {
+        for (const [key, b] of bindings) {
+          const keyLabel = KEY_LABELS[key] || key.toUpperCase();
+          const dotsHtml = (b.sources || [b.source]).map(s =>
+            '<span class="ref-source-dot ' + s + '"></span>'
+          ).join('');
+
+          const tileText = (b.tileAction && b.tileAction !== b.floatAction) ? b.tileAction : '';
+
+          html += '<div class="ref-row three-col">' +
+            '<span class="ref-key">' + keyLabel + '</span>' +
+            '<span class="ref-action">' + (b.floatAction || b.action) + '</span>' +
+            '<span class="ref-tile">' + (tileText ? 'tile: ' + tileText : '') + '</span>' +
+            '<span class="ref-source-dots">' + dotsHtml + '</span>' +
+            '</div>';
+        }
+      }
+      // Alt layer: Key | Workspace | App
+      else if (currentLayer === 'alt') {
+        for (const [key, b] of bindings) {
+          const keyLabel = KEY_LABELS[key] || key.toUpperCase();
+          const dotsHtml = (b.sources || [b.source]).map(s =>
+            '<span class="ref-source-dot ' + s + '"></span>'
+          ).join('');
+
+          html += '<div class="ref-row three-col">' +
+            '<span class="ref-key">' + keyLabel + '</span>' +
+            '<span class="ref-action">Workspace ' + b.action + '</span>' +
+            '<span class="ref-tile">' + (b.app || '') + '</span>' +
+            '<span class="ref-source-dots">' + dotsHtml + '</span>' +
+            '</div>';
+        }
+      }
+      // Alt+Shift: Key | Action | App
+      else if (currentLayer === 'alt-shift') {
+        for (const [key, b] of bindings) {
+          const keyLabel = KEY_LABELS[key] || key.toUpperCase();
+          const dotsHtml = (b.sources || [b.source]).map(s =>
+            '<span class="ref-source-dot ' + s + '"></span>'
+          ).join('');
+
+          html += '<div class="ref-row three-col">' +
+            '<span class="ref-key">' + keyLabel + '</span>' +
+            '<span class="ref-action">Move to ' + key.toUpperCase() + ' + follow</span>' +
+            '<span class="ref-tile">' + (b.app || '') + '</span>' +
+            '<span class="ref-source-dots">' + dotsHtml + '</span>' +
+            '</div>';
+        }
+      }
+      // Service: Key | Action
+      else {
+        for (const [key, b] of bindings) {
+          const keyLabel = KEY_LABELS[key] || key.toUpperCase();
+          const dotsHtml = (b.sources || [b.source]).map(s =>
+            '<span class="ref-source-dot ' + s + '"></span>'
+          ).join('');
+
+          html += '<div class="ref-row two-col">' +
+            '<span class="ref-key">' + keyLabel + '</span>' +
+            '<span class="ref-action">' + b.desc + '</span>' +
+            '<span class="ref-source-dots">' + dotsHtml + '</span>' +
+            '</div>';
+        }
+      }
+
+      html += '</div></div>';
+      container.innerHTML = html;
     }
 
     // ============================================================
     // EVENTS
     // ============================================================
 
-    document.getElementById('editBtn').addEventListener('click', () => {
-      editMode = !editMode;
-      document.body.classList.toggle('edit-mode', editMode);
-      document.getElementById('editBtn').classList.toggle('edit-active', editMode);
-      document.getElementById('editBtn').textContent = editMode ? 'View' : 'Edit';
-      if (!editMode) deselectKey();
-      lockedKey = null;
-      renderKeyboard();
-    });
-
-    document.getElementById('editClose').addEventListener('click', deselectKey);
-
-    document.getElementById('editSave').addEventListener('click', () => {
-      if (!selectedKey) return;
-      const action = document.getElementById('editAction').value.trim();
-      const type = document.getElementById('editType').value;
-      if (!action || !type) { alert('Action and Type required'); return; }
-      drafts[getDK(currentLayer, selectedKey)] = {
-        action, type,
-        source: document.getElementById('editSource').value || 'karabiner',
-        desc: document.getElementById('editDesc').value.trim(),
-        icon: type === 'workspace' ? 'ws' : type === 'position' ? 'pos' : type === 'focus' ? 'focus' : type === 'resize' ? 'resize' : type === 'system' ? 'sys' : 'mode'
-      };
-      renderDrafts();
-      renderKeyboard();
-    });
-
-    document.getElementById('editClear').addEventListener('click', () => {
-      if (!selectedKey) return;
-      delete drafts[getDK(currentLayer, selectedKey)];
-      renderDrafts();
-      renderKeyboard();
-      selectKey(selectedKey);
-    });
-
-    document.getElementById('refBtn').addEventListener('click', () => { renderRef(); document.getElementById('refModal').classList.add('visible'); });
-    document.getElementById('closeRef').addEventListener('click', () => document.getElementById('refModal').classList.remove('visible'));
-
-    function showToast(message) {
-      const toast = document.getElementById('toast');
-      toast.textContent = message;
-      toast.classList.add('visible');
-      setTimeout(() => toast.classList.remove('visible'), 2500);
-    }
-
-    function generateClaudePrompt(draftEntries) {
-      const changes = draftEntries.map(([dk, d]) => {
-        const [layer, key] = dk.split(':');
-        const layerName = LAYERS[layer].name;
-        const keyLabel = KEY_LABELS[key] || key.toUpperCase();
-        const existingBinding = LAYERS[layer].bindings[key];
-        const sourceFile = SOURCE_FILES[d.source] || SOURCE_FILES[existingBinding?.source] || 'unknown';
-
-        return `
-### ${layerName} + ${keyLabel}
-
-**Current Binding:**
-- Action: ${existingBinding?.action || '(none)'}
-- Type: ${existingBinding?.type || '(none)'}
-- Source: ${existingBinding?.source || 'none'}
-- File: \`${sourceFile}\`
-
-**Requested Change:**
-- New Action: ${d.action}
-- Type: ${d.type}
-- Source: ${d.source}
-- Description: ${d.desc}
-`;
-      }).join('\n');
-
-      return `Please modify the following keybindings in my dotfiles:
-
-${changes}
-
-**Instructions:**
-1. Edit the appropriate config file(s) based on the Source field
-2. For Karabiner: Modify the complex_modifications in the JSON
-3. For AeroSpace: Update the TOML binding in the appropriate mode section
-4. After editing, also update \`hammerspoon/cheatsheet.lua\` to reflect the change
-5. Reload the affected tool:
-   - AeroSpace: \`aerospace reload-config\`
-   - Hammerspoon: \`hs.reload()\`
-   - Karabiner: Changes apply automatically
-
-**Config file locations:**
-- Karabiner: \`${SOURCE_FILES.karabiner}\`
-- AeroSpace: \`${SOURCE_FILES.aerospace}\`
-- Hammerspoon: \`${SOURCE_FILES.hammerspoon}\`
-`;
-    }
-
-    document.getElementById('exportDrafts').addEventListener('click', () => {
-      const entries = Object.entries(drafts);
-      if (!entries.length) { alert('No drafts'); return; }
-
-      const prompt = generateClaudePrompt(entries);
-
-      // Copy to clipboard
-      navigator.clipboard.writeText(prompt).then(() => {
-        showToast('Claude prompt copied to clipboard!');
-      }).catch(() => {
-        // Fallback: show in modal
-        document.getElementById('exportContent').textContent = prompt;
-        document.getElementById('exportModal').classList.add('visible');
-      });
-
-      // Also show in modal
-      document.getElementById('exportContent').textContent = prompt;
-      document.getElementById('exportModal').classList.add('visible');
-    });
-    document.getElementById('closeExport').addEventListener('click', () => document.getElementById('exportModal').classList.remove('visible'));
-    document.getElementById('copyPrompt').addEventListener('click', () => {
-      const prompt = document.getElementById('exportContent').textContent;
-      navigator.clipboard.writeText(prompt).then(() => {
-        showToast('Copied to clipboard!');
-        document.getElementById('exportModal').classList.remove('visible');
-      });
-    });
-    document.getElementById('clearDrafts').addEventListener('click', () => { if (confirm('Clear all?')) { drafts = {}; renderDrafts(); renderKeyboard(); } });
-
     document.querySelectorAll('.layer-tab').forEach(t => {
       t.addEventListener('click', () => {
         currentLayer = t.dataset.layer;
-        deselectKey();
         lockedKey = null;
         renderTabs();
         renderKeyboard();
+        renderRefPanel();
         clearTooltip();
       });
     });
 
     document.addEventListener('keydown', e => {
-      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') return;
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
       const layers = { '1': 'hyper', '2': 'alt', '3': 'alt-shift', '4': 'service' };
-      if (layers[e.key]) { currentLayer = layers[e.key]; deselectKey(); lockedKey = null; renderTabs(); renderKeyboard(); clearTooltip(); }
-      if (e.key === 'e' || e.key === 'E') document.getElementById('editBtn').click();
-      if (e.key === 'Escape') {
-        if (document.getElementById('refModal').classList.contains('visible')) document.getElementById('refModal').classList.remove('visible');
-        else if (document.getElementById('exportModal').classList.contains('visible')) document.getElementById('exportModal').classList.remove('visible');
-        else if (editMode && selectedKey) deselectKey();
-        else if (lockedKey) { lockedKey = null; renderKeyboard(); clearTooltip(); }
+      if (layers[e.key]) {
+        currentLayer = layers[e.key];
+        lockedKey = null;
+        renderTabs();
+        renderKeyboard();
+        renderRefPanel();
+        clearTooltip();
       }
-    });
-
-    ['refModal', 'exportModal'].forEach(id => {
-      document.getElementById(id).addEventListener('click', e => { if (e.target.id === id) e.target.classList.remove('visible'); });
+      if (e.key === 'Escape' && lockedKey) {
+        lockedKey = null;
+        renderKeyboard();
+        clearTooltip();
+      }
     });
 
     // ============================================================
@@ -1298,7 +935,7 @@ ${changes}
 
     renderTabs();
     renderKeyboard();
-    renderDrafts();
+    renderRefPanel();
   </script>
 </body>
 </html>

@@ -1,5 +1,5 @@
 ------------------------------------------------------------
--- AeroSpace/Rectangle Cheatsheet Overlay
+-- AeroSpace/Karabiner/Rectangle Cheatsheet Overlay
 -- Triggered by F10, dismiss with any key or click
 ------------------------------------------------------------
 
@@ -15,7 +15,7 @@ Cheatsheet.style = {
 }
 
 Cheatsheet.config = {
-  width = 580,
+  width = 620,
   padding = 24,
   lineHeight = 20,
   sectionGap = 12,
@@ -33,39 +33,73 @@ Cheatsheet.visible = false
 -- Shortcut data
 Cheatsheet.sections = {
   {
-    title = "HYPER — Navigation",
+    title = "HYPER — Float Mode (default)",
     items = {
-      { "Q", "Focus prev window" },
-      { "T", "Focus next window" },
-      { "W", "Focus next monitor" },
-      { "R", "Move window to monitor + follow" },
-      { "A", "Toggle tiling/floating" },
+      { "Q", "Cascade all windows" },
+      { "W", "Focus prev window" },
+      { "E", "Maximize" },
+      { "R", "Focus next window" },
+      { "T", "Focus next monitor" },
+      { "S", "Snap left ½ → ⅓ cycle" },
+      { "D", "Snap center ½ → ⅓ cycle" },
+      { "F", "Snap right ½ → ⅓ cycle" },
+      { "X", "Snap left ⅔" },
+      { "C", "Snap center ⅔" },
+      { "V", "Snap right ⅔" },
+    }
+  },
+  {
+    title = "HYPER — Tile Mode (opt-in via Z)",
+    items = {
+      { "W", "Focus prev window" },
+      { "E", "Move up" },
+      { "R", "Focus next window" },
+      { "S", "Move left" },
+      { "D", "Move down" },
+      { "F", "Move right" },
+      { "X", "Shrink window" },
+      { "C", "Flatten + horizontal tiles" },
+      { "V", "Grow window" },
+    }
+  },
+  {
+    title = "HYPER — Both Modes",
+    items = {
+      { "A", "Toggle ALL windows float/tile" },
+      { "Z", "Toggle focused window float/tile" },
+      { "G", "Move window to next monitor" },
+      { "B", "Swap monitor workspaces" },
+      { "/", "Sort windows by app" },
       { ";", "Service mode" },
       { "'", "Toggle SketchyBar" },
     }
   },
   {
-    title = "HYPER — Positioning (Rectangle Pro)",
-    items = {
-      { "S", "Left half (cycles)" },
-      { "D", "Center" },
-      { "F", "Right half (cycles)" },
-      { "E", "Maximize" },
-      { "X", "First third" },
-      { "V", "Last third" },
-      { "Z", "Cascade all" },
-    }
-  },
-  {
     title = "ALT (⌥) — Workspaces",
     items = {
-      { "Q-P", "Switch to workspace 1-0" },
+      { "A", "Slack" },
+      { "B", "Bloom" },
+      { "C", "Claude" },
+      { "D", "Obsidian" },
+      { "F", "Firefox / Safari / Brave" },
+      { "G", "Ghostty / Terminal / Warp" },
+      { "I", "System Settings" },
+      { "K", "Karabiner" },
+      { "L", "LM Studio" },
+      { "M", "Messages" },
+      { "O", "Outlook" },
+      { "P", "Photos" },
+      { "R", "Spark" },
+      { "S", "Spotify / Music" },
+      { "T", "Sublime Text" },
+      { "V", "VS Code / Cursor" },
+      { "W", "WhatsApp" },
     }
   },
   {
-    title = "ALT+SHIFT (⌥⇧)",
+    title = "ALT+SHIFT (⌥⇧) — Send Window",
     items = {
-      { "Q-P", "Send window + follow" },
+      { "A-Z", "Send window to workspace (stay on current)" },
     }
   },
   {
@@ -83,6 +117,7 @@ Cheatsheet.sections = {
     items = {
       { "⌘Q hold", "Hold-to-quit" },
       { "⌘W hold", "Hold-to-close" },
+      { "⌘M", "Minimise toggle" },
       { "F10", "This cheatsheet" },
     }
   },
