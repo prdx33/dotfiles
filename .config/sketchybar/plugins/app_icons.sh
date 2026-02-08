@@ -50,6 +50,7 @@ get_icon_name() {
         com.apple.iCal) echo "calendar.png" ;;
         com.kakao.KakaoTalkMac) echo "kakaotalk.png" ;;
         com.apple.MobileSMS) echo "messages.png" ;;
+        notion.id) echo "notion.png" ;;
         # macOS built-in apps
         com.apple.mail) echo "mail.png" ;;
         com.apple.Music) echo "music.png" ;;

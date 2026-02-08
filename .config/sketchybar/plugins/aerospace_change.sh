@@ -52,10 +52,14 @@ for ws in $TOUCHED_WS $m1_ws $m2_ws; do
     IFS=' ' read -ra BUNDLES <<< "$local_bundles"
     num_apps=${#BUNDLES[@]}
 
-    # Determine icon prefix: ◂X = M1 (left), M2 arrow handled separately
+    # Monitor indicators: ◂X = M1 (left), X▸ = M2 (right)
     icon_prefix=""
+    icon_suffix=""
     if [[ "$ws" == "$m1_ws" ]]; then
         icon_prefix="◂"
+    fi
+    if [[ "$ws" == "$m2_ws" ]]; then
+        icon_suffix="▸"
     fi
 
     # Determine state:
@@ -80,7 +84,7 @@ for ws in $TOUCHED_WS $m1_ws $m2_ws; do
     if [[ $num_apps -eq 0 && "$ws" != "$focused_ws" && "$ws" != "$m1_ws" && "$ws" != "$m2_ws" ]]; then
         BATCH_CMD="$BATCH_CMD --set space.$ws icon.drawing=off icon.padding_left=0 icon.padding_right=0"
     else
-        BATCH_CMD="$BATCH_CMD --set space.$ws icon=\"${icon_prefix}${ws}\" icon.drawing=on icon.font=\"$icon_font\" icon.color=$icon_color icon.padding_left=$WORKSPACE_GAP icon.padding_right=$WS_ICON_GAP"
+        BATCH_CMD="$BATCH_CMD --set space.$ws icon=\"${icon_prefix}${ws}${icon_suffix}\" icon.drawing=on icon.font=\"$icon_font\" icon.color=$icon_color icon.padding_left=$WORKSPACE_GAP icon.padding_right=$WS_ICON_GAP"
     fi
 
     # Update icon slots (literal loop, no seq subprocess)
@@ -99,13 +103,6 @@ for ws in $TOUCHED_WS $m1_ws $m2_ws; do
         fi
     done
 done
-
-# M2 arrow: show after last icon of M2 workspace
-if [[ -n "$m2_ws" ]]; then
-    BATCH_CMD="$BATCH_CMD --set space_m2_arrow icon.drawing=on"
-else
-    BATCH_CMD="$BATCH_CMD --set space_m2_arrow icon.drawing=off"
-fi
 
 # Single sketchybar IPC call for all updates
 eval "$BATCH_CMD"

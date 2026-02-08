@@ -55,10 +55,14 @@ for space_id in $WORKSPACES; do
     IFS=' ' read -ra BUNDLES <<< "$bundle_ids"
     num_apps=${#BUNDLES[@]}
 
-    # Determine icon prefix: ◂X = M1 (left), M2 arrow handled separately
+    # Monitor indicators: ◂X = M1 (left), X▸ = M2 (right)
     icon_prefix=""
+    icon_suffix=""
     if [[ "$space_id" == "$m1_ws" ]]; then
         icon_prefix="◂"
+    fi
+    if [[ "$space_id" == "$m2_ws" ]]; then
+        icon_suffix="▸"
     fi
 
     # Determine state:
@@ -83,7 +87,7 @@ for space_id in $WORKSPACES; do
     if [[ $num_apps -eq 0 && "$space_id" != "$focused_ws" && "$space_id" != "$m1_ws" && "$space_id" != "$m2_ws" ]]; then
         BATCH_CMD="$BATCH_CMD --set space.$space_id icon.drawing=off icon.padding_left=0 icon.padding_right=0"
     else
-        BATCH_CMD="$BATCH_CMD --set space.$space_id icon=\"${icon_prefix}${space_id}\" icon.drawing=on icon.font=\"$icon_font\" icon.color=$icon_color icon.padding_left=$WORKSPACE_GAP icon.padding_right=$WS_ICON_GAP"
+        BATCH_CMD="$BATCH_CMD --set space.$space_id icon=\"${icon_prefix}${space_id}${icon_suffix}\" icon.drawing=on icon.font=\"$icon_font\" icon.color=$icon_color icon.padding_left=$WORKSPACE_GAP icon.padding_right=$WS_ICON_GAP"
         # Track which shield has visible workspaces
         case "$LEFT_SHIELD" in *" $space_id "*) has_left=1 ;; esac
         case "$RIGHT_SHIELD" in *" $space_id "*) has_right=1 ;; esac
@@ -108,33 +112,19 @@ for space_id in $WORKSPACES; do
     done
 done
 
-# Show spacer between shields only when both have visible workspaces
-if [[ $has_left -eq 1 && $has_right -eq 1 ]]; then
-    BATCH_CMD="$BATCH_CMD --set space_div width=$WORKSPACE_GAP"
-else
-    BATCH_CMD="$BATCH_CMD --set space_div width=0"
-fi
-
-# M2 arrow: show after last icon of M2 workspace
-if [[ -n "$m2_ws" ]]; then
-    BATCH_CMD="$BATCH_CMD --set space_m2_arrow icon.drawing=on"
-else
-    BATCH_CMD="$BATCH_CMD --set space_m2_arrow icon.drawing=off"
-fi
+# Spacer between shields — no visual, just item ordering anchor
+BATCH_CMD="$BATCH_CMD --set space_div width=0"
 
 # Execute batched command
 eval "$BATCH_CMD"
 
-# Ensure order: Corne layout — left shield │ right shield
-# M2 arrow placed after M2 workspace's icon slots
+# Ensure order: Corne layout — left shield [spacer] right shield
 REORDER=""
 for ws in Q W E R T A S D F G Z X C V B; do
     REORDER="$REORDER space.$ws space.$ws.icon.0 space.$ws.icon.1 space.$ws.icon.2 space.$ws.icon.3"
-    [[ "$ws" == "$m2_ws" ]] && REORDER="$REORDER space_m2_arrow"
 done
 REORDER="$REORDER space_div"
 for ws in Y U I O P H J K L N M; do
     REORDER="$REORDER space.$ws space.$ws.icon.0 space.$ws.icon.1 space.$ws.icon.2 space.$ws.icon.3"
-    [[ "$ws" == "$m2_ws" ]] && REORDER="$REORDER space_m2_arrow"
 done
 sketchybar --reorder $REORDER

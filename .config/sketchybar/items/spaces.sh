@@ -44,9 +44,8 @@ for sid in $WORKSPACES; do
     done
 done
 
-# Corne split spacer (left shield | right shield)
-# Hidden by default, shown by refresh when both sides have visible workspaces
-# Pure empty space — no visible character
+# Corne split spacer (left shield / right shield)
+# Pure empty space between shields
 sketchybar --add item space_div center \
     --set space_div \
         icon.drawing=off \
@@ -54,17 +53,11 @@ sketchybar --add item space_div center \
         background.drawing=off \
         width=0
 
-# M2 (right monitor) arrow — positioned after last icon of M2 workspace by reorder
+# M2 arrow is now a suffix on the workspace letter (e.g. "G▸")
+# Kept as hidden placeholder for bracket compatibility
 sketchybar --add item space_m2_arrow center \
     --set space_m2_arrow \
-        icon="▸" \
-        icon.font="$MONO_FONT:Regular:$FONT_SIZE" \
-        icon.color=$WS_FOCUSED \
-        icon.drawing=off \
-        icon.padding_left=2 \
-        icon.padding_right=2 \
-        label.drawing=off \
-        background.drawing=off
+        drawing=off
 
 # Right spacer to balance left padding
 sketchybar --add item spaces_spacer center \

@@ -1,16 +1,14 @@
 #!/bin/bash
 
-# Toggle sketchybar visibility
-# Called by Hyper + ' keyboard shortcut
+# Toggle sketchybar visibility — called directly from Karabiner (no Hammerspoon hop)
 
 HIDDEN_FILE="/tmp/sketchybar_hidden"
+SKETCHYBAR="/opt/homebrew/bin/sketchybar"
 
 if [[ -f "$HIDDEN_FILE" ]]; then
-    # Currently hidden, show it
-    sketchybar --bar hidden=off
+    $SKETCHYBAR --bar hidden=off
     rm "$HIDDEN_FILE"
 else
-    # Currently visible, hide it
-    sketchybar --bar hidden=on
+    $SKETCHYBAR --bar hidden=on
     touch "$HIDDEN_FILE"
 fi

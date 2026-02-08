@@ -304,7 +304,7 @@
                                     }
                                 ],
                                 "from": { "key_code": "quote" },
-                                "to": [{ "shell_command": "/opt/homebrew/bin/hs -c 'BarToggle:toggle()'" }],
+                                "to": [{ "shell_command": "/Users/n0id/.config/sketchybar/plugins/bar_toggle.sh" }],
                                 "type": "basic"
                             }
                         ]

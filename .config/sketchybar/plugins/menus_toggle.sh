@@ -1,46 +1,41 @@
 #!/bin/bash
 
-# Toggle menu items visibility with delayed hide
+# Toggle menu items visibility — hover in/out with 3s delayed hide
+# State tracking prevents redundant redraws that cause flickering
+STATEFILE="/tmp/sketchybar_menus_visible"
 PIDFILE="/tmp/sketchybar_menu_hide.pid"
+HIDE_SCRIPT="$HOME/.config/sketchybar/plugins/menus_hide.sh"
 
-show_menus() {
-    # Cancel any pending hide
+cancel_hide() {
     if [[ -f "$PIDFILE" ]]; then
         kill "$(cat "$PIDFILE")" 2>/dev/null
         rm -f "$PIDFILE"
     fi
+}
 
+show_menus() {
+    cancel_hide
+
+    # Skip if already visible — prevents flicker from redundant redraws
+    [[ -f "$STATEFILE" ]] && return
+
+    touch "$STATEFILE"
     sketchybar \
-        --set menu.0 label.drawing=on label.padding_left=9 label.padding_right=11 width=dynamic \
-        --set menu.1 label.drawing=on label.padding_left=9 label.padding_right=11 width=dynamic \
-        --set menu.2 label.drawing=on label.padding_left=9 label.padding_right=11 width=dynamic \
-        --set menu.3 label.drawing=on label.padding_left=9 label.padding_right=11 width=dynamic \
-        --set menu.4 label.drawing=on label.padding_left=9 label.padding_right=11 width=dynamic \
-        --set menu.5 label.drawing=on label.padding_left=9 label.padding_right=11 width=dynamic \
-        --set menu.6 label.drawing=on label.padding_left=9 label.padding_right=11 width=dynamic \
-        --set menu.7 label.drawing=on label.padding_left=9 label.padding_right=11 width=dynamic
+        --set menu.0 label.drawing=on width=dynamic \
+        --set menu.1 label.drawing=on width=dynamic \
+        --set menu.2 label.drawing=on width=dynamic \
+        --set menu.3 label.drawing=on width=dynamic \
+        --set menu.4 label.drawing=on width=dynamic \
+        --set menu.5 label.drawing=on width=dynamic \
+        --set menu.6 label.drawing=on width=dynamic \
+        --set menu.7 label.drawing=on width=dynamic
 }
 
 hide_menus() {
-    # Cancel any existing timer
-    if [[ -f "$PIDFILE" ]]; then
-        kill "$(cat "$PIDFILE")" 2>/dev/null
-        rm -f "$PIDFILE"
-    fi
+    cancel_hide
 
-    (
-        sleep 1.5
-        sketchybar \
-            --set menu.0 label.drawing=off label.padding_left=0 label.padding_right=0 width=0 \
-            --set menu.1 label.drawing=off label.padding_left=0 label.padding_right=0 width=0 \
-            --set menu.2 label.drawing=off label.padding_left=0 label.padding_right=0 width=0 \
-            --set menu.3 label.drawing=off label.padding_left=0 label.padding_right=0 width=0 \
-            --set menu.4 label.drawing=off label.padding_left=0 label.padding_right=0 width=0 \
-            --set menu.5 label.drawing=off label.padding_left=0 label.padding_right=0 width=0 \
-            --set menu.6 label.drawing=off label.padding_left=0 label.padding_right=0 width=0 \
-            --set menu.7 label.drawing=off label.padding_left=0 label.padding_right=0 width=0
-        rm -f "$PIDFILE"
-    ) &
+    # Detached process — survives script exit
+    nohup bash "$HIDE_SCRIPT" </dev/null >/dev/null 2>&1 &
     echo $! > "$PIDFILE"
 }
 
