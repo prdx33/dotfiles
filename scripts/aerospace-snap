@@ -1,0 +1,44 @@
+#!/bin/bash
+# aerospace-snap — Snap floating windows with optional cycling
+# Usage: aerospace-snap <position> <size> [cycle-size]
+#
+# Positions: left, center, right
+# Sizes: half, third, two-thirds
+# If cycle-size provided, toggles between size and cycle-size
+
+POSITION="$1"
+SIZE="$2"
+CYCLE="$3"
+
+STATE_FILE="/tmp/aerospace-snap-state"
+
+action_name() {
+    case "$1-$2" in
+        left-half)          echo "left-half" ;;
+        left-third)         echo "first-third" ;;
+        left-two-thirds)    echo "first-two-thirds" ;;
+        center-half)        echo "center-half" ;;
+        center-third)       echo "center-third" ;;
+        center-two-thirds)  echo "center-two-thirds" ;;
+        right-half)         echo "right-half" ;;
+        right-third)        echo "last-third" ;;
+        right-two-thirds)   echo "last-two-thirds" ;;
+    esac
+}
+
+if [ -n "$CYCLE" ]; then
+    current=$(cat "$STATE_FILE" 2>/dev/null)
+    primary="$POSITION-$SIZE"
+    if [ "$current" = "$primary" ]; then
+        action=$(action_name "$POSITION" "$CYCLE")
+        echo "$POSITION-$CYCLE" > "$STATE_FILE"
+    else
+        action=$(action_name "$POSITION" "$SIZE")
+        echo "$primary" > "$STATE_FILE"
+    fi
+else
+    action=$(action_name "$POSITION" "$SIZE")
+    echo "$POSITION-$SIZE" > "$STATE_FILE"
+fi
+
+open -g "rectangle://execute-action?name=$action"

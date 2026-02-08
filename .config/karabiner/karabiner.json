@@ -72,7 +72,7 @@
                         ]
                     },
                     {
-                        "description": "Hyper S → Left Third (float) / Move Left (tiled)",
+                        "description": "Hyper S → Left Half/Third cycle (float) / Move Left (tiled)",
                         "manipulators": [
                             {
                                 "conditions": [
@@ -83,13 +83,13 @@
                                     }
                                 ],
                                 "from": { "key_code": "s" },
-                                "to": [{ "shell_command": "L=$(/opt/homebrew/bin/aerospace list-windows --focused --format '%{window-layout}'); if [ \"$L\" = floating ]; then open -g 'rectangle://execute-action?name=first-third'; else /opt/homebrew/bin/aerospace move left; fi" }],
+                                "to": [{ "shell_command": "L=$(/opt/homebrew/bin/aerospace list-windows --focused --format '%{window-layout}'); if [ \"$L\" = floating ]; then /Users/n0id/.local/bin/aerospace-snap left half third; else /opt/homebrew/bin/aerospace move left; fi" }],
                                 "type": "basic"
                             }
                         ]
                     },
                     {
-                        "description": "Hyper F → Right Third (float) / Move Right (tiled)",
+                        "description": "Hyper F → Right Half/Third cycle (float) / Move Right (tiled)",
                         "manipulators": [
                             {
                                 "conditions": [
@@ -100,13 +100,13 @@
                                     }
                                 ],
                                 "from": { "key_code": "f" },
-                                "to": [{ "shell_command": "L=$(/opt/homebrew/bin/aerospace list-windows --focused --format '%{window-layout}'); if [ \"$L\" = floating ]; then open -g 'rectangle://execute-action?name=last-third'; else /opt/homebrew/bin/aerospace move right; fi" }],
+                                "to": [{ "shell_command": "L=$(/opt/homebrew/bin/aerospace list-windows --focused --format '%{window-layout}'); if [ \"$L\" = floating ]; then /Users/n0id/.local/bin/aerospace-snap right half third; else /opt/homebrew/bin/aerospace move right; fi" }],
                                 "type": "basic"
                             }
                         ]
                     },
                     {
-                        "description": "Hyper G → Move window to next monitor + follow",
+                        "description": "Hyper G → Move window to next monitor + follow + center 2/3",
                         "manipulators": [
                             {
                                 "conditions": [
@@ -117,7 +117,7 @@
                                     }
                                 ],
                                 "from": { "key_code": "g" },
-                                "to": [{ "shell_command": "/opt/homebrew/bin/aerospace move-node-to-monitor --wrap-around next && /opt/homebrew/bin/aerospace focus-monitor --wrap-around next" }],
+                                "to": [{ "shell_command": "/opt/homebrew/bin/aerospace move-node-to-monitor --wrap-around next && /opt/homebrew/bin/aerospace focus-monitor --wrap-around next && open -g 'rectangle://execute-action?name=maximize' && /opt/homebrew/bin/hs -c 'local w=hs.window.focusedWindow() if w then local f=w:frame() hs.mouse.absolutePosition({x=f.x+f.w/2,y=f.y+f.h/2}) end'" }],
                                 "type": "basic"
                             }
                         ]
@@ -174,7 +174,7 @@
                         ]
                     },
                     {
-                        "description": "Hyper D → Center Third (float) / Move Down (tiled)",
+                        "description": "Hyper D → Center Half/Third cycle (float) / Move Down (tiled)",
                         "manipulators": [
                             {
                                 "conditions": [
@@ -185,13 +185,13 @@
                                     }
                                 ],
                                 "from": { "key_code": "d" },
-                                "to": [{ "shell_command": "L=$(/opt/homebrew/bin/aerospace list-windows --focused --format '%{window-layout}'); if [ \"$L\" = floating ]; then open -g 'rectangle://execute-action?name=center-third'; else /opt/homebrew/bin/aerospace move down; fi" }],
+                                "to": [{ "shell_command": "L=$(/opt/homebrew/bin/aerospace list-windows --focused --format '%{window-layout}'); if [ \"$L\" = floating ]; then /Users/n0id/.local/bin/aerospace-snap center half third; else /opt/homebrew/bin/aerospace move down; fi" }],
                                 "type": "basic"
                             }
                         ]
                     },
                     {
-                        "description": "Hyper C → Center 2/3 (float) / Flatten + Vertical tiles (tiled)",
+                        "description": "Hyper C → Center 2/3 (float) / Flatten + Horizontal tiles (tiled)",
                         "manipulators": [
                             {
                                 "conditions": [
@@ -202,7 +202,7 @@
                                     }
                                 ],
                                 "from": { "key_code": "c" },
-                                "to": [{ "shell_command": "L=$(/opt/homebrew/bin/aerospace list-windows --focused --format '%{window-layout}'); if [ \"$L\" = floating ]; then open -g 'rectangle://execute-action?name=center-two-thirds'; else /opt/homebrew/bin/aerospace flatten-workspace-tree && /opt/homebrew/bin/aerospace layout tiles horizontal; fi" }],
+                                "to": [{ "shell_command": "L=$(/opt/homebrew/bin/aerospace list-windows --focused --format '%{window-layout}'); if [ \"$L\" = floating ]; then /Users/n0id/.local/bin/aerospace-snap center two-thirds; else /opt/homebrew/bin/aerospace flatten-workspace-tree && /opt/homebrew/bin/aerospace layout tiles horizontal; fi" }],
                                 "type": "basic"
                             }
                         ]
@@ -219,7 +219,7 @@
                                     }
                                 ],
                                 "from": { "key_code": "x" },
-                                "to": [{ "shell_command": "L=$(/opt/homebrew/bin/aerospace list-windows --focused --format '%{window-layout}'); if [ \"$L\" = floating ]; then open -g 'rectangle://execute-action?name=first-two-thirds'; else /opt/homebrew/bin/aerospace resize smart -150; fi" }],
+                                "to": [{ "shell_command": "L=$(/opt/homebrew/bin/aerospace list-windows --focused --format '%{window-layout}'); if [ \"$L\" = floating ]; then /Users/n0id/.local/bin/aerospace-snap left two-thirds; else /opt/homebrew/bin/aerospace resize smart -150; fi" }],
                                 "type": "basic"
                             }
                         ]
@@ -236,7 +236,7 @@
                                     }
                                 ],
                                 "from": { "key_code": "v" },
-                                "to": [{ "shell_command": "L=$(/opt/homebrew/bin/aerospace list-windows --focused --format '%{window-layout}'); if [ \"$L\" = floating ]; then open -g 'rectangle://execute-action?name=last-two-thirds'; else /opt/homebrew/bin/aerospace resize smart +150; fi" }],
+                                "to": [{ "shell_command": "L=$(/opt/homebrew/bin/aerospace list-windows --focused --format '%{window-layout}'); if [ \"$L\" = floating ]; then /Users/n0id/.local/bin/aerospace-snap right two-thirds; else /opt/homebrew/bin/aerospace resize smart +150; fi" }],
                                 "type": "basic"
                             }
                         ]

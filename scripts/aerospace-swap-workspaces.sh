@@ -14,6 +14,9 @@ fi
 
 # Summon other workspace here, switch back to ours, push ours across, focus swapped
 /opt/homebrew/bin/aerospace summon-workspace "$other_ws"
+sleep 0.1
 /opt/homebrew/bin/aerospace workspace "$current_ws"
+sleep 0.1
 /opt/homebrew/bin/aerospace move-workspace-to-monitor --wrap-around next
+sleep 0.1
 /opt/homebrew/bin/aerospace workspace "$other_ws"

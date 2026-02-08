@@ -1,0 +1,19 @@
+#!/bin/bash
+# Toggle ALL windows on the focused workspace between floating and tiled
+
+WS=$(/opt/homebrew/bin/aerospace list-workspaces --focused)
+[ -z "$WS" ] && exit 0
+
+# Check if any window on this workspace is floating
+FLOATING=$(/opt/homebrew/bin/aerospace list-windows --workspace "$WS" --format '%{window-layout}' | grep -c floating)
+
+if [ "$FLOATING" -gt 0 ]; then
+  TARGET="tiling"
+else
+  TARGET="floating"
+fi
+
+# Apply to all windows on the workspace
+for WID in $(/opt/homebrew/bin/aerospace list-windows --workspace "$WS" --format '%{window-id}'); do
+  /opt/homebrew/bin/aerospace layout --window-id "$WID" "$TARGET" 2>/dev/null
+done

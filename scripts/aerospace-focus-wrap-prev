@@ -1,0 +1,8 @@
+#!/bin/bash
+# Aerospace focus previous with cross-monitor wrapping
+
+# Try to focus previous window in current workspace
+if ! /opt/homebrew/bin/aerospace focus --boundaries workspace --boundaries-action wrap-around-the-workspace dfs-prev 2>/dev/null; then
+    # If at boundary, move to previous monitor and focus last window
+    /opt/homebrew/bin/aerospace focus-monitor --wrap-around prev
+fi
