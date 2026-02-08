@@ -1,0 +1,66 @@
+# Starship Config - Clean & Minimal
+# Docs: https://starship.rs/config/
+
+# Use a two-line prompt
+format = """
+$directory$git_branch$git_status$nodejs$python
+$character"""
+
+# Prompt character
+[character]
+success_symbol = "[❯](green)"
+error_symbol = "[❯](red)"
+
+# Directory - show truncated path
+[directory]
+truncation_length = 3
+truncate_to_repo = true
+style = "bold cyan"
+
+# Git branch
+[git_branch]
+format = "[$symbol$branch]($style) "
+symbol = " "
+style = "purple"
+
+# Git status - clean indicators
+[git_status]
+format = '([$all_status$ahead_behind]($style) )'
+style = "yellow"
+conflicted = "="
+ahead = "⇡${count}"
+behind = "⇣${count}"
+diverged = "⇕⇡${ahead_count}⇣${behind_count}"
+untracked = "?"
+stashed = "\\$"
+modified = "!"
+staged = "+"
+renamed = "»"
+deleted = "✘"
+
+# Node.js - only show when relevant
+[nodejs]
+format = "[$symbol($version)]($style) "
+symbol = " "
+style = "green"
+detect_files = ["package.json", ".node-version"]
+detect_folders = ["node_modules"]
+
+# Python - only show when relevant
+[python]
+format = '[${symbol}${pyenv_prefix}(${version})(\($virtualenv\))]($style) '
+symbol = " "
+style = "yellow"
+
+# Disable modules we don't need
+[aws]
+disabled = true
+
+[gcloud]
+disabled = true
+
+[kubernetes]
+disabled = true
+
+[docker_context]
+disabled = true

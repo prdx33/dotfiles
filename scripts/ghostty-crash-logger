@@ -1,0 +1,49 @@
+#!/bin/bash
+# ghostty-crash-logger — Monitors Ghostty and logs crash/exit events
+# Self-destructs at 3am. Run: ghostty-crash-logger &
+# Check logs: cat /tmp/ghostty-crash.log
+
+LOG="/tmp/ghostty-crash.log"
+echo "=== Ghostty crash logger started $(date) ===" >> "$LOG"
+
+while true; do
+    # Self-destruct at 3am
+    if [ "$(date +%H)" = "03" ]; then
+        echo "[$(date '+%Y-%m-%d %H:%M:%S')] Logger self-destructing" >> "$LOG"
+        exit 0
+    fi
+
+    # Get Ghostty PID(s)
+    PIDS=$(pgrep -x ghostty)
+
+    if [ -z "$PIDS" ]; then
+        TIMESTAMP=$(date '+%Y-%m-%d %H:%M:%S')
+        echo "[$TIMESTAMP] Ghostty NOT running — likely crashed or was killed" >> "$LOG"
+
+        # Capture recent system log entries around the crash
+        echo "[$TIMESTAMP] Recent system log:" >> "$LOG"
+        log show --predicate 'process == "ghostty" OR (eventMessage CONTAINS "ghostty" AND eventType == logError)' --last 2m --style compact 2>/dev/null >> "$LOG"
+
+        # Check for new crash reports
+        LATEST_CRASH=$(ls -t ~/Library/Logs/DiagnosticReports/ghostty* 2>/dev/null | head -1)
+        if [ -n "$LATEST_CRASH" ]; then
+            echo "[$TIMESTAMP] Crash report found: $LATEST_CRASH" >> "$LOG"
+            head -50 "$LATEST_CRASH" >> "$LOG"
+        fi
+
+        # Capture aerospace state at time of crash
+        echo "[$TIMESTAMP] AeroSpace state:" >> "$LOG"
+        /opt/homebrew/bin/aerospace list-workspaces --all --format '%{workspace} monitor=%{monitor-id} visible=%{visible}' >> "$LOG" 2>&1
+        /opt/homebrew/bin/aerospace list-windows --all --format '%{app-name} ws=%{workspace} layout=%{window-layout}' >> "$LOG" 2>&1
+
+        echo "---" >> "$LOG"
+
+        # Wait for Ghostty to come back before monitoring again
+        while ! pgrep -x ghostty > /dev/null 2>&1; do
+            sleep 2
+        done
+        echo "[$(date '+%Y-%m-%d %H:%M:%S')] Ghostty restarted (PID: $(pgrep -x ghostty))" >> "$LOG"
+    fi
+
+    sleep 1
+done

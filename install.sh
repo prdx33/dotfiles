@@ -55,6 +55,13 @@ echo ""
 echo "AeroSpace config:"
 mkdir -p "$HOME/.config/aerospace"
 link_file "$DOTFILES_DIR/.config/aerospace/aerospace.toml" "$HOME/.config/aerospace/aerospace.toml"
+mkdir -p "$HOME/.config/aerospace/scripts"
+for script in "$DOTFILES_DIR"/.config/aerospace/scripts/*; do
+    if [ -f "$script" ]; then
+        script_name=$(basename "$script")
+        link_file "$script" "$HOME/.config/aerospace/scripts/$script_name"
+    fi
+done
 echo ""
 
 # ────────────────────────────────────────────────────────────────────────────
@@ -78,6 +85,14 @@ echo ""
 echo "JankyBorders config:"
 mkdir -p "$HOME/.config/borders"
 link_file "$DOTFILES_DIR/.config/borders/bordersrc" "$HOME/.config/borders/bordersrc"
+echo ""
+
+# ────────────────────────────────────────────────────────────────────────────
+# Starship Prompt Configuration
+# ────────────────────────────────────────────────────────────────────────────
+echo "Starship config:"
+link_file "$DOTFILES_DIR/.config/starship.toml" "$HOME/.config/starship.toml"
+echo ""
 
 # Remove old ~/.gitconfig if it exists and point to new location
 if [ -f "$HOME/.gitconfig" ] && [ ! -L "$HOME/.gitconfig" ]; then
