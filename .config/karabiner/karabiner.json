@@ -117,7 +117,7 @@
                                     }
                                 ],
                                 "from": { "key_code": "g" },
-                                "to": [{ "shell_command": "/opt/homebrew/bin/aerospace move-node-to-monitor --wrap-around next && /opt/homebrew/bin/aerospace focus-monitor --wrap-around next && open -g 'rectangle://execute-action?name=maximize' && /opt/homebrew/bin/hs -c 'local w=hs.window.focusedWindow() if w then local f=w:frame() hs.mouse.absolutePosition({x=f.x+f.w/2,y=f.y+f.h/2}) end'" }],
+                                "to": [{ "shell_command": "/opt/homebrew/bin/aerospace move-node-to-monitor --wrap-around next && /opt/homebrew/bin/aerospace focus-monitor --wrap-around next && open -g 'rectangle://execute-action?name=maximize' && sleep 0.15 && /opt/homebrew/bin/aerospace move-mouse window-lazy-center" }],
                                 "type": "basic"
                             }
                         ]

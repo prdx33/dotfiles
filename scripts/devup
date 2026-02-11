@@ -1,0 +1,225 @@
+#!/bin/bash
+# devup / devdown — manage local dev servers via tmux sessions
+# Usage: devup [name|all|list]   Start dev servers
+#        devdown [name|all]      Stop dev servers
+# When invoked as "devdown", acts as stop command.
+
+set -euo pipefail
+
+# ── Colours ──────────────────────────────────────────────────────────────────
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[0;33m'
+CYAN='\033[0;36m'
+DIM='\033[2m'
+BOLD='\033[1m'
+RESET='\033[0m'
+
+# ── Registry ─────────────────────────────────────────────────────────────────
+# Each project: NAME|PATH|COMMAND|PORT
+# Add new projects here — one per line.
+REGISTRY=(
+    "origin-a|$HOME/Dev/origin-a_web|shopify hydrogen dev --codegen|3000"
+    "proudexos|$HOME/Dev/proudexos|npm run dev|3001"
+    "proudex-map|$HOME/Dev/proudex-map/site|npm run dev|3002"
+    "gsd|$HOME/Dev/_lab/gsd-dashboard|npm run dev|3003"
+    "n0idos-control|$HOME/Dev/_lab/n0idos-control|npm run dev|2200"
+    "keymap-editor|$HOME/Dev/_external/keymap-editor|npm run dev|8080"
+)
+
+SESSION_PREFIX="dev-"
+
+# ── Helpers ──────────────────────────────────────────────────────────────────
+
+# Look up a project entry by name. Sets _P_PATH, _P_CMD, _P_PORT.
+# Returns 1 if not found.
+lookup() {
+    local target="$1"
+    for entry in "${REGISTRY[@]}"; do
+        local name="${entry%%|*}"
+        if [[ "$name" == "$target" ]]; then
+            local rest="${entry#*|}"
+            _P_PATH="${rest%%|*}"
+            rest="${rest#*|}"
+            _P_CMD="${rest%|*}"
+            _P_PORT="${rest##*|}"
+            return 0
+        fi
+    done
+    return 1
+}
+
+# Get just the name from each registry entry
+all_names() {
+    for entry in "${REGISTRY[@]}"; do
+        echo "${entry%%|*}"
+    done
+}
+
+is_running() {
+    tmux has-session -t "${SESSION_PREFIX}$1" 2>/dev/null
+}
+
+get_pid() {
+    if is_running "$1"; then
+        tmux list-panes -t "${SESSION_PREFIX}$1" -F '#{pane_pid}' 2>/dev/null | head -1
+    fi
+}
+
+# ── Commands ─────────────────────────────────────────────────────────────────
+
+cmd_start() {
+    local name="$1"
+    if ! lookup "$name"; then
+        echo -e "${RED}Unknown project: ${name}${RESET}"
+        echo "Run 'devup list' to see registered projects."
+        exit 1
+    fi
+
+    if is_running "$name"; then
+        echo -e "${YELLOW}${name}${RESET} is already running on port ${_P_PORT}"
+        return
+    fi
+
+    if [[ ! -d "$_P_PATH" ]]; then
+        echo -e "${RED}Path not found: ${_P_PATH}${RESET}"
+        exit 1
+    fi
+
+    tmux new-session -d -s "${SESSION_PREFIX}${name}" -c "$_P_PATH" \
+        "export PORT=${_P_PORT}; ${_P_CMD}; exec bash"
+
+    echo -e "${GREEN}Started${RESET} ${BOLD}${name}${RESET} on port ${CYAN}${_P_PORT}${RESET} ${DIM}(tmux: ${SESSION_PREFIX}${name})${RESET}"
+}
+
+cmd_stop() {
+    local name="$1"
+    if ! lookup "$name"; then
+        echo -e "${RED}Unknown project: ${name}${RESET}"
+        exit 1
+    fi
+
+    if ! is_running "$name"; then
+        echo -e "${DIM}${name} is not running${RESET}"
+        return
+    fi
+
+    tmux kill-session -t "${SESSION_PREFIX}${name}" 2>/dev/null
+    echo -e "${RED}Stopped${RESET} ${BOLD}${name}${RESET}"
+}
+
+cmd_start_all() {
+    while IFS= read -r name; do
+        cmd_start "$name"
+    done < <(all_names)
+}
+
+cmd_stop_all() {
+    while IFS= read -r name; do
+        if is_running "$name"; then
+            cmd_stop "$name"
+        fi
+    done < <(all_names)
+    echo -e "\n${DIM}All dev servers stopped.${RESET}"
+}
+
+cmd_status() {
+    echo -e "${BOLD}Dev Servers${RESET}"
+    echo ""
+    printf "  ${DIM}%-18s %-8s %-10s %s${RESET}\n" "PROJECT" "PORT" "STATUS" "PID"
+    printf "  ${DIM}%-18s %-8s %-10s %s${RESET}\n" "-------" "----" "------" "---"
+
+    while IFS= read -r name; do
+        lookup "$name"
+        local pid status_text
+
+        if is_running "$name"; then
+            pid=$(get_pid "$name")
+            status_text="${GREEN}running${RESET}"
+        else
+            pid="-"
+            status_text="${RED}stopped${RESET}"
+        fi
+
+        printf "  %-18s %-8s %-21b %s\n" "$name" "$_P_PORT" "$status_text" "$pid"
+    done < <(all_names)
+    echo ""
+}
+
+cmd_list() {
+    echo -e "${BOLD}Registered Projects${RESET}"
+    echo ""
+    printf "  ${DIM}%-18s %-8s %-38s %s${RESET}\n" "NAME" "PORT" "COMMAND" "PATH"
+    printf "  ${DIM}%-18s %-8s %-38s %s${RESET}\n" "----" "----" "-------" "----"
+
+    while IFS= read -r name; do
+        lookup "$name"
+        local display_path="${_P_PATH/#$HOME/~}"
+        printf "  %-18s %-8s %-38s %s\n" "$name" "$_P_PORT" "$_P_CMD" "$display_path"
+    done < <(all_names)
+    echo ""
+}
+
+cmd_help() {
+    echo -e "${BOLD}devup${RESET} — manage local dev servers"
+    echo ""
+    echo "Usage:"
+    echo "  devup              Show status of all projects"
+    echo "  devup <name>       Start a project's dev server"
+    echo "  devup all          Start all projects"
+    echo "  devup list         List registered projects with details"
+    echo "  devdown <name>     Stop a project's dev server"
+    echo "  devdown all        Stop all dev servers"
+    echo ""
+    echo "Servers run in tmux sessions named 'dev-<project>'."
+    echo "Attach with: tmux attach -t dev-<project>"
+}
+
+# ── Main ─────────────────────────────────────────────────────────────────────
+
+# Check tmux is available
+if ! command -v tmux &>/dev/null; then
+    echo -e "${RED}Error: tmux is not installed.${RESET}"
+    echo "Install with: brew install tmux"
+    exit 1
+fi
+
+# Detect if called as devdown
+MODE="up"
+if [[ "$(basename "$0")" == "devdown" ]]; then
+    MODE="down"
+fi
+
+case "${1:-}" in
+    "")
+        if [[ "$MODE" == "down" ]]; then
+            cmd_help
+        else
+            cmd_status
+        fi
+        ;;
+    help|--help|-h)
+        cmd_help
+        ;;
+    list)
+        if [[ "$MODE" == "down" ]]; then
+            cmd_help
+        else
+            cmd_list
+        fi
+        ;;
+    all)
+        if [[ "$MODE" == "down" ]]; then
+            cmd_stop_all
+        else
+            cmd_start_all
+        fi
+        ;;
+    *)
+        if [[ "$MODE" == "down" ]]; then
+            cmd_stop "$1"
+        else
+            cmd_start "$1"
+        fi
+        ;;
+esac

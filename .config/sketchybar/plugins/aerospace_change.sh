@@ -3,17 +3,29 @@
 # Optimised workspace change handler - only updates prev + current workspace
 # Called with PREV and FOCUSED variables from aerospace
 
-# Debounce: coalesce rapid updates, collect all touched workspaces
-DEBOUNCE="/tmp/aerospace_change.ts"
+# Exclusive lock + event coalescing — prevents zombie accumulation
+LOCKDIR="/tmp/aerospace_change.lock"
 TOUCHED="/tmp/aerospace_change.touched"
-NOW=$(date +%s%3N)
-echo "$NOW" > "$DEBOUNCE"
-# Record workspaces touched during this burst
+
+# Record workspaces touched by this event (before lock — safe to append)
 [[ -n "$PREV" ]] && echo "$PREV" >> "$TOUCHED"
 [[ -n "$FOCUSED" ]] && echo "$FOCUSED" >> "$TOUCHED"
+
+if ! mkdir "$LOCKDIR" 2>/dev/null; then
+    # Lock exists — check if holder is still alive
+    OLD_PID=$(cat "$LOCKDIR/pid" 2>/dev/null)
+    if [[ -n "$OLD_PID" ]] && kill -0 "$OLD_PID" 2>/dev/null; then
+        exit 0  # Another instance will pick up our touched workspaces
+    fi
+    # Stale lock — reclaim
+    rm -rf "$LOCKDIR"
+    mkdir "$LOCKDIR" 2>/dev/null || exit 0
+fi
+echo $$ > "$LOCKDIR/pid"
+trap 'rm -rf "$LOCKDIR"' EXIT
+
+# Brief coalesce window — collect burst of rapid events
 sleep 0.03
-[[ "$(cat "$DEBOUNCE" 2>/dev/null)" != "$NOW" ]] && exit 0
-# We won - collect touched workspaces and clean up
 TOUCHED_WS=$(sort -u "$TOUCHED" 2>/dev/null | tr '\n' ' ')
 rm -f "$TOUCHED"
 
@@ -40,9 +52,13 @@ cache_all_workspace_apps
 # Build single batched sketchybar command for ALL workspace updates
 BATCH_CMD="sketchybar"
 
-# Dedupe touched + visible workspaces (bash 3.2 compatible)
+# Include previously highlighted workspaces to clean up stale state
+PREV_STATE="/tmp/sketchybar_highlighted"
+PREV_HIGHLIGHTED=$(cat "$PREV_STATE" 2>/dev/null)
+
+# Dedupe touched + visible + previously highlighted workspaces (bash 3.2 compatible)
 _seen=" "
-for ws in $TOUCHED_WS $m1_ws $m2_ws; do
+for ws in $TOUCHED_WS $m1_ws $m2_ws $PREV_HIGHLIGHTED; do
     [[ -z "$ws" ]] && continue
     case "$_seen" in *" $ws "*) continue ;; esac
     _seen="$_seen$ws "
@@ -103,6 +119,9 @@ for ws in $TOUCHED_WS $m1_ws $m2_ws; do
         fi
     done
 done
+
+# Save currently highlighted workspaces for next run's cleanup
+echo "$focused_ws $m1_ws $m2_ws" > "$PREV_STATE"
 
 # Single sketchybar IPC call for all updates
 eval "$BATCH_CMD"

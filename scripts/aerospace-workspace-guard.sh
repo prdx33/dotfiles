@@ -1,0 +1,31 @@
+#!/bin/bash
+# Workspace guard: bounce off numbered workspaces, update SketchyBar.
+# Called by AeroSpace exec-on-workspace-change AND after-startup-command.
+
+AE=/opt/homebrew/bin/aerospace
+PREV="$AEROSPACE_PREV_WORKSPACE"
+FOCUSED="$AEROSPACE_FOCUSED_WORKSPACE"
+GUARD_LOCK="/tmp/aerospace_guard_bounce"
+
+# Skip if we triggered this change (recursion from bounce)
+if [[ -f "$GUARD_LOCK" ]]; then
+    rm -f "$GUARD_LOCK"
+    [[ -n "$FOCUSED" ]] && /opt/homebrew/bin/sketchybar --trigger aerospace_workspace_change \
+        PREV="$PREV" FOCUSED="$FOCUSED"
+    exit 0
+fi
+
+# Update SketchyBar
+[[ -n "$FOCUSED" ]] && /opt/homebrew/bin/sketchybar --trigger aerospace_workspace_change \
+    PREV="$PREV" FOCUSED="$FOCUSED"
+
+# Bounce: if we landed on a numbered workspace, escape to a letter
+if [[ "$FOCUSED" =~ ^[0-9]+$ ]]; then
+    target=$([[ "$PREV" =~ ^[A-Z]$ ]] && echo "$PREV" || echo "Z")
+    # Rescue any stranded windows
+    for wid in $($AE list-windows --workspace "$FOCUSED" --format '%{window-id}' 2>/dev/null); do
+        [[ -n "$wid" ]] && $AE move-node-to-workspace --window-id "$wid" "$target" 2>/dev/null
+    done
+    touch "$GUARD_LOCK"
+    $AE summon-workspace "$target" 2>/dev/null
+fi

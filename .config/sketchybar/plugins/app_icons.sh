@@ -80,6 +80,8 @@ get_icon_name() {
         com.apple.findmy) echo "findmy.png" ;;
         com.apple.Passwords) echo "passwords.png" ;;
         com.apple.journal) echo "journal.png" ;;
+        com.1password.1password) echo "1password.png" ;;
+        com.Eltima.ElmediaPlayer) echo "elmediaplayer.png" ;;
         *) echo "" ;;
     esac
 }

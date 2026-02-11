@@ -8,12 +8,20 @@
 # Arrows: X⟵ = M1 (left), X⟶ = M2 (right)
 # Layout: left shield (QWERTASDFGZXCVB) │ right shield (YUIOPHJKLNM)
 
-# Debounce rapid calls (front_app_switched fires frequently)
-DEBOUNCE="/tmp/aerospace_refresh.ts"
-NOW=$(date +%s%3N)
-echo "$NOW" > "$DEBOUNCE"
-sleep 0.05
-[[ "$(cat "$DEBOUNCE" 2>/dev/null)" != "$NOW" ]] && exit 0
+# Exclusive lock — only one instance runs at a time (prevents zombie accumulation)
+LOCKDIR="/tmp/aerospace_refresh.lock"
+if ! mkdir "$LOCKDIR" 2>/dev/null; then
+    # Lock exists — check if holder is still alive
+    OLD_PID=$(cat "$LOCKDIR/pid" 2>/dev/null)
+    if [[ -n "$OLD_PID" ]] && kill -0 "$OLD_PID" 2>/dev/null; then
+        exit 0  # Another instance is running — skip this event
+    fi
+    # Stale lock from crashed process — reclaim it
+    rm -rf "$LOCKDIR"
+    mkdir "$LOCKDIR" 2>/dev/null || exit 0
+fi
+echo $$ > "$LOCKDIR/pid"
+trap 'rm -rf "$LOCKDIR"' EXIT
 
 CONFIG_DIR="$HOME/.config/sketchybar"
 source "$CONFIG_DIR/colours.sh" 2>/dev/null || exit 0

@@ -74,6 +74,7 @@ function HoldToAction.new(config)
       startTime = nil,
       fadeStartTime = nil,
       displayLabel = nil,
+      iconPath = nil,
       targetWindowId = nil,
       lastEventTime = 0,
       lastTriggerTime = 0,
@@ -149,40 +150,97 @@ function HoldToAction:createCanvas()
 
   local barWidth = cfg.hudWidth - (cfg.barPadding * 2)
   local barY = cfg.hudHeight - cfg.barPadding - cfg.barHeight
+  local idx = 1
 
-  -- [1] Background
-  canvas[1] = {
+  -- Background
+  canvas[idx] = {
     type = "rectangle", action = "fill",
     roundedRectRadii = { xRadius = 6, yRadius = 6 },
     fillColor = self.style.bg
   }
+  idx = idx + 1
 
-  -- [2] Label text
-  canvas[2] = {
-    type = "text",
-    text = cfg.hudPrefix .. label,
-    textFont = "JetBrains Mono",
-    textSize = 14,
-    textColor = self.style.text,
-    frame = { x = cfg.barPadding, y = 12, w = barWidth, h = 24 },
-    textAlignment = "left"
-  }
+  -- Optional title (bold, top-centered)
+  if cfg.hudTitle then
+    canvas[idx] = {
+      type = "text",
+      text = cfg.hudTitle,
+      textFont = "JetBrains Mono Bold",
+      textSize = 14,
+      textColor = { white = 1, alpha = 1 },
+      frame = { x = 0, y = math.floor(cfg.hudHeight * 0.22), w = cfg.hudWidth, h = 20 },
+      textAlignment = "center"
+    }
+    idx = idx + 1
+  end
 
-  -- [3] Progress bar background
-  canvas[3] = {
+  -- Content row: optional icon + label (centered as a unit when hudTitle is set)
+  local contentY = cfg.hudTitle and math.floor(cfg.hudHeight * 0.42) or 12
+  local labelText = cfg.hudTitle and label or (cfg.hudPrefix .. label)
+
+  if cfg.hudTitle then
+    -- Estimate content width to center icon+label as a unit
+    local iconSize = self.state.iconPath and 22 or 0
+    local iconGap = self.state.iconPath and 8 or 0
+    local charWidth = 8.4  -- approx for JetBrains Mono 14pt
+    local textWidth = #labelText * charWidth
+    local totalWidth = iconSize + iconGap + textWidth
+    local startX = (cfg.hudWidth - totalWidth) / 2
+
+    if self.state.iconPath then
+      local iconImg = hs.image.imageFromPath(self.state.iconPath)
+      if iconImg then
+        canvas[idx] = {
+          type = "image",
+          image = iconImg,
+          frame = { x = startX, y = contentY, w = iconSize, h = iconSize },
+          imageScaling = "scaleToFit"
+        }
+        idx = idx + 1
+      end
+    end
+
+    canvas[idx] = {
+      type = "text",
+      text = labelText,
+      textFont = "JetBrains Mono",
+      textSize = 14,
+      textColor = self.style.text,
+      frame = { x = startX + iconSize + iconGap, y = contentY, w = barWidth, h = 24 },
+      textAlignment = "left"
+    }
+    idx = idx + 1
+  else
+    -- Simple layout (no title): prefix + label, left-aligned
+    canvas[idx] = {
+      type = "text",
+      text = labelText,
+      textFont = "JetBrains Mono",
+      textSize = 14,
+      textColor = self.style.text,
+      frame = { x = cfg.barPadding, y = contentY, w = barWidth, h = 24 },
+      textAlignment = "left"
+    }
+    idx = idx + 1
+  end
+
+  -- Progress bar background
+  canvas[idx] = {
     type = "rectangle", action = "fill",
     frame = { x = cfg.barPadding, y = barY, w = barWidth, h = cfg.barHeight },
     roundedRectRadii = { xRadius = 2, yRadius = 2 },
     fillColor = self.style.bar
   }
+  idx = idx + 1
 
-  -- [4] Progress bar fill (starts at 0 width)
-  canvas[4] = {
+  -- Progress bar fill (starts at 0 width)
+  canvas[idx] = {
     type = "rectangle", action = "fill",
     frame = { x = cfg.barPadding, y = barY, w = 0, h = cfg.barHeight },
     roundedRectRadii = { xRadius = 2, yRadius = 2 },
     fillColor = self.style.fill
   }
+  self.computed.fillIdx = idx
 
   canvas:show()
   self.state.canvas = canvas
@@ -207,6 +265,7 @@ function HoldToAction:resetToIdle()
   self.state.startTime = nil
   self.state.fadeStartTime = nil
   self.state.displayLabel = nil
+  self.state.iconPath = nil
   self.state.targetWindowId = nil
   self:transitionTo(self.States.IDLE)
 end
@@ -231,14 +290,15 @@ function HoldToAction:updateProgress()
   if pct > 1 then pct = 1 end
 
   -- Update progress bar width
-  self.state.canvas[4].frame.w = self.computed.barWidth * pct
+  local fi = self.computed.fillIdx
+  self.state.canvas[fi].frame.w = self.computed.barWidth * pct
 
   -- Gradient from white to amber (reuse table to reduce GC)
   local c = self.computed.fillColor
   c.red   = 0.9 + 0.1 * pct     -- 0.9 -> 1.0
   c.green = 0.9 - 0.15 * pct    -- 0.9 -> 0.75
   c.blue  = 0.9 - 0.6 * pct     -- 0.9 -> 0.3
-  self.state.canvas[4].fillColor = c
+  self.state.canvas[fi].fillColor = c
 
   if pct >= 1 then
     self:triggerAction()
@@ -256,7 +316,7 @@ function HoldToAction:triggerAction()
 
   -- Flash mint green
   if self.state.canvas then
-    self.state.canvas[4].fillColor = self.style.mint
+    self.state.canvas[self.computed.fillIdx].fillColor = self.style.mint
   end
 
   -- Delegate to config callback

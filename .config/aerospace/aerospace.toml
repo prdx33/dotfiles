@@ -2,7 +2,7 @@
 # ALT+letter: switch to app workspace | HYPER: window management (via Karabiner)
 
 start-at-login = false
-after-startup-command = ['workspace F']
+after-startup-command = ['workspace F', 'move-workspace-to-monitor --workspace Z 2']
 
 # Normalizations
 enable-normalization-flatten-containers = true
@@ -14,7 +14,7 @@ default-root-container-layout = 'tiles'
 default-root-container-orientation = 'horizontal'
 
 # SketchyBar integration
-exec-on-workspace-change = ['/bin/bash', '-c', 'sketchybar --trigger aerospace_workspace_change PREV=$AEROSPACE_PREV_WORKSPACE FOCUSED=$AEROSPACE_FOCUSED_WORKSPACE']
+exec-on-workspace-change = ['/bin/bash', '/Users/n0id/.local/bin/aerospace-workspace-guard.sh']
 
 # Disable macOS hide application
 automatically-unhide-macos-hidden-apps = true

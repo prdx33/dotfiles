@@ -229,6 +229,9 @@ alias startup='startup-tui'                     # Daily startup rundown TUI
 alias hlt='homelab-tui'                         # Homelab service dashboard
 alias homelab='homelab-tui'                     # Homelab service dashboard (long form)
 
+# Sketchybar icon management
+alias add-icon='~/.config/sketchybar/icons/tinyicon/add-icon.sh'
+
 # ────────────────────────────────────────────────────────────────────────────
 # PROJECT LAUNCHER (themed Ghostty terminals)
 # ────────────────────────────────────────────────────────────────────────────
