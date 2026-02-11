@@ -46,39 +46,22 @@ get_mapped_bundles() {
     sed -n 's/^[[:space:]]*\([A-Za-z0-9._-]*\)) echo ".*;;$/\1/p' "$APP_ICONS_SH" | sort -u
 }
 
-# ── Scan /Applications for third-party apps ───────────────────────────
+# ── Scan /Applications for apps ──────────────────────────────────────
+# Usage: scan_apps [--all]
+#   Default: only unmapped third-party apps
+#   --all:   all installed apps (including mapped ones)
 scan_apps() {
+    local show_all=false
+    [[ "${1:-}" == "--all" ]] && show_all=true
+
     local mapped_bundles
     mapped_bundles=$(get_mapped_bundles)
 
     local results=()
 
-    for app in /Applications/*.app; do
-        [[ -d "$app" ]] || continue
-
-        local plist="$app/Contents/Info.plist"
-        [[ -f "$plist" ]] || continue
-
-        local bundle_id
-        bundle_id=$(/usr/libexec/PlistBuddy -c "Print :CFBundleIdentifier" "$plist" 2>/dev/null) || continue
-        [[ -z "$bundle_id" ]] && continue
-
-        # Skip Apple apps
-        [[ "$bundle_id" == com.apple.* ]] && continue
-
-        # Skip if already mapped
-        if echo "$mapped_bundles" | grep -qFx "$bundle_id"; then
-            continue
-        fi
-
-        local app_name
-        app_name=$(basename "$app" .app)
-        results+=("$app_name|$bundle_id")
-    done
-
-    # Also scan ~/Applications
-    if [[ -d "$HOME/Applications" ]]; then
-        for app in "$HOME/Applications/"*.app; do
+    for base in /Applications "$HOME/Applications"; do
+        [[ -d "$base" ]] || continue
+        for app in "$base"/*.app; do
             [[ -d "$app" ]] || continue
 
             local plist="$app/Contents/Info.plist"
@@ -88,17 +71,23 @@ scan_apps() {
             bundle_id=$(/usr/libexec/PlistBuddy -c "Print :CFBundleIdentifier" "$plist" 2>/dev/null) || continue
             [[ -z "$bundle_id" ]] && continue
 
+            # Skip Apple apps
             [[ "$bundle_id" == com.apple.* ]] && continue
 
-            if echo "$mapped_bundles" | grep -qFx "$bundle_id"; then
+            # Skip if already mapped (unless --all)
+            if [[ "$show_all" == false ]] && echo "$mapped_bundles" | grep -qFx "$bundle_id"; then
                 continue
             fi
 
             local app_name
             app_name=$(basename "$app" .app)
-            results+=("$app_name|$bundle_id")
+            local tag=""
+            if [[ "$show_all" == true ]] && echo "$mapped_bundles" | grep -qFx "$bundle_id"; then
+                tag=" *"
+            fi
+            results+=("$app_name|$bundle_id|$tag")
         done
-    fi
+    done
 
     printf '%s\n' "${results[@]}" | sort
 }
@@ -107,6 +96,57 @@ scan_apps() {
 derive_icon_name() {
     local app_name="$1"
     echo "$app_name" | tr '[:upper:]' '[:lower:]' | tr -d ' ' | sed 's/[^a-z0-9]//g'
+}
+
+# ── Extract built-in icon from .app bundle ───────────────────────────
+extract_app_icon() {
+    local bundle_id="$1"
+
+    # Find the .app
+    local app_path=""
+    for base in /Applications "$HOME/Applications" /System/Applications /System/Applications/Utilities; do
+        for app in "$base"/*.app; do
+            [[ -d "$app" ]] || continue
+            local bid
+            bid=$(/usr/libexec/PlistBuddy -c "Print :CFBundleIdentifier" "$app/Contents/Info.plist" 2>/dev/null) || continue
+            if [[ "$bid" == "$bundle_id" ]]; then
+                app_path="$app"
+                break 2
+            fi
+        done
+    done
+
+    if [[ -z "$app_path" ]]; then
+        echo ""
+        return 1
+    fi
+
+    # Get .icns path
+    local icon_file
+    icon_file=$(defaults read "$app_path/Contents/Info" CFBundleIconFile 2>/dev/null)
+    [[ -z "$icon_file" ]] && icon_file="AppIcon"
+    [[ "$icon_file" != *.icns ]] && icon_file="${icon_file}.icns"
+    local icns_path="$app_path/Contents/Resources/$icon_file"
+
+    if [[ ! -f "$icns_path" ]]; then
+        echo ""
+        return 1
+    fi
+
+    # Extract to 512px PNG via sips (high-res source for clean downscale)
+    local tmp_dir="/tmp/sketchybar-add-icon"
+    mkdir -p "$tmp_dir"
+    local tmp_png="$tmp_dir/extracted_512.png"
+
+    sips -s format png --resampleWidth 512 --resampleHeight 512 \
+        "$icns_path" --out "$tmp_png" >/dev/null 2>&1
+
+    if [[ ! -f "$tmp_png" ]]; then
+        echo ""
+        return 1
+    fi
+
+    echo "$tmp_png"
 }
 
 # ── Process icon: resize + dim ────────────────────────────────────────
@@ -164,110 +204,135 @@ main() {
     gum style --bold --foreground 212 "add-icon — sketchybar icon mapper"
     echo ""
 
-    # Scan for missing apps
-    gum spin --spinner dot --title "Scanning installed apps..." -- sleep 0.5
-    local missing
-    missing=$(scan_apps)
+    while true; do
+        # Choose scope
+        local scope
+        scope=$(gum choose --header "Show:" \
+            "Unmapped apps only" \
+            "All installed apps") || break
 
-    if [[ -z "$missing" ]]; then
-        gum style --foreground 10 "All installed apps already have icon mappings."
-        exit 0
-    fi
+        local scan_flag=""
+        [[ "$scope" == "All installed apps" ]] && scan_flag="--all"
 
-    local count
-    count=$(echo "$missing" | wc -l | tr -d ' ')
-    gum style --foreground 11 "Found $count apps without icon mappings"
-    echo ""
+        # Scan apps
+        gum spin --spinner dot --title "Scanning installed apps..." -- sleep 0.5
+        local app_list
+        app_list=$(scan_apps $scan_flag)
 
-    # Build display lines for gum choose
-    local display_lines=()
-    while IFS='|' read -r app_name bundle_id; do
-        display_lines+=("$app_name  ($bundle_id)")
-    done <<< "$missing"
+        if [[ -z "$app_list" ]]; then
+            gum style --foreground 10 "All installed apps already have icon mappings."
+            break
+        fi
 
-    # Let user select an app
-    local selected
-    selected=$(printf '%s\n' "${display_lines[@]}" | gum choose --header "Select an app to add an icon for:" --height 20) || {
-        echo "Cancelled."
-        exit 0
-    }
+        local count
+        count=$(echo "$app_list" | wc -l | tr -d ' ')
+        gum style --foreground 11 "Found $count apps"
+        echo ""
 
-    # Parse selection back to components
-    local selected_app selected_bundle
-    selected_app=$(echo "$selected" | sed 's/  (.*//')
-    selected_bundle=$(echo "$selected" | sed 's/.*(\(.*\))/\1/')
+        # Build display lines for gum choose (* = already mapped)
+        local display_lines=()
+        while IFS='|' read -r app_name bundle_id tag; do
+            display_lines+=("${tag:+$tag }$app_name  ($bundle_id)")
+        done <<< "$app_list"
 
-    gum style --foreground 14 "Selected: $selected_app ($selected_bundle)"
-    echo ""
+        # Let user select an app
+        local selected
+        selected=$(printf '%s\n' "${display_lines[@]}" | gum choose --header "Select an app:" --height 20) || break
 
-    # Prompt for source PNG
-    local src_png
-    src_png=$(gum input \
-        --header "Path to source .png file (square format):" \
-        --placeholder "/path/to/icon.png" \
-        --width 80) || {
-        echo "Cancelled."
-        exit 0
-    }
+        # Parse selection back to components (strip leading * tag if present)
+        local selected_app selected_bundle
+        selected_app=$(echo "$selected" | sed 's/^ \* //' | sed 's/  (.*//')
+        selected_bundle=$(echo "$selected" | sed 's/.*(\(.*\))/\1/')
 
-    # Expand ~ if used
-    src_png="${src_png/#\~/$HOME}"
+        gum style --foreground 14 "Selected: $selected_app ($selected_bundle)"
+        echo ""
 
-    # Validate source file
-    if [[ ! -f "$src_png" ]]; then
-        gum style --foreground 9 "Error: File not found: $src_png"
-        exit 1
-    fi
+        # Choose icon source
+        local icon_source
+        icon_source=$(gum choose --header "Icon source:" \
+            "Use app's built-in icon" \
+            "Provide a custom PNG") || break
 
-    if [[ "${src_png##*.}" != "png" ]]; then
-        gum style --foreground 9 "Error: Source file must be a .png"
-        exit 1
-    fi
+        local src_png
+        if [[ "$icon_source" == "Use app's built-in icon" ]]; then
+            gum spin --spinner dot --title "Extracting icon from app bundle..." -- sleep 0.2
+            src_png=$(extract_app_icon "$selected_bundle")
 
-    # Derive and confirm icon filename
-    local default_name
-    default_name=$(derive_icon_name "$selected_app")
+            if [[ -z "$src_png" || ! -f "$src_png" ]]; then
+                gum style --foreground 9 "Error: Could not extract icon from app bundle"
+                continue
+            fi
 
-    local icon_name
-    icon_name=$(gum input \
-        --header "Icon filename (without .png):" \
-        --value "$default_name" \
-        --placeholder "appname") || {
-        echo "Cancelled."
-        exit 0
-    }
+            gum style --foreground 10 "Extracted icon from app bundle"
+        else
+            # Prompt for source PNG
+            src_png=$(gum input \
+                --header "Path to source .png file (square format):" \
+                --placeholder "/path/to/icon.png" \
+                --width 80) || break
 
-    local icon_file="${icon_name}.png"
+            # Expand ~ if used
+            src_png="${src_png/#\~/$HOME}"
 
-    # Check if icon file already exists
-    if [[ -f "$DEST_24/$icon_file" ]]; then
-        gum confirm "Icon $icon_file already exists in 24px/. Overwrite?" || {
-            echo "Cancelled."
-            exit 0
-        }
-    fi
+            # Validate source file
+            if [[ ! -f "$src_png" ]]; then
+                gum style --foreground 9 "Error: File not found: $src_png"
+                continue
+            fi
 
-    echo ""
-    gum style --foreground 11 "Processing..."
+            if [[ "${src_png##*.}" != "png" ]]; then
+                gum style --foreground 9 "Error: Source file must be a .png"
+                continue
+            fi
+        fi
 
-    # Process the icon
-    process_icon "$src_png" "$icon_file"
+        # Derive and confirm icon filename
+        local default_name
+        default_name=$(derive_icon_name "$selected_app")
 
-    # Insert mapping into app_icons.sh
-    insert_mapping "$selected_bundle" "$icon_file"
+        local icon_name
+        icon_name=$(gum input \
+            --header "Icon filename (without .png):" \
+            --value "$default_name" \
+            --placeholder "appname") || break
 
-    # Summary
-    echo ""
-    gum style --bold --foreground 10 "Done!"
-    echo ""
-    echo "  App:        $selected_app"
-    echo "  Bundle ID:  $selected_bundle"
-    echo "  Icon file:  $icon_file"
-    echo "  24px:       $DEST_24/$icon_file"
-    echo "  dim25:      $DEST_DIM/$icon_file"
-    echo "  Mapping:    $selected_bundle -> $icon_file (added to app_icons.sh)"
-    echo ""
-    gum style --foreground 8 "Restart sketchybar to pick up the new icon:  sketchybar --reload"
+        local icon_file="${icon_name}.png"
+
+        # Check if icon file already exists
+        if [[ -f "$DEST_24/$icon_file" ]]; then
+            gum confirm "Icon $icon_file already exists in 24px/. Overwrite?" || continue
+        fi
+
+        echo ""
+        gum style --foreground 11 "Processing..."
+
+        # Process the icon
+        process_icon "$src_png" "$icon_file"
+
+        # Insert mapping into app_icons.sh (skip if already mapped)
+        if ! grep -qF "$selected_bundle)" "$APP_ICONS_SH"; then
+            insert_mapping "$selected_bundle" "$icon_file"
+        fi
+
+        # Reload sketchybar and refresh workspace icons
+        (sketchybar --reload 2>/dev/null; sleep 1; "$DOTFILES_BASE/plugins/aerospace_refresh.sh") &
+
+        # Summary
+        echo ""
+        gum style --bold --foreground 10 "Done!"
+        echo ""
+        echo "  App:        $selected_app"
+        echo "  Bundle ID:  $selected_bundle"
+        echo "  Icon file:  $icon_file"
+        echo "  24px:       $DEST_24/$icon_file"
+        echo "  dim25:      $DEST_DIM/$icon_file"
+        echo ""
+        gum style --foreground 8 "SketchyBar reloaded"
+        echo ""
+    done
+
+    # Cleanup temp files
+    rm -rf /tmp/sketchybar-add-icon
 }
 
 main "$@"

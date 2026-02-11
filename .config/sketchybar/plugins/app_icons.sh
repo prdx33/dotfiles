@@ -82,6 +82,10 @@ get_icon_name() {
         com.apple.journal) echo "journal.png" ;;
         com.1password.1password) echo "1password.png" ;;
         com.Eltima.ElmediaPlayer) echo "elmediaplayer.png" ;;
+        pro.betterdisplay.BetterDisplay) echo "betterdisplay.png" ;;
+        com.sindresorhus.Color-Picker) echo "colorpicker.png" ;;
+        org.hammerspoon.Hammerspoon) echo "hammerspoon.png" ;;
+        com.sindresorhus.Color-Picker) echo "colorpicker.png" ;;
         *) echo "" ;;
     esac
 }

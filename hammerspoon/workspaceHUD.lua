@@ -63,6 +63,10 @@ function WorkspaceHUD:cleanup()
     self.showTimer:stop()
     self.showTimer = nil
   end
+  if self.fadeInTimer then
+    self.fadeInTimer:stop()
+    self.fadeInTimer = nil
+  end
   if self.fadeTimer then
     self.fadeTimer:stop()
     self.fadeTimer = nil
@@ -144,11 +148,27 @@ function WorkspaceHUD:_render(letter, layout)
     textAlignment = "center",
   }
 
+  c:alpha(0)
   c:show()
   self.canvas = c
 
-  -- Schedule fade
-  self.dismissTimer = hs.timer.doAfter(DISPLAY_SEC, function()
+  -- Fade in (0.2s quadratic ease-in)
+  local FADE_IN_SEC = 0.2
+  local fadeInStart = now()
+  self.fadeInTimer = hs.timer.doEvery(1 / FPS, function()
+    if not self.canvas then
+      if self.fadeInTimer then self.fadeInTimer:stop(); self.fadeInTimer = nil end
+      return
+    end
+    local t = math.min((now() - fadeInStart) / FADE_IN_SEC, 1)
+    pcall(function() self.canvas:alpha(t * t) end)
+    if t >= 1 then
+      self.fadeInTimer:stop(); self.fadeInTimer = nil
+    end
+  end)
+
+  -- Schedule fade out after fade-in + display
+  self.dismissTimer = hs.timer.doAfter(FADE_IN_SEC + DISPLAY_SEC, function()
     self:fade()
   end)
 end
