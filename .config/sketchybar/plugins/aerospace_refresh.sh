@@ -110,9 +110,9 @@ for space_id in $WORKSPACES; do
             custom_icon=$(get_custom_icon_dimmed "$bundle" "$icon_state")
 
             if [[ -n "$custom_icon" && -f "$custom_icon" ]]; then
-                BATCH_CMD="$BATCH_CMD --set $item_name icon.drawing=off background.image=\"$custom_icon\" background.image.scale=$ICON_SCALE background.image.drawing=on width=$(($ICON_WIDTH + $ICON_GAP))"
+                BATCH_CMD="$BATCH_CMD --set $item_name icon.drawing=off background.image=\"$custom_icon\" background.image.scale=$ICON_SCALE background.image.drawing=on width=$(($ICON_WIDTH + $ICON_GAP)) click_script=\"open -b $bundle\""
             else
-                BATCH_CMD="$BATCH_CMD --set $item_name icon.drawing=off background.image=\"app.$bundle\" background.image.scale=$ICON_SCALE background.image.drawing=on width=$(($ICON_WIDTH + $ICON_GAP))"
+                BATCH_CMD="$BATCH_CMD --set $item_name icon.drawing=off background.image=\"app.$bundle\" background.image.scale=$ICON_SCALE background.image.drawing=on width=$(($ICON_WIDTH + $ICON_GAP)) click_script=\"open -b $bundle\""
             fi
         else
             BATCH_CMD="$BATCH_CMD --set $item_name icon.drawing=off background.image.drawing=off width=0"

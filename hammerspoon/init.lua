@@ -33,7 +33,7 @@ package.loaded["holdToAction"] = nil  -- force reload on config reload
 local HoldToAction = require("holdToAction")
 
 -- Icon map: bundle ID → tinyicon filename (mirrors app_icons.sh)
-local ICON_DIR = os.getenv("HOME") .. "/.config/sketchybar/icons/tinyicon/24px"
+local ICON_DIR = os.getenv("HOME") .. "/.config/sketchybar/icons/tinyicon/500px"
 local ICON_MAP = {
   ["com.mitchellh.ghostty"] = "ghostty", ["com.spotify.client"] = "spotify",
   ["md.obsidian"] = "obsidian", ["com.tinyspeck.slackmacgap"] = "slack",
@@ -82,14 +82,15 @@ local holdToQuit = HoldToAction.new({
   name = "HoldToQuit",
   keycode = hs.keycodes.map.q,
   holdThreshold = 0.5,
-  fadeDelay = 0.5,
-  fadeDuration = 0.15,
+  fadeDelay = 0.3,
+  fadeDuration = 0.7,
   updateRate = 60,
   cooldown = 0,
-  hudWidth = 180,
-  hudHeight = 180,
+  hudWidth = 200,
+  hudHeight = 200,
   barHeight = 4,
   barPadding = 24,
+  hudIconSize = 64,
   maxTitleLength = nil,
   hudTitle = "Quitting",
   hudPrefix = "",

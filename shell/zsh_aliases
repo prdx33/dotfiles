@@ -250,6 +250,16 @@ alias msc='proj mushrum --claude'                 # Mushrum + Claude (green them
 # PRODUCTIVITY
 # ────────────────────────────────────────────────────────────────────────────
 
+# Things 3 — quick inbox capture
+t() {
+  if [ -z "$1" ]; then
+    echo "Usage: t <thought>"
+    return 1
+  fi
+  local encoded=$(python3 -c "import urllib.parse,sys; print(urllib.parse.quote(sys.argv[1]))" "$*")
+  open "things:///add?title=${encoded}"
+}
+
 # Quick commands
 alias c='clear'                                   # Clear terminal
 alias h='history'                                 # Show command history

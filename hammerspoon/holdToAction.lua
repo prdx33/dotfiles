@@ -165,27 +165,25 @@ function HoldToAction:createCanvas()
     canvas[idx] = {
       type = "text",
       text = cfg.hudTitle,
-      textFont = "JetBrains Mono Bold",
+      textFont = "Iosevka Extended Bold",
       textSize = 14,
       textColor = { white = 1, alpha = 1 },
-      frame = { x = 0, y = math.floor(cfg.hudHeight * 0.22), w = cfg.hudWidth, h = 20 },
+      frame = { x = 0, y = math.floor(cfg.hudHeight * 0.10), w = cfg.hudWidth, h = 20 },
       textAlignment = "center"
     }
     idx = idx + 1
   end
 
-  -- Content row: optional icon + label (centered as a unit when hudTitle is set)
-  local contentY = cfg.hudTitle and math.floor(cfg.hudHeight * 0.42) or 12
+  -- Content: icon (centered, large) + label below when hudTitle is set
   local labelText = cfg.hudTitle and label or (cfg.hudPrefix .. label)
 
   if cfg.hudTitle then
-    -- Estimate content width to center icon+label as a unit
-    local iconSize = self.state.iconPath and 22 or 0
-    local iconGap = self.state.iconPath and 8 or 0
-    local charWidth = 8.4  -- approx for JetBrains Mono 14pt
-    local textWidth = #labelText * charWidth
-    local totalWidth = iconSize + iconGap + textWidth
-    local startX = (cfg.hudWidth - totalWidth) / 2
+    local iconSize = cfg.hudIconSize or 64
+    local titleBottom = math.floor(cfg.hudHeight * 0.10) + 20
+    local barTop = cfg.hudHeight - cfg.barPadding - cfg.barHeight
+    local contentHeight = iconSize + 8 + 20  -- icon + gap + label
+    local iconY = titleBottom + math.floor((barTop - titleBottom - contentHeight) / 2)
+    local labelY = iconY + iconSize + 8
 
     if self.state.iconPath then
       local iconImg = hs.image.imageFromPath(self.state.iconPath)
@@ -193,7 +191,7 @@ function HoldToAction:createCanvas()
         canvas[idx] = {
           type = "image",
           image = iconImg,
-          frame = { x = startX, y = contentY, w = iconSize, h = iconSize },
+          frame = { x = (cfg.hudWidth - iconSize) / 2, y = iconY, w = iconSize, h = iconSize },
           imageScaling = "scaleToFit"
         }
         idx = idx + 1
@@ -202,12 +200,12 @@ function HoldToAction:createCanvas()
 
     canvas[idx] = {
       type = "text",
-      text = labelText,
-      textFont = "JetBrains Mono",
+      text = string.upper(labelText),
+      textFont = "Iosevka Extended",
       textSize = 14,
       textColor = self.style.text,
-      frame = { x = startX + iconSize + iconGap, y = contentY, w = barWidth, h = 24 },
-      textAlignment = "left"
+      frame = { x = 0, y = labelY, w = cfg.hudWidth, h = 24 },
+      textAlignment = "center"
     }
     idx = idx + 1
   else
@@ -215,7 +213,7 @@ function HoldToAction:createCanvas()
     canvas[idx] = {
       type = "text",
       text = labelText,
-      textFont = "JetBrains Mono",
+      textFont = "Iosevka Extended",
       textSize = 14,
       textColor = self.style.text,
       frame = { x = cfg.barPadding, y = contentY, w = barWidth, h = 24 },
@@ -342,6 +340,9 @@ function HoldToAction:startFade()
     return
   end
 
+  -- Capture original frame for zoom animation (deep copy to avoid reference issues)
+  local f = self.state.canvas:frame()
+  self.state.fadeFrame = { x = f.x, y = f.y, w = f.w, h = f.h }
   self:transitionTo(self.States.FADING)
   self.state.fadeStartTime = now()
 
@@ -363,14 +364,33 @@ function HoldToAction:updateFade()
     return
   end
 
-  local alpha = 1 - (now() - self.state.fadeStartTime) / self.config.fadeDuration
+  local t = (now() - self.state.fadeStartTime) / self.config.fadeDuration
+  if t > 1 then t = 1 end
 
-  if alpha < 0.01 then
+  -- Pop-and-shrink: expands to ~1.2x then shrinks to ~0.8x while fading
+  local pop = math.sin(math.pi * math.pow(t, 0.7))
+  local scale = 1 + 0.25 * pop - 0.2 * t
+  local alpha = 1 - math.pow(t, 1.5)
+
+  if t >= 1 then
     self:stopFadeTimer()
     self:destroyCanvas()
     self:transitionTo(self.States.AWAITING_RELEASE)
   else
-    pcall(function() self.state.canvas:alpha(alpha) end)
+    pcall(function()
+      self.state.canvas:alpha(alpha)
+      local f = self.state.fadeFrame
+      if f then
+        local newW = f.w * scale
+        local newH = f.h * scale
+        self.state.canvas:frame({
+          x = f.x - (newW - f.w) / 2,
+          y = f.y - (newH - f.h) / 2,
+          w = newW,
+          h = newH,
+        })
+      end
+    end)
   end
 end
 

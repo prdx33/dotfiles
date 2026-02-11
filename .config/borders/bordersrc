@@ -6,5 +6,4 @@ borders \
     hidpi=on \
     active_color="glow(0x99fff5e0)" \
     inactive_color="glow(0x33fff5e0)" \
-    order=below \
-    whitelist="ghostty,iTerm2,Claude,Obsidian,sublime_text,Visual Studio Code,Cursor,Warp,TextEdit"
+    order=below
