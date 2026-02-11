@@ -134,12 +134,18 @@ function HoldToAction:createCanvas()
 
   local cfg = self.config
   local sf = activeScreenFrame()
-  local x = sf.x + (sf.w - cfg.hudWidth) / 2
-  local y = sf.y + (sf.h - cfg.hudHeight) / 2
-
   local label = truncateTitle(self.state.displayLabel, cfg.maxTitleLength)
 
-  local canvas = hs.canvas.new({ x = x, y = y, w = cfg.hudWidth, h = cfg.hudHeight })
+  -- Oversized canvas with margin for pop animation (no clipping during scale)
+  local margin = cfg.hudTitle and math.floor(cfg.hudWidth * 0.2) or 0
+  local canvasW = cfg.hudWidth + margin * 2
+  local canvasH = cfg.hudHeight + margin * 2
+  local ox, oy = margin, margin  -- content offset
+
+  local x = sf.x + (sf.w - canvasW) / 2
+  local y = sf.y + (sf.h - canvasH) / 2
+
+  local canvas = hs.canvas.new({ x = x, y = y, w = canvasW, h = canvasH })
   if not canvas then
     self:log("ERROR: Failed to create canvas")
     return false
@@ -152,9 +158,10 @@ function HoldToAction:createCanvas()
   local barY = cfg.hudHeight - cfg.barPadding - cfg.barHeight
   local idx = 1
 
-  -- Background
+  -- Background (positioned within the oversized canvas)
   canvas[idx] = {
     type = "rectangle", action = "fill",
+    frame = { x = ox, y = oy, w = cfg.hudWidth, h = cfg.hudHeight },
     roundedRectRadii = { xRadius = 6, yRadius = 6 },
     fillColor = self.style.bg
   }
@@ -168,7 +175,7 @@ function HoldToAction:createCanvas()
       textFont = "Iosevka Extended Bold",
       textSize = 14,
       textColor = { white = 1, alpha = 1 },
-      frame = { x = 0, y = math.floor(cfg.hudHeight * 0.10), w = cfg.hudWidth, h = 20 },
+      frame = { x = ox, y = oy + math.floor(cfg.hudHeight * 0.10), w = cfg.hudWidth, h = 20 },
       textAlignment = "center"
     }
     idx = idx + 1
@@ -181,7 +188,7 @@ function HoldToAction:createCanvas()
     local iconSize = cfg.hudIconSize or 64
     local titleBottom = math.floor(cfg.hudHeight * 0.10) + 20
     local barTop = cfg.hudHeight - cfg.barPadding - cfg.barHeight
-    local contentHeight = iconSize + 8 + 20  -- icon + gap + label
+    local contentHeight = iconSize + 8 + 20
     local iconY = titleBottom + math.floor((barTop - titleBottom - contentHeight) / 2)
     local labelY = iconY + iconSize + 8
 
@@ -191,7 +198,7 @@ function HoldToAction:createCanvas()
         canvas[idx] = {
           type = "image",
           image = iconImg,
-          frame = { x = (cfg.hudWidth - iconSize) / 2, y = iconY, w = iconSize, h = iconSize },
+          frame = { x = ox + (cfg.hudWidth - iconSize) / 2, y = oy + iconY, w = iconSize, h = iconSize },
           imageScaling = "scaleToFit"
         }
         idx = idx + 1
@@ -204,7 +211,7 @@ function HoldToAction:createCanvas()
       textFont = "Iosevka Extended",
       textSize = 14,
       textColor = self.style.text,
-      frame = { x = 0, y = labelY, w = cfg.hudWidth, h = 24 },
+      frame = { x = ox, y = oy + labelY, w = cfg.hudWidth, h = 24 },
       textAlignment = "center"
     }
     idx = idx + 1
@@ -216,7 +223,7 @@ function HoldToAction:createCanvas()
       textFont = "Iosevka Extended",
       textSize = 14,
       textColor = self.style.text,
-      frame = { x = cfg.barPadding, y = contentY, w = barWidth, h = 24 },
+      frame = { x = ox + cfg.barPadding, y = oy + 12, w = barWidth, h = 24 },
       textAlignment = "left"
     }
     idx = idx + 1
@@ -225,7 +232,7 @@ function HoldToAction:createCanvas()
   -- Progress bar background
   canvas[idx] = {
     type = "rectangle", action = "fill",
-    frame = { x = cfg.barPadding, y = barY, w = barWidth, h = cfg.barHeight },
+    frame = { x = ox + cfg.barPadding, y = oy + barY, w = barWidth, h = cfg.barHeight },
     roundedRectRadii = { xRadius = 2, yRadius = 2 },
     fillColor = self.style.bar
   }
@@ -234,11 +241,13 @@ function HoldToAction:createCanvas()
   -- Progress bar fill (starts at 0 width)
   canvas[idx] = {
     type = "rectangle", action = "fill",
-    frame = { x = cfg.barPadding, y = barY, w = 0, h = cfg.barHeight },
+    frame = { x = ox + cfg.barPadding, y = oy + barY, w = 0, h = cfg.barHeight },
     roundedRectRadii = { xRadius = 2, yRadius = 2 },
     fillColor = self.style.fill
   }
   self.computed.fillIdx = idx
+  self.computed.canvasW = canvasW
+  self.computed.canvasH = canvasH
 
   canvas:show()
   self.state.canvas = canvas
@@ -367,10 +376,13 @@ function HoldToAction:updateFade()
   local t = (now() - self.state.fadeStartTime) / self.config.fadeDuration
   if t > 1 then t = 1 end
 
-  -- Pop-and-shrink: expands to ~1.2x then shrinks to ~0.8x while fading
-  local pop = math.sin(math.pi * math.pow(t, 0.7))
-  local scale = 1 + 0.25 * pop - 0.2 * t
-  local alpha = 1 - math.pow(t, 1.5)
+  -- Standard pop-dismiss: quick overshoot then ease-out shrink+fade
+  -- Modelled on iOS spring dismiss (ease-out-back)
+  local c1 = 1.70158
+  local c3 = c1 + 1
+  local ease = 1 + c3 * math.pow(t - 1, 3) + c1 * math.pow(t - 1, 2)
+  local scale = 1 + 0.15 * (1 - ease)  -- pops to ~1.15x then settles to 1.0
+  local alpha = 1 - ease
 
   if t >= 1 then
     self:stopFadeTimer()
@@ -379,16 +391,15 @@ function HoldToAction:updateFade()
   else
     pcall(function()
       self.state.canvas:alpha(alpha)
-      local f = self.state.fadeFrame
-      if f then
-        local newW = f.w * scale
-        local newH = f.h * scale
-        self.state.canvas:frame({
-          x = f.x - (newW - f.w) / 2,
-          y = f.y - (newH - f.h) / 2,
-          w = newW,
-          h = newH,
-        })
+      -- Scale all elements from canvas centre (content + container scale together)
+      local cx = self.computed.canvasW / 2
+      local cy = self.computed.canvasH / 2
+      local m = hs.canvas.matrix.identity()
+        :translate(cx, cy)
+        :scale(scale)
+        :translate(-cx, -cy)
+      for i = 1, #self.state.canvas do
+        self.state.canvas[i].transformation = m
       end
     end)
   end
