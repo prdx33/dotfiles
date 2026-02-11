@@ -181,6 +181,14 @@ local holdDispatcher = HoldToAction.createDispatcher({
 holdDispatcher:start()
 
 ------------------------------------------------------------
+-- Workspace HUD - Flash workspace letter on switch
+-- Called via: hs -c 'WorkspaceHUD:show("Q")'
+------------------------------------------------------------
+package.loaded["workspaceHUD"] = nil
+WorkspaceHUD = require("workspaceHUD")
+WorkspaceHUD:init()
+
+------------------------------------------------------------
 -- Bar Toggle - Alternate between SketchyBar and macOS menu bar
 -- Called via: hs -c 'BarToggle:toggle()'
 ------------------------------------------------------------

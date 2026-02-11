@@ -1,0 +1,40 @@
+#!/bin/bash
+# Hyper E: Cycle size (float) / Move up (tiled)
+# Float cycle: compact centered → almost-maximize → maximize
+
+LAYOUT=$(/opt/homebrew/bin/aerospace list-windows --focused --format '%{window-layout}')
+
+if [ "$LAYOUT" != "floating" ]; then
+  /opt/homebrew/bin/aerospace move up
+  exit 0
+fi
+
+# Per-window state tracking
+WID=$(/opt/homebrew/bin/aerospace list-windows --focused --format '%{window-id}')
+STATE_FILE="/tmp/hyper-e-$WID"
+STATE=$(cat "$STATE_FILE" 2>/dev/null || echo 2)
+
+case $STATE in
+  0)
+    open -g 'rectangle://execute-action?name=almost-maximize'
+    echo 1 > "$STATE_FILE"
+    ;;
+  1)
+    open -g 'rectangle://execute-action?name=maximize'
+    echo 2 > "$STATE_FILE"
+    ;;
+  *)
+    # Compact centered window (70% width, 75% height) via Hammerspoon
+    /opt/homebrew/bin/hs -c '
+      local w = hs.window.focusedWindow()
+      if not w then return end
+      local prev = hs.window.animationDuration
+      hs.window.animationDuration = 0
+      local s = w:screen():frame()
+      local fw, fh = s.w * 0.7, s.h * 0.75
+      w:setFrame(hs.geometry.rect(s.x + (s.w - fw) / 2, s.y + (s.h - fh) / 2, fw, fh))
+      hs.window.animationDuration = prev
+    '
+    echo 0 > "$STATE_FILE"
+    ;;
+esac

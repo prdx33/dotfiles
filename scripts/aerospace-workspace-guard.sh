@@ -19,6 +19,12 @@ fi
 [[ -n "$FOCUSED" ]] && /opt/homebrew/bin/sketchybar --trigger aerospace_workspace_change \
     PREV="$PREV" FOCUSED="$FOCUSED"
 
+# Flash workspace HUD
+if [[ "$FOCUSED" =~ ^[A-Z]$ ]]; then
+  WL=$($AE list-windows --focused --format '%{window-layout}' 2>/dev/null)
+  /opt/homebrew/bin/hs -c "WorkspaceHUD:show('$FOCUSED','${WL:-}')" &
+fi
+
 # Bounce: if we landed on a numbered workspace, escape to a letter
 if [[ "$FOCUSED" =~ ^[0-9]+$ ]]; then
     target=$([[ "$PREV" =~ ^[A-Z]$ ]] && echo "$PREV" || echo "Z")

@@ -140,7 +140,7 @@
                         ]
                     },
                     {
-                        "description": "Hyper E → Maximize (float) / Move Up (tiled)",
+                        "description": "Hyper E → Cycle size (float) / Move Up (tiled)",
                         "manipulators": [
                             {
                                 "conditions": [
@@ -151,7 +151,7 @@
                                     }
                                 ],
                                 "from": { "key_code": "e" },
-                                "to": [{ "shell_command": "L=$(/opt/homebrew/bin/aerospace list-windows --focused --format '%{window-layout}'); if [ \"$L\" = floating ]; then open -g 'rectangle://execute-action?name=maximize'; else /opt/homebrew/bin/aerospace move up; fi" }],
+                                "to": [{ "shell_command": "/Users/n0id/.local/bin/hyper-e-action" }],
                                 "type": "basic"
                             }
                         ]
