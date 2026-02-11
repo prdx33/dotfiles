@@ -25,13 +25,15 @@ if [[ "$FOCUSED" =~ ^[A-Z]$ ]]; then
   /opt/homebrew/bin/hs -c "WorkspaceHUD:show('$FOCUSED','${WL:-}')" &
 fi
 
-# Bounce: if we landed on a numbered workspace, escape to a letter
+# Bounce: if we landed on a numbered workspace, pin G to this orphaned monitor
 if [[ "$FOCUSED" =~ ^[0-9]+$ ]]; then
-    target=$([[ "$PREV" =~ ^[A-Z]$ ]] && echo "$PREV" || echo "Z")
+    orphan_monitor=$($AE list-monitors --focused --format '%{monitor-id}' 2>/dev/null)
+    target="G"
     # Rescue any stranded windows
     for wid in $($AE list-windows --workspace "$FOCUSED" --format '%{window-id}' 2>/dev/null); do
         [[ -n "$wid" ]] && $AE move-node-to-workspace --window-id "$wid" "$target" 2>/dev/null
     done
     touch "$GUARD_LOCK"
-    $AE summon-workspace "$target" 2>/dev/null
+    $AE move-workspace-to-monitor --workspace "$target" "$orphan_monitor" 2>/dev/null
+    $AE workspace "$target" 2>/dev/null
 fi

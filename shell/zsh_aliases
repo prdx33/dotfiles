@@ -215,6 +215,7 @@ alias npmupdateall='npm update'                   # Update all packages
 
 # Quick Claude workflows
 alias cl='claude'                                 # Start Claude in current directory
+alias devclaude='cd ~/Dev && claude --dangerously-skip-permissions' # Dev root + full auto
 alias clhelp='claude --help'                      # Show Claude help
 alias clhistory='cat ~/.claude/history.jsonl | tail -20' # Recent Claude history
 

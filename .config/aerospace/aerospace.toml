@@ -2,7 +2,7 @@
 # ALT+letter: switch to app workspace | HYPER: window management (via Karabiner)
 
 start-at-login = false
-after-startup-command = ['workspace F', 'move-workspace-to-monitor --workspace Z 2']
+after-startup-command = ['move-workspace-to-monitor --workspace G 1', 'workspace G']
 
 # Normalizations
 enable-normalization-flatten-containers = true
