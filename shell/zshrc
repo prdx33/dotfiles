@@ -1,7 +1,12 @@
 # ────────────────────────────────────────────────────────────────────────────
-# Secrets (not tracked in git)
+# Secrets — managed by 1Password CLI
 # ────────────────────────────────────────────────────────────────────────────
-[ -f ~/.env ] && source ~/.env
+# DO NOT source ~/.env — secrets are injected at runtime via:
+#   op run --env-file=.env.tpl -- ./command    (inject into child process)
+#   op read "op://Vault/Item/field"            (read single secret)
+#
+# To open a shell with secrets available (manual work only):
+#   op run --env-file=~/.env.tpl -- zsh
 
 # ────────────────────────────────────────────────────────────────────────────
 # Plugins
@@ -18,7 +23,7 @@ eval "$(zoxide init zsh)"
 # ────────────────────────────────────────────────────────────────────────────
 # PATH
 # ────────────────────────────────────────────────────────────────────────────
-export PATH="$HOME/.local/bin:$HOME/go/bin:$PATH"
+export PATH="$HOME/Dev/dotfiles/scripts:$HOME/.local/bin:$HOME/go/bin:$PATH"
 
 # NVM
 export NVM_DIR="$HOME/.nvm"
@@ -49,7 +54,6 @@ alias ghub='open /Applications/lghub.app/Contents/MacOS/lghub_agent.app; open /A
 alias p3="python3 $HOME/Dev/Scripts/pocket3ingest.py"
 alias vimman="(cd ~/Dev/vim-man && go run cmd/console/vimman.go)"
 alias vimgym="python3 $HOME/Dev/vimgym/vimgym.py"
-alias claudego="claude --dangerously-skip-permissions"
 
 # ────────────────────────────────────────────────────────────────────────────
 # Default working directory

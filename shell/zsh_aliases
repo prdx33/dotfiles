@@ -12,7 +12,7 @@
 alias dev='cd ~/Dev'                              # Dev root
 alias n0id='cd ~/Dev/n0idOS'                      # Personal vault/OS
 alias dots='cd ~/Dev/dotfiles'                    # Dotfiles
-alias tools='cd ~/Dev/_tools'                     # Tools directory
+alias cdt='cd ~/Dev/_tools'                       # cd to tools directory
 
 # Proudex projects
 alias cdp='cd ~/Dev/proudexos'                    # ProudexOS (legacy alias)
@@ -227,8 +227,8 @@ alias clhistory='cat ~/.claude/history.jsonl | tail -20' # Recent Claude history
 alias startup='startup-tui'                     # Daily startup rundown TUI
 
 # Homelab service manager
-alias hlt='homelab-tui'                         # Homelab service dashboard
-alias homelab='homelab-tui'                     # Homelab service dashboard (long form)
+alias hlt='~/Dev/_lab/homelab-tui/homelab-tui'   # Homelab service dashboard
+alias homelab='~/Dev/_lab/homelab-tui/homelab-tui' # Homelab service dashboard (long form)
 
 # Sketchybar icon management
 alias add-icon='~/.config/sketchybar/icons/tinyicon/add-icon.sh'

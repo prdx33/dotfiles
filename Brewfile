@@ -51,6 +51,7 @@ brew "nmap"                      # Network scanning
 # ────────────────────────────────────────────────────────────────────────────
 # Applications
 # ────────────────────────────────────────────────────────────────────────────
+cask "1password-cli"             # 1Password CLI (secrets & SSH agent)
 cask "claude"                    # Claude desktop
 cask "cursor"                    # AI code editor
 cask "obsidian"                  # Knowledge base

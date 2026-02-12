@@ -7,6 +7,7 @@
 [user]
 	name = prdx33
 	email = admin@proudex.com.au
+	signingkey = ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFxghnD8IOIjBY89Qvc3F/aylQOr7Q9e/cnoXn2c3W1m
 
 [credential "https://github.com"]
 	helper =
@@ -29,3 +30,9 @@
 	autoSetupRemote = true
 [credential]
 	helper = osxkeychain
+[gpg]
+	format = ssh
+[gpg "ssh"]
+	program = /Applications/1Password.app/Contents/MacOS/op-ssh-sign
+[commit]
+	gpgsign = true
