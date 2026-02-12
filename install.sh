@@ -115,9 +115,12 @@ echo ""
 # ────────────────────────────────────────────────────────────────────────────
 echo "Scripts:"
 mkdir -p "$HOME/.local/bin"
-for script in "$DOTFILES_DIR"/scripts/*; do
-    if [ -f "$script" ]; then
+for script in "$DOTFILES_DIR"/scripts/*/*; do
+    if [ -f "$script" ] || [ -L "$script" ]; then
         script_name=$(basename "$script")
+        case "$script_name" in
+            *.md|*.txt|*.rst|*.csv|README*) continue ;;
+        esac
         link_file "$script" "$HOME/.local/bin/$script_name"
     fi
 done

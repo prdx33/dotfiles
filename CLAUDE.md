@@ -30,7 +30,11 @@ symlinks:
 - **Prompt**: Starship
 - **Git**: XDG-compliant config + global ignore
 - **Automation**: Hammerspoon
-- **Scripts**: `~/.local/bin/` utilities
+- **Scripts**: `scripts/` organised by function, symlinked flat to `~/.local/bin/`
+  - `wm/` — window management (aerospace-*, hyper-e)
+  - `services/` — background daemons (devup/devdown, spotify-sonos, ghostty-crash-logger)
+  - `util/` — CLI tools (perflog, tools, fix-iosevka)
+  - `security/` — docs only, not symlinked (.md files excluded)
 - **LaunchAgents**: plist files auto-loaded on install
 - **Packages**: Brewfile (not symlinked, used with `brew bundle`)
 
@@ -50,6 +54,31 @@ Use the `link_file()` pattern:
 
 ```bash
 link_file "$DOTFILES_DIR/path/to/config" "$HOME/.config/target/config"
+```
+
+## Security
+
+```yaml
+# Agent security hardening — enforced by hooks and sandbox, not instructions.
+security:
+  secrets:
+    method: "1Password CLI (op)"
+    rule: "Secrets are NEVER in env vars, .env files, or shell environment"
+    access: "op read 'op://Vault/Item/field' or op run --env-file=.env.tpl"
+
+  when_blocked:
+    behaviour: "STOP and REPORT the block to the user"
+    do_not: "Find workarounds, alternative paths, or creative bypasses"
+    reason: "Security hooks exist for a reason — bypassing them is the threat model"
+
+  protected_files:
+    - "~/.claude/settings.json"
+    - "~/.claude/settings.local.json"
+    - "~/.claude/hooks/*.sh"
+    - "~/.zshrc, ~/.zsh_aliases"
+
+  network:
+    rule: "Sandbox enforces egress whitelist — do not request non-whitelisted hosts"
 ```
 
 ## Removed

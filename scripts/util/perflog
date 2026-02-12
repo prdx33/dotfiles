@@ -1,0 +1,251 @@
+#!/bin/bash
+# perflog — macOS system performance logger
+# Samples system metrics every 60s for background performance analysis.
+# Usage: perflog start | stop | status | help
+
+set -uo pipefail
+# Note: -e omitted deliberately. ps|head pipelines trigger SIGPIPE which
+# causes spurious failures with errexit. We handle errors explicitly.
+
+LOG_DIR="$HOME/Dev/n0idOS/02_CLAUDE/sessions/syslog"
+PID_FILE="/tmp/n0id-perflog.pid"
+INTERVAL=60
+LOG_FILE="$LOG_DIR/perflog-$(date +%Y-%m-%d).log"
+
+# --- helpers ---
+
+die() { printf 'perflog: %s\n' "$1" >&2; exit 1; }
+
+usage() {
+    cat <<'EOF'
+perflog — macOS system performance logger
+
+Usage:
+    perflog start     Start logging in the background
+    perflog stop      Stop a running logger
+    perflog status    Check if logger is running
+    perflog once      Capture a single sample to stdout
+    perflog help      Show this message
+
+Samples CPU, memory, thermal, and process data every 60s.
+Logs to ~/Dev/n0idOS/02_CLAUDE/sessions/syslog/perflog-YYYY-MM-DD.log
+EOF
+}
+
+is_running() {
+    [[ -f "$PID_FILE" ]] && kill -0 "$(cat "$PID_FILE")" 2>/dev/null
+}
+
+# --- data collectors ---
+
+write_header() {
+    local model macos_ver cpu_brand cpu_cores ram_gb
+    model=$(sysctl -n hw.model 2>/dev/null || echo "unknown")
+    macos_ver=$(sw_vers -productVersion 2>/dev/null || echo "unknown")
+    cpu_brand=$(sysctl -n machdep.cpu.brand_string 2>/dev/null || echo "unknown")
+    cpu_cores=$(sysctl -n hw.ncpu 2>/dev/null || echo "?")
+    ram_gb=$(( $(sysctl -n hw.memsize 2>/dev/null || echo 0) / 1073741824 ))
+
+    cat <<EOF
+================================================================================
+PERFLOG — System Performance Log
+================================================================================
+Started:    $(date '+%Y-%m-%d %H:%M:%S %Z')
+Machine:    $model
+macOS:      $macos_ver
+CPU:        $cpu_brand ($cpu_cores cores)
+RAM:        ${ram_gb}GB
+Interval:   ${INTERVAL}s
+================================================================================
+
+EOF
+}
+
+collect_sample() {
+    local ts
+    ts=$(date '+%Y-%m-%d %H:%M:%S')
+
+    echo "--- SAMPLE [$ts] ---"
+    echo ""
+
+    # Top 10 CPU processes
+    echo "=== TOP CPU (top 10 by %CPU) ==="
+    printf '%-6s  %-30s  %6s  %6s\n' "PID" "NAME" "%CPU" "%MEM"
+    # Use ps for a point-in-time snapshot — lighter than top
+    ps -Ao pid,pcpu,pmem,comm -r 2>/dev/null \
+        | head -11 | tail -10 \
+        | while read -r pid cpu mem comm; do
+            name=$(basename "$comm" 2>/dev/null || echo "$comm")
+            printf '%-6s  %-30s  %6s  %6s\n' "$pid" "${name:0:30}" "$cpu" "$mem"
+        done
+    echo ""
+
+    # Top 5 memory processes
+    echo "=== TOP MEM (top 5 by %MEM) ==="
+    printf '%-6s  %-30s  %6s  %6s\n' "PID" "NAME" "%MEM" "%CPU"
+    ps -Ao pid,pmem,pcpu,comm -m 2>/dev/null \
+        | head -6 | tail -5 \
+        | while read -r pid mem cpu comm; do
+            name=$(basename "$comm" 2>/dev/null || echo "$comm")
+            printf '%-6s  %-30s  %6s  %6s\n' "$pid" "${name:0:30}" "$mem" "$cpu"
+        done
+    echo ""
+
+    # Overall CPU usage via top (1 sample, 0 delay for snapshot)
+    echo "=== SYSTEM ==="
+    local cpu_line
+    cpu_line=$(top -l 1 -n 0 -s 0 2>/dev/null | grep "CPU usage" || echo "CPU usage: unavailable")
+    echo "CPU: $cpu_line"
+
+    # Memory pressure via vm_stat
+    local vm_out page_size pages_free pages_active pages_inactive pages_speculative pages_wired
+    local pages_compressed swap_used swap_total
+    vm_out=$(vm_stat 2>/dev/null)
+    page_size=$(sysctl -n hw.pagesize 2>/dev/null || echo 16384)
+
+    # Parse vm_stat: extract the trailing number from each line (strip dots)
+    _vmval() { echo "$vm_out" | awk -v pat="$1" '$0 ~ pat {gsub(/[^0-9]/,"",$NF); print $NF}'; }
+    pages_free=$(_vmval "Pages free")
+    pages_active=$(_vmval "Pages active")
+    pages_inactive=$(_vmval "Pages inactive")
+    pages_speculative=$(_vmval "Pages speculative")
+    pages_wired=$(_vmval "Pages wired down")
+    pages_compressed=$(_vmval "Pages occupied by compressor")
+
+    # Default to 0 if parsing returned empty
+    pages_free=${pages_free:-0}
+    pages_active=${pages_active:-0}
+    pages_inactive=${pages_inactive:-0}
+    pages_speculative=${pages_speculative:-0}
+    pages_wired=${pages_wired:-0}
+    pages_compressed=${pages_compressed:-0}
+
+    local free_mb used_mb wired_mb compressed_mb
+    free_mb=$(( (pages_free + pages_speculative) * page_size / 1048576 ))
+    used_mb=$(( (pages_active + pages_inactive) * page_size / 1048576 ))
+    wired_mb=$(( pages_wired * page_size / 1048576 ))
+    compressed_mb=$(( pages_compressed * page_size / 1048576 ))
+
+    # Swap from sysctl
+    local swap_info
+    swap_info=$(sysctl -n vm.swapusage 2>/dev/null || echo "unavailable")
+
+    echo "Memory: free=${free_mb}MB used=${used_mb}MB wired=${wired_mb}MB compressed=${compressed_mb}MB"
+    echo "Swap: $swap_info"
+
+    # Thermal state
+    local thermal
+    thermal=$(pmset -g therm 2>/dev/null | tail -1 || echo "unavailable")
+    echo "Thermal: $thermal"
+
+    # GPU usage (Apple Silicon — brief)
+    if command -v ioreg &>/dev/null; then
+        local gpu_busy
+        gpu_busy=$(ioreg -r -d 1 -n IOGPU 2>/dev/null \
+            | awk -F'"' '/\"GPU Busy"/ || /\"Device Utilization %"/ {print $0}' \
+            | head -1 || true)
+        if [[ -n "$gpu_busy" ]]; then
+            echo "GPU: $gpu_busy"
+        else
+            echo "GPU: no utilisation data available"
+        fi
+    fi
+
+    # Process count (subtract 1 for the header line)
+    local proc_count
+    proc_count=$(( $(ps -A 2>/dev/null | wc -l | tr -d ' ') - 1 ))
+    echo "Processes: $proc_count"
+
+    echo ""
+}
+
+# --- commands ---
+
+cmd_start() {
+    if is_running; then
+        echo "perflog is already running (PID $(cat "$PID_FILE"))."
+        echo "Log: $LOG_FILE"
+        return 0
+    fi
+
+    mkdir -p "$LOG_DIR"
+
+    # Launch the sampling loop in background
+    (
+        # Write header on fresh log
+        if [[ ! -f "$LOG_FILE" ]]; then
+            write_header >> "$LOG_FILE"
+        fi
+
+        echo "--- LOGGER STARTED $(date '+%Y-%m-%d %H:%M:%S %Z') ---" >> "$LOG_FILE"
+        echo "" >> "$LOG_FILE"
+
+        while true; do
+            # Roll to new day's log at midnight
+            local current_log="$LOG_DIR/perflog-$(date +%Y-%m-%d).log"
+            if [[ "$current_log" != "$LOG_FILE" ]]; then
+                LOG_FILE="$current_log"
+                write_header >> "$LOG_FILE"
+            fi
+
+            collect_sample >> "$LOG_FILE"
+            sleep "$INTERVAL"
+        done
+    ) &
+
+    local bg_pid=$!
+    echo "$bg_pid" > "$PID_FILE"
+    disown "$bg_pid" 2>/dev/null || true
+
+    echo "perflog started (PID $bg_pid)."
+    echo "Log: $LOG_FILE"
+    echo "Stop with: perflog stop"
+}
+
+cmd_stop() {
+    if ! is_running; then
+        echo "perflog is not running."
+        # Clean up stale PID file
+        rm -f "$PID_FILE"
+        return 0
+    fi
+
+    local pid
+    pid=$(cat "$PID_FILE")
+    kill "$pid" 2>/dev/null
+    rm -f "$PID_FILE"
+
+    echo "perflog stopped (was PID $pid)."
+}
+
+cmd_status() {
+    if is_running; then
+        local pid
+        pid=$(cat "$PID_FILE")
+        local log_size
+        log_size=$(du -h "$LOG_FILE" 2>/dev/null | cut -f1 || echo "?")
+        local sample_count
+        sample_count=$(grep -c -e '--- SAMPLE' "$LOG_FILE" 2>/dev/null || echo 0)
+        echo "perflog is running (PID $pid)."
+        echo "Log:     $LOG_FILE ($log_size)"
+        echo "Samples: $sample_count"
+    else
+        echo "perflog is not running."
+        rm -f "$PID_FILE"
+    fi
+}
+
+cmd_once() {
+    collect_sample
+}
+
+# --- main ---
+
+case "${1:-help}" in
+    start)  cmd_start ;;
+    stop)   cmd_stop ;;
+    status) cmd_status ;;
+    once)   cmd_once ;;
+    help|-h|--help) usage ;;
+    *)      die "Unknown command '$1'. Try: perflog help" ;;
+esac

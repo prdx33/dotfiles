@@ -1,0 +1,742 @@
+#!/bin/bash
+# tools — scan known directories and print a formatted tool/script inventory
+# Usage: tools [query]    Filter by name or description (case insensitive)
+
+set -uo pipefail
+
+# ── Colour support ──────────────────────────────────────────────────────────
+if [ -t 1 ] && command -v tput &>/dev/null && [ "$(tput colors 2>/dev/null)" -ge 8 ]; then
+  BOLD=$(tput bold)
+  DIM=$(tput setaf 8)
+  CYAN=$(tput setaf 6)
+  RESET=$(tput sgr0)
+else
+  BOLD="" DIM="" CYAN="" RESET=""
+fi
+
+QUERY="${1:-}"
+
+# ── Description extraction ──────────────────────────────────────────────────
+
+# Extract description from a shell script (first comment after shebang)
+desc_from_script() {
+  local file="$1"
+  local line
+
+  # Read line 2 onwards looking for first comment with content
+  while IFS= read -r line; do
+    # Skip empty comments
+    [[ "$line" =~ ^[[:space:]]*#[[:space:]]*$ ]] && continue
+    # Skip shebang (shouldn't appear but guard)
+    [[ "$line" =~ ^#! ]] && continue
+    # Skip decorative lines (═══, ───, ***)
+    [[ "$line" =~ ^[[:space:]]*#[[:space:]]*[═─\*\-]{3,} ]] && continue
+
+    if [[ "$line" =~ ^[[:space:]]*#[[:space:]]*(.*) ]]; then
+      local comment="${BASH_REMATCH[1]}"
+      # Strip leading "name — " or "name:" prefix to get just the description
+      # Handle "name — desc" pattern
+      if [[ "$comment" =~ ^[a-zA-Z0-9_.-]+[[:space:]]*[—–-][[:space:]]+(.*) ]]; then
+        echo "${BASH_REMATCH[1]}"
+        return
+      fi
+      # Handle "description: text" pattern
+      if [[ "$comment" =~ ^[Dd]escription:[[:space:]]*(.*) ]]; then
+        echo "${BASH_REMATCH[1]}"
+        return
+      fi
+      # Skip lines that are just a filename (e.g. "# script-name.sh")
+      if [[ "$comment" =~ ^[a-zA-Z0-9_.-]+\.(sh|py|rb|pl|js)$ ]]; then
+        continue
+      fi
+      # Skip ALL-CAPS banner titles (e.g. "GUM THEME - Minimal & Modern")
+      # — keep going to find a more useful description below
+      # Otherwise use the whole comment
+      echo "$comment"
+      return
+    fi
+    # Hit a non-comment line — give up
+    break
+  done < <(tail -n +2 "$file")
+}
+
+# Extract description from a Python script (docstring or first comment)
+desc_from_python() {
+  local file="$1"
+  local in_docstring=0
+  local line
+
+  while IFS= read -r line; do
+    # Skip shebang
+    [[ "$line" =~ ^#! ]] && continue
+    # Skip blank lines
+    [[ -z "${line// /}" ]] && continue
+
+    # Triple-quote docstring opening
+    if [[ "$line" =~ ^[[:space:]]*\"\"\" ]] || [[ "$line" =~ ^[[:space:]]*\'\'\' ]]; then
+      # Single-line docstring: """text"""
+      if [[ "$line" =~ ^[[:space:]]*\"\"\"(.+)\"\"\" ]] || [[ "$line" =~ ^[[:space:]]*\'\'\'(.+)\'\'\' ]]; then
+        echo "${BASH_REMATCH[1]}"
+        return
+      fi
+      in_docstring=1
+      continue
+    fi
+
+    # Inside docstring — grab first non-empty line
+    if [ $in_docstring -eq 1 ]; then
+      local trimmed="${line#"${line%%[![:space:]]*}"}"
+      if [ -n "$trimmed" ]; then
+        # Strip trailing period for consistency
+        echo "$trimmed"
+        return
+      fi
+      continue
+    fi
+
+    # Comment line
+    if [[ "$line" =~ ^[[:space:]]*#[[:space:]]*(.*) ]]; then
+      local comment="${BASH_REMATCH[1]}"
+      [ -n "$comment" ] && echo "$comment" && return
+    fi
+
+    # Hit code — give up
+    break
+  done < "$file"
+}
+
+# Extract description from SKILL.md frontmatter
+desc_from_skill() {
+  local skill_dir="$1"
+  local skill_file="$skill_dir/SKILL.md"
+  [ -f "$skill_file" ] || return
+
+  local in_front=0
+  while IFS= read -r line; do
+    if [ "$in_front" -eq 0 ]; then
+      [[ "$line" == "---" ]] && in_front=1 && continue
+      return  # no frontmatter
+    fi
+    [[ "$line" == "---" ]] && return  # end of frontmatter, didn't find it
+    if [[ "$line" =~ ^description:[[:space:]]*(.*) ]]; then
+      local desc="${BASH_REMATCH[1]}"
+      # Strip surrounding quotes
+      desc="${desc#\"}" ; desc="${desc%\"}"
+      desc="${desc#\'}" ; desc="${desc%\'}"
+      echo "$desc"
+      return
+    fi
+  done < "$skill_file"
+}
+
+# Extract description from README.md (first heading text or first content line)
+desc_from_readme() {
+  local dir="$1"
+  local readme="$dir/README.md"
+  [ -f "$readme" ] || return
+
+  while IFS= read -r line; do
+    [[ -z "${line// /}" ]] && continue
+    # Skip image/badge lines
+    [[ "$line" =~ ^\<img ]] && continue
+    [[ "$line" =~ ^\!\[ ]] && continue
+
+    # Heading: strip # prefix and any HTML
+    if [[ "$line" =~ ^#+[[:space:]]+(.*) ]]; then
+      local heading="${BASH_REMATCH[1]}"
+      # Strip inline HTML tags
+      heading=$(echo "$heading" | sed 's/<[^>]*>//g' | xargs)
+      # Skip if heading is just the directory name
+      local dirname
+      dirname=$(basename "$dir")
+      local heading_lower dirname_lower dirname_spaced
+      heading_lower=$(echo "$heading" | tr '[:upper:]' '[:lower:]')
+      dirname_lower=$(echo "$dirname" | tr '[:upper:]' '[:lower:]')
+      dirname_spaced=$(echo "$dirname" | tr '-' ' ' | tr '[:upper:]' '[:lower:]')
+      if [ "$heading_lower" = "$dirname_lower" ] || [ "$heading_lower" = "$dirname_spaced" ]; then
+        continue
+      fi
+      echo "$heading"
+      return
+    fi
+
+    # Non-heading content line (skip markdown link-only lines and badge lines)
+    if [[ "$line" =~ ^\> ]]; then
+      # Blockquote — grab content after >
+      local trimmed="${line#>}"
+      trimmed="${trimmed#"${trimmed%%[![:space:]]*}"}"
+      [ -n "$trimmed" ] && echo "$trimmed" && return
+      continue
+    fi
+    local trimmed="${line#"${line%%[![:space:]]*}"}"
+    [ -n "$trimmed" ] && echo "$trimmed" && return
+  done < "$readme"
+}
+
+# Get file type fallback — check extension first, then file(1) magic
+desc_fallback() {
+  local file="$1"
+  if [ -d "$file" ]; then
+    echo "directory"
+  elif [[ "$file" == *.py ]]; then
+    echo "Python script"
+  elif [[ "$file" == *.sh ]]; then
+    echo "shell script"
+  elif [[ "$file" == *.json ]]; then
+    echo "JSON data"
+  elif [[ "$file" == *.sql ]]; then
+    echo "SQL script"
+  elif file -b "$file" 2>/dev/null | grep -qi "executable\|mach-o"; then
+    echo "compiled binary"
+  else
+    local ft
+    ft=$(file -b --mime-type "$file" 2>/dev/null)
+    case "$ft" in
+      text/x-shellscript) echo "shell script" ;;
+      text/x-script.python|text/x-python) echo "Python script" ;;
+      application/x-executable|application/x-mach-binary) echo "compiled binary" ;;
+      *) echo "script" ;;
+    esac
+  fi
+}
+
+# Truncate description to terminal-friendly length
+clean_desc() {
+  local desc="$1"
+  if [ ${#desc} -gt 80 ]; then
+    desc="${desc:0:77}..."
+  fi
+  echo "$desc"
+}
+
+# ── Entry extraction per directory type ─────────────────────────────────────
+
+# Collect entries as "name\tdescription" lines
+entries=()
+
+collect_scripts() {
+  local dir="$1"
+  local self_name="tools"
+
+  for subdir in "$dir"/*/; do
+    [ -d "$subdir" ] || continue
+    for file in "$subdir"/*; do
+      [ -f "$file" ] || continue
+      local name
+      name=$(basename "$file")
+
+      # Exclude self
+      [ "$name" = "$self_name" ] && continue
+      # Exclude hidden/dot files
+      [[ "$name" == .* ]] && continue
+      # Exclude non-script files
+      case "$name" in *.md|*.txt|*.rst|*.csv|README*) continue ;; esac
+
+      local desc=""
+      if [[ "$name" == *.py ]]; then
+        desc=$(desc_from_python "$file")
+      elif head -1 "$file" 2>/dev/null | grep -q '^#!'; then
+        desc=$(desc_from_script "$file")
+      fi
+      [ -z "$desc" ] && desc=$(desc_fallback "$file")
+
+      entries+=("$(printf '%s\t%s' "$name" "$desc")")
+    done
+  done
+}
+
+collect_tools() {
+  local dir="$1"
+
+  for file in "$dir"/*; do
+    [ -e "$file" ] || continue
+    local name
+    name=$(basename "$file")
+    [[ "$name" == .* ]] && continue
+
+    local desc=""
+    if [[ "$name" == *.py ]]; then
+      desc=$(desc_from_python "$file")
+    elif [[ "$name" == *.sh ]]; then
+      desc=$(desc_from_script "$file")
+    elif [ -f "$file" ] && head -1 "$file" 2>/dev/null | grep -q '^#!'; then
+      desc=$(desc_from_script "$file")
+    fi
+    [ -z "$desc" ] && desc=$(desc_fallback "$file")
+
+    entries+=("$(printf '%s\t%s' "$name" "$desc")")
+  done
+}
+
+collect_projects() {
+  local dir="$1"
+
+  for d in "$dir"/*/; do
+    [ -d "$d" ] || continue
+    local name
+    name=$(basename "$d")
+    [[ "$name" == .* ]] && continue
+
+    local desc=""
+    desc=$(desc_from_readme "$d")
+    [ -z "$desc" ] && desc="project directory"
+
+    entries+=("$(printf '%s\t%s' "$name" "$desc")")
+  done
+}
+
+collect_go_bins() {
+  local dir="$1"
+
+  for file in "$dir"/*; do
+    [ -f "$file" ] || continue
+    local name
+    name=$(basename "$file")
+    [[ "$name" == .* ]] && continue
+
+    local size
+    size=$(ls -lh "$file" 2>/dev/null | awk '{print $5}')
+    local desc="Go binary ($size)"
+
+    entries+=("$(printf '%s\t%s' "$name" "$desc")")
+  done
+}
+
+collect_skills() {
+  local dir="$1"
+
+  for d in "$dir"/*/; do
+    [ -d "$d" ] || continue
+    local name
+    name=$(basename "$d")
+    # Exclude hidden, deprecated, stashed directories
+    [[ "$name" == .* ]] && continue
+    [[ "$name" == _deprecated* ]] && continue
+    [[ "$name" == _stashed* ]] && continue
+
+    local desc=""
+    desc=$(desc_from_skill "$d")
+    [ -z "$desc" ] && desc="Claude skill"
+
+    entries+=("$(printf '%s\t%s' "$name" "$desc")")
+  done
+}
+
+collect_dev_projects() {
+  local dir="$1"
+
+  for d in "$dir"/*/; do
+    [ -d "$d" ] || continue
+    local name
+    name=$(basename "$d")
+    # Skip hidden, underscore-prefixed (covered by other groups), and non-git dirs
+    [[ "$name" == .* ]] && continue
+    [[ "$name" == _* ]] && continue
+    [ -d "$d/.git" ] || continue
+
+    local desc=""
+    # Try CLAUDE.md first line after frontmatter heading
+    if [ -f "$d/CLAUDE.md" ]; then
+      local found=0
+      while IFS= read -r line; do
+        [[ -z "${line// /}" ]] && continue
+        [[ "$line" == "---" ]] && continue
+        if [[ "$line" =~ ^#+[[:space:]]+(.*) ]]; then
+          found=1
+          continue
+        fi
+        if [ $found -eq 1 ] && [ -n "$line" ]; then
+          desc="$line"
+          break
+        fi
+      done < "$d/CLAUDE.md"
+    fi
+    # Fall back to README
+    [ -z "$desc" ] && desc=$(desc_from_readme "$d")
+    [ -z "$desc" ] && desc="git project"
+
+    # Append git status hint
+    local hint=""
+    local branch
+    branch=$(git -C "$d" branch --show-current 2>/dev/null)
+    local dirty
+    dirty=$(git -C "$d" status --porcelain 2>/dev/null | wc -l | tr -d ' ')
+    [ "$dirty" -gt 0 ] && hint="${dirty} dirty"
+    [ -n "$branch" ] && [ "$branch" != "main" ] && [ "$branch" != "master" ] && hint="${hint:+$hint, }branch: $branch"
+    [ -n "$hint" ] && desc="$desc [$hint]"
+
+    entries+=("$(printf '%s\t%s' "$name" "$desc")")
+  done
+}
+
+collect_agents() {
+  local dir="$1"
+
+  for f in "$dir"/*.md; do
+    [ -f "$f" ] || continue
+    local name
+    name=$(basename "$f" .md)
+
+    local desc=""
+    # Parse YAML frontmatter for description field
+    local in_front=0
+    while IFS= read -r line; do
+      if [ "$in_front" -eq 0 ]; then
+        [[ "$line" == "---" ]] && in_front=1 && continue
+        break
+      fi
+      [[ "$line" == "---" ]] && break
+      if [[ "$line" =~ ^description:[[:space:]]*(.*) ]]; then
+        desc="${BASH_REMATCH[1]}"
+        desc="${desc#\"}" ; desc="${desc%\"}"
+        desc="${desc#\'}" ; desc="${desc%\'}"
+        break
+      fi
+    done < "$f"
+    [ -z "$desc" ] && desc="Claude agent"
+
+    entries+=("$(printf '%s\t%s' "$name" "$desc")")
+  done
+}
+
+collect_superpowers() {
+  local base="$1"
+
+  for d in "$base"/*/; do
+    [ -d "$d" ] || continue
+    local name
+    name=$(basename "$d")
+
+    local desc=""
+    desc=$(desc_from_skill "$d")
+    [ -z "$desc" ] && desc="Superpowers skill"
+
+    entries+=("$(printf '%s\t%s' "$name" "$desc")")
+  done
+}
+
+collect_hooks() {
+  local dir="$1"
+
+  for f in "$dir"/*.sh; do
+    [ -f "$f" ] || continue
+    local name
+    name=$(basename "$f" .sh)
+
+    local desc=""
+    desc=$(desc_from_script "$f")
+    [ -z "$desc" ] && desc="Claude hook"
+
+    entries+=("$(printf '%s\t%s' "$name" "$desc")")
+  done
+}
+
+collect_mcp_servers() {
+  # Scan .mcp.json files for MCP server configs
+  for mcp_file in "$HOME/Dev/.mcp.json" "$HOME/Dev/proudexos/.mcp.json" "$HOME/Dev/proudex-map/.mcp.json"; do
+    [ -f "$mcp_file" ] || continue
+    local scope
+    scope=$(basename "$(dirname "$mcp_file")")
+    [ "$scope" = "Dev" ] && scope="workspace"
+
+    local mcp_output
+    mcp_output=$(python3 -c "
+import json
+try:
+    d = json.load(open('$mcp_file'))
+    for k, v in d.get('mcpServers', {}).items():
+        t = v.get('type', 'stdio')
+        print(f'{k}\t{t} ($scope)')
+except: pass
+" 2>/dev/null)
+    while IFS=$'\t' read -r name desc; do
+      [ -n "$name" ] && entries+=("$(printf '%s\t%s' "$name" "$desc")")
+    done <<< "$mcp_output"
+  done
+
+  # Active plugins
+  local plugin_cache="$HOME/.claude/plugins/cache/claude-plugins-official"
+  if [ -d "$plugin_cache" ]; then
+    for d in "$plugin_cache"/*/; do
+      [ -d "$d" ] || continue
+      local name
+      name=$(basename "$d")
+      entries+=("$(printf '%s\t%s' "$name" "Claude plugin")")
+    done
+  fi
+
+  # Superpowers marketplace plugin
+  local sp_cache="$HOME/.claude/plugins/cache/superpowers-marketplace"
+  if [ -d "$sp_cache" ]; then
+    local sp_ver
+    sp_ver=$(ls -d "$sp_cache"/superpowers/*/ 2>/dev/null | sort -V | tail -1)
+    if [ -n "$sp_ver" ]; then
+      entries+=("$(printf '%s\t%s' "superpowers" "Obra methodology plugin v$(basename "$sp_ver")")")
+    fi
+  fi
+}
+
+collect_configs() {
+  # Dotfiles .config directories
+  local dotconfig="$HOME/Dev/dotfiles/.config"
+  if [ -d "$dotconfig" ]; then
+    for d in "$dotconfig"/*/; do
+      [ -d "$d" ] || continue
+      local name
+      name=$(basename "$d")
+      [[ "$name" == .* ]] && continue
+
+      local desc=""
+      # Count files for context
+      local fcount
+      fcount=$(find "$d" -maxdepth 2 -type f 2>/dev/null | wc -l | tr -d ' ')
+      desc="$fcount files"
+      # Check for plugins subdirectory
+      if [ -d "$d/plugins" ]; then
+        local pcount
+        pcount=$(ls "$d/plugins/" 2>/dev/null | wc -l | tr -d ' ')
+        desc="$desc, $pcount plugins"
+      fi
+      entries+=("$(printf '%s\t%s' "$name" "$desc")")
+    done
+  fi
+
+  # Standalone config files in dotfiles/.config
+  if [ -d "$dotconfig" ]; then
+    for f in "$dotconfig"/*; do
+      [ -f "$f" ] || continue
+      local name
+      name=$(basename "$f")
+      entries+=("$(printf '%s\t%s' "$name" "config file")")
+    done
+  fi
+
+  # Hammerspoon
+  local hs="$HOME/.hammerspoon"
+  if [ -d "$hs" ]; then
+    for f in "$hs"/*.lua; do
+      [ -f "$f" ] || continue
+      local name
+      name=$(basename "$f")
+      local desc=""
+      # Grab first meaningful comment (skip decorative lines)
+      while IFS= read -r line; do
+        if [[ "$line" =~ ^--[[:space:]]*(.*) ]]; then
+          local comment="${BASH_REMATCH[1]}"
+          # Skip decorative lines (───, ===, ---, ***)
+          [[ "$comment" =~ ^[-─═\*]{3,} ]] && continue
+          [ -n "$comment" ] && desc="$comment" && break
+        fi
+        [[ "$line" =~ ^-- ]] || break
+      done < "$f"
+      [ -z "$desc" ] && desc="Hammerspoon module"
+      entries+=("$(printf '%s\t%s' "$name" "$desc")")
+    done
+  fi
+}
+
+collect_services() {
+  # LaunchAgents
+  local la_dir="$HOME/Library/LaunchAgents"
+  if [ -d "$la_dir" ]; then
+    for f in "$la_dir"/*.plist; do
+      [ -f "$f" ] || continue
+      local name
+      name=$(basename "$f" .plist)
+      local status="installed"
+      # Check if running
+      if launchctl list 2>/dev/null | grep -q "$name"; then
+        status="running"
+      fi
+      entries+=("$(printf '%s\t%s' "$name" "$status")")
+    done
+  fi
+}
+
+# ── Output formatting ───────────────────────────────────────────────────────
+
+print_group() {
+  local label="$1"
+  local path="$2"
+  shift 2
+
+  # Sort entries
+  local sorted
+  sorted=$(printf '%s\n' "$@" | sort -t$'\t' -k1,1f)
+
+  # Apply query filter
+  if [ -n "$QUERY" ]; then
+    sorted=$(echo "$sorted" | grep -i "$QUERY" || true)
+  fi
+
+  [ -z "$sorted" ] && return
+
+  local count
+  count=$(echo "$sorted" | wc -l | tr -d ' ')
+
+  # Find max name width for alignment
+  local max_width=0
+  while IFS=$'\t' read -r name _desc; do
+    local len=${#name}
+    [ "$len" -gt "$max_width" ] && max_width=$len
+  done <<< "$sorted"
+
+  echo "${BOLD}${CYAN}${label}${RESET} ${DIM}(${path})${RESET} ${DIM}— ${count} items${RESET}"
+
+  while IFS=$'\t' read -r name desc; do
+    desc=$(clean_desc "$desc")
+    printf "  %-${max_width}s ${DIM}—${RESET} %s\n" "$name" "$desc"
+  done <<< "$sorted"
+
+  echo
+}
+
+# ── Main ────────────────────────────────────────────────────────────────────
+
+# Track whether we printed anything
+printed=0
+
+# Scripts
+dir="$HOME/Dev/dotfiles/scripts"
+if [ -d "$dir" ]; then
+  entries=()
+  collect_scripts "$dir"
+  if [ ${#entries[@]} -gt 0 ]; then
+    print_group "SCRIPTS" "~/Dev/dotfiles/scripts" "${entries[@]}"
+    printed=1
+  fi
+fi
+
+# Tools
+dir="$HOME/Dev/_tools"
+if [ -d "$dir" ]; then
+  entries=()
+  collect_tools "$dir"
+  if [ ${#entries[@]} -gt 0 ]; then
+    print_group "TOOLS" "~/Dev/_tools" "${entries[@]}"
+    printed=1
+  fi
+fi
+
+# Labs
+dir="$HOME/Dev/_lab"
+if [ -d "$dir" ]; then
+  entries=()
+  collect_projects "$dir"
+  if [ ${#entries[@]} -gt 0 ]; then
+    print_group "LABS" "~/Dev/_lab" "${entries[@]}"
+    printed=1
+  fi
+fi
+
+# External
+dir="$HOME/Dev/_external"
+if [ -d "$dir" ]; then
+  entries=()
+  collect_projects "$dir"
+  if [ ${#entries[@]} -gt 0 ]; then
+    print_group "EXTERNAL" "~/Dev/_external" "${entries[@]}"
+    printed=1
+  fi
+fi
+
+# Go binaries
+dir="$HOME/go/bin"
+if [ -d "$dir" ]; then
+  entries=()
+  collect_go_bins "$dir"
+  if [ ${#entries[@]} -gt 0 ]; then
+    print_group "GO BINARIES" "~/go/bin" "${entries[@]}"
+    printed=1
+  fi
+fi
+
+# Dev projects (git repos at ~/Dev root, excluding _prefixed dirs)
+dir="$HOME/Dev"
+if [ -d "$dir" ]; then
+  entries=()
+  collect_dev_projects "$dir"
+  if [ ${#entries[@]} -gt 0 ]; then
+    print_group "PROJECTS" "~/Dev" "${entries[@]}"
+    printed=1
+  fi
+fi
+
+# Configs & plugins
+entries=()
+collect_configs
+if [ ${#entries[@]} -gt 0 ]; then
+  print_group "CONFIG" "dotfiles/.config + ~/.hammerspoon" "${entries[@]}"
+  printed=1
+fi
+
+# Services (LaunchAgents)
+entries=()
+collect_services
+if [ ${#entries[@]} -gt 0 ]; then
+  print_group "SERVICES" "~/Library/LaunchAgents" "${entries[@]}"
+  printed=1
+fi
+
+# Hooks
+dir="$HOME/.claude/hooks"
+if [ -d "$dir" ]; then
+  entries=()
+  collect_hooks "$dir"
+  if [ ${#entries[@]} -gt 0 ]; then
+    print_group "HOOKS" "~/.claude/hooks" "${entries[@]}"
+    printed=1
+  fi
+fi
+
+# MCP servers & plugins
+entries=()
+collect_mcp_servers
+if [ ${#entries[@]} -gt 0 ]; then
+  print_group "MCP" "plugins + integrations" "${entries[@]}"
+  printed=1
+fi
+
+# Agents
+dir="$HOME/.claude/agents"
+if [ -d "$dir" ]; then
+  entries=()
+  collect_agents "$dir"
+  if [ ${#entries[@]} -gt 0 ]; then
+    print_group "AGENTS" "~/.claude/agents" "${entries[@]}"
+    printed=1
+  fi
+fi
+
+# Superpowers skills
+sp_dir="$HOME/.claude/plugins/cache/superpowers-marketplace/superpowers"
+sp_latest=$(ls -d "$sp_dir"/*/ 2>/dev/null | sort -V | tail -1)
+if [ -n "$sp_latest" ] && [ -d "$sp_latest/skills" ]; then
+  entries=()
+  collect_superpowers "$sp_latest/skills"
+  if [ ${#entries[@]} -gt 0 ]; then
+    sp_ver=$(basename "$sp_latest")
+    print_group "SUPERPOWERS" "obra superpowers v$sp_ver" "${entries[@]}"
+    printed=1
+  fi
+fi
+
+# Claude skills
+dir="$HOME/.claude/skills"
+if [ -d "$dir" ]; then
+  entries=()
+  collect_skills "$dir"
+  if [ ${#entries[@]} -gt 0 ]; then
+    print_group "CLAUDE SKILLS" "~/.claude/skills" "${entries[@]}"
+    printed=1
+  fi
+fi
+
+if [ "$printed" -eq 0 ]; then
+  if [ -n "$QUERY" ]; then
+    echo "No tools matching '$QUERY'"
+  else
+    echo "No tools found"
+  fi
+  exit 1
+fi

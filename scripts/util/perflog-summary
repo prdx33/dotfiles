@@ -1,0 +1,299 @@
+#!/bin/bash
+# perflog-summary — analyse perflog output files
+# Usage: perflog-summary [logfile]
+# Defaults to today's log if no argument given.
+
+set -euo pipefail
+
+LOG_DIR="$HOME/Dev/n0idOS/02_CLAUDE/sessions/syslog"
+
+usage() {
+    cat <<'EOF'
+perflog-summary — analyse perflog output files
+
+Usage:
+    perflog-summary [logfile]    Summarise a perflog log file
+    perflog-summary              Summarise today's log
+    perflog-summary --list       List available log files
+    perflog-summary help         Show this message
+
+Outputs:
+    - Recording duration and sample count
+    - Top CPU consumers (by frequency in top-10 lists)
+    - Top memory consumers (by peak and frequency)
+    - Memory pressure timeline (min/max/avg)
+    - Thermal events (any non-nominal states)
+    - Process count range
+EOF
+}
+
+die() { printf 'perflog-summary: %s\n' "$1" >&2; exit 1; }
+
+cmd_list() {
+    echo "Available perflog files:"
+    if ls "$LOG_DIR"/perflog-*.log &>/dev/null; then
+        for f in "$LOG_DIR"/perflog-*.log; do
+            local size samples
+            size=$(du -h "$f" | cut -f1)
+            samples=$(grep -c -e '--- SAMPLE' "$f" 2>/dev/null || echo 0)
+            echo "  $(basename "$f")  ($size, $samples samples)"
+        done
+    else
+        echo "  (none found in $LOG_DIR)"
+    fi
+}
+
+summarise() {
+    local logfile="$1"
+    [[ -f "$logfile" ]] || die "Log file not found: $logfile"
+
+    local samples first_ts last_ts
+    samples=$(grep -c -e '--- SAMPLE' "$logfile" 2>/dev/null || echo 0)
+
+    if [[ "$samples" -eq 0 ]]; then
+        die "No samples found in $logfile"
+    fi
+
+    first_ts=$(grep -e '--- SAMPLE' "$logfile" | head -1 | sed 's/.*\[\(.*\)\].*/\1/')
+    last_ts=$(grep -e '--- SAMPLE' "$logfile" | tail -1 | sed 's/.*\[\(.*\)\].*/\1/')
+
+    echo "================================================================================"
+    echo "PERFLOG SUMMARY"
+    echo "================================================================================"
+    echo "File:       $(basename "$logfile")"
+    echo "Samples:    $samples"
+    echo "First:      $first_ts"
+    echo "Last:       $last_ts"
+    echo "Size:       $(du -h "$logfile" | cut -f1)"
+
+    # Print system header info if present
+    local machine cpu ram
+    machine=$(grep '^Machine:' "$logfile" | head -1 | sed 's/Machine: *//' || true)
+    cpu=$(grep '^CPU:' "$logfile" | head -1 | grep -v 'CPU usage' | sed 's/CPU: *//' || true)
+    ram=$(grep '^RAM:' "$logfile" | head -1 | sed 's/RAM: *//' || true)
+    if [[ -n "$machine" ]]; then
+        echo "Machine:    $machine"
+        echo "CPU:        $cpu"
+        echo "RAM:        $ram"
+    fi
+    echo ""
+
+    # --- Top CPU consumers ---
+    # Count how many times each process appears in the TOP CPU sections,
+    # and sum their %CPU values for a rough "cumulative CPU time" proxy.
+    echo "=== TOP CPU CONSUMERS (by appearances in top-10 + cumulative %CPU) ==="
+    printf '%-30s  %8s  %10s  %8s\n' "PROCESS" "COUNT" "SUM_%CPU" "AVG_%CPU"
+    echo "-------------------------------------------------------------------"
+
+    # Extract lines between "=== TOP CPU" and the next blank line,
+    # skip the header line, parse name and %CPU
+    awk '
+        /^=== TOP CPU/ { in_cpu=1; header=1; next }
+        in_cpu && /^$/ { in_cpu=0; next }
+        in_cpu && header { header=0; next }
+        in_cpu {
+            # Fields: PID  NAME  %CPU  %MEM (fixed width but whitespace-delimited)
+            name = $2
+            cpu_val = $3
+            if (name != "" && cpu_val+0 == cpu_val) {
+                count[name]++
+                sum_cpu[name] += cpu_val
+            }
+        }
+        END {
+            for (name in count) {
+                avg = sum_cpu[name] / count[name]
+                printf "%-30s  %8d  %10.1f  %8.1f\n", name, count[name], sum_cpu[name], avg
+            }
+        }
+    ' "$logfile" | sort -t',' -k3 -rn | sort -k3 -rn | head -15
+
+    echo ""
+
+    # --- Top memory consumers ---
+    echo "=== TOP MEMORY CONSUMERS (by peak %MEM) ==="
+    printf '%-30s  %8s  %10s  %8s\n' "PROCESS" "COUNT" "PEAK_%MEM" "AVG_%MEM"
+    echo "-------------------------------------------------------------------"
+
+    awk '
+        /^=== TOP MEM/ { in_mem=1; header=1; next }
+        in_mem && /^$/ { in_mem=0; next }
+        in_mem && header { header=0; next }
+        in_mem {
+            name = $2
+            mem_val = $3
+            if (name != "" && mem_val+0 == mem_val) {
+                count[name]++
+                sum_mem[name] += mem_val
+                if (mem_val > peak[name]) peak[name] = mem_val
+            }
+        }
+        END {
+            for (name in count) {
+                avg = sum_mem[name] / count[name]
+                printf "%-30s  %8d  %10.1f  %8.1f\n", name, count[name], peak[name], avg
+            }
+        }
+    ' "$logfile" | sort -k3 -rn | head -15
+
+    echo ""
+
+    # --- Memory pressure timeline ---
+    echo "=== MEMORY PRESSURE ==="
+    awk '
+        /^Memory:/ && !/Memory:.*unavailable/ {
+            # Parse: Memory: free=XXXmb used=XXXmb wired=XXXmb compressed=XXXmb
+            for (i=1; i<=NF; i++) {
+                if ($i ~ /^free=/) { gsub(/free=|MB/,"",$i); free=$i+0 }
+                if ($i ~ /^used=/) { gsub(/used=|MB/,"",$i); used=$i+0 }
+                if ($i ~ /^wired=/) { gsub(/wired=|MB/,"",$i); wired=$i+0 }
+                if ($i ~ /^compressed=/) { gsub(/compressed=|MB/,"",$i); comp=$i+0 }
+            }
+            n++
+            sum_free += free; sum_used += used; sum_wired += wired; sum_comp += comp
+            if (n==1 || free < min_free) min_free = free
+            if (n==1 || free > max_free) max_free = free
+            if (n==1 || used > max_used) max_used = used
+            if (n==1 || comp > max_comp) max_comp = comp
+        }
+        END {
+            if (n > 0) {
+                printf "Free:       min=%dMB  max=%dMB  avg=%dMB\n", min_free, max_free, sum_free/n
+                printf "Used:       max=%dMB  avg=%dMB\n", max_used, sum_used/n
+                printf "Wired:      avg=%dMB\n", sum_wired/n
+                printf "Compressed: max=%dMB  avg=%dMB\n", max_comp, sum_comp/n
+            } else {
+                print "(no memory data found)"
+            }
+        }
+    ' "$logfile"
+
+    echo ""
+
+    # --- Swap usage ---
+    echo "=== SWAP ==="
+    awk '
+        /^Swap:/ && !/unavailable/ {
+            # sysctl vm.swapusage format: total = X.XXM  used = X.XXM  free = X.XXM
+            for (i=1; i<=NF; i++) {
+                if ($i == "used") {
+                    # next token is "=", then the value like "1586.75M"
+                    val = $(i+2)
+                    gsub(/M$/, "", val)
+                    used = val + 0
+                    if (used > 0) {
+                        n++
+                        sum += used
+                        if (n==1 || used > max_swap) max_swap = used
+                    }
+                    break
+                }
+            }
+        }
+        END {
+            if (n > 0) {
+                printf "Swap used:  max=%.1fMB  avg=%.1fMB\n", max_swap, sum/n
+            } else {
+                print "(no swap data or no swap used)"
+            }
+        }
+    ' "$logfile"
+
+    echo ""
+
+    # --- Thermal events ---
+    echo "=== THERMAL EVENTS ==="
+    local thermal_issues
+    thermal_issues=$(grep '^Thermal:' "$logfile" | grep -iv 'nominal\|no thermal\|unavailable\|No CPU power\| 0$' || true)
+    if [[ -n "$thermal_issues" ]]; then
+        echo "WARNING: Non-nominal thermal states detected:"
+        echo "$thermal_issues" | sort | uniq -c | sort -rn
+    else
+        local thermal_count
+        thermal_count=$(grep -c '^Thermal:' "$logfile" 2>/dev/null || echo 0)
+        echo "All $thermal_count samples nominal (no throttling detected)."
+    fi
+
+    echo ""
+
+    # --- CPU usage stats ---
+    echo "=== CPU USAGE (system-wide) ==="
+    awk '
+        /^CPU:.*user/ {
+            # Format: CPU: CPU usage: X.XX% user, X.XX% sys, X.XX% idle
+            for (i=1; i<=NF; i++) {
+                if ($(i+1) == "user," || $(i+1) == "user") {
+                    gsub(/%/,"",$i); user=$i+0
+                }
+                if ($(i+1) == "sys," || $(i+1) == "sys") {
+                    gsub(/%/,"",$i); sys=$i+0
+                }
+                if ($(i+1) == "idle" || $(i+1) == "idle,") {
+                    gsub(/%/,"",$i); idle=$i+0
+                }
+            }
+            if (user+sys+idle > 0) {
+                n++
+                sum_user += user; sum_sys += sys; sum_idle += idle
+                if (n==1 || user > max_user) max_user = user
+                if (n==1 || sys > max_sys) max_sys = sys
+                if (n==1 || idle < min_idle) min_idle = idle
+            }
+        }
+        END {
+            if (n > 0) {
+                printf "User:   avg=%.1f%%  max=%.1f%%\n", sum_user/n, max_user
+                printf "System: avg=%.1f%%  max=%.1f%%\n", sum_sys/n, max_sys
+                printf "Idle:   avg=%.1f%%  min=%.1f%%\n", sum_idle/n, min_idle
+            } else {
+                print "(no CPU usage data found)"
+            }
+        }
+    ' "$logfile"
+
+    echo ""
+
+    # --- Process count ---
+    echo "=== PROCESS COUNT ==="
+    awk '
+        /^Processes:/ {
+            val = $2+0
+            if (val > 0) {
+                n++
+                sum += val
+                if (n==1 || val < min_val) min_val = val
+                if (n==1 || val > max_val) max_val = val
+            }
+        }
+        END {
+            if (n > 0) {
+                printf "Range: %d — %d  (avg: %d)\n", min_val, max_val, sum/n
+            } else {
+                print "(no process count data)"
+            }
+        }
+    ' "$logfile"
+
+    echo ""
+    echo "================================================================================"
+}
+
+# --- main ---
+
+case "${1:-}" in
+    help|-h|--help) usage ;;
+    --list|list)    cmd_list ;;
+    "")
+        # Default to today's log
+        today_log="$LOG_DIR/perflog-$(date +%Y-%m-%d).log"
+        summarise "$today_log"
+        ;;
+    *)
+        # If argument is just a filename, check the log dir
+        if [[ ! -f "$1" && -f "$LOG_DIR/$1" ]]; then
+            summarise "$LOG_DIR/$1"
+        else
+            summarise "$1"
+        fi
+        ;;
+esac
