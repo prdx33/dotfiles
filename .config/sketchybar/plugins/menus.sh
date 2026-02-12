@@ -2,7 +2,7 @@
 
 # Menu bar plugin - displays current app's menu items as clickable items
 
-MAX_MENUS=8
+MAX_MENUS=14
 
 # Get frontmost app name and menu items
 OUTPUT=$(osascript -e '

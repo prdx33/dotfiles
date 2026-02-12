@@ -65,7 +65,7 @@ sketchybar --add item app_name left \
         label="APP"
 
 # === LEFT: Menu bar items (always visible, 20% opacity, clickable) ===
-MAX_MENUS=8
+MAX_MENUS=14
 for i in $(seq 0 $((MAX_MENUS - 1))); do
     sketchybar --add item menu.$i left \
         --set menu.$i \
