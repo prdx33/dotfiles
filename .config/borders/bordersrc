@@ -4,6 +4,6 @@ borders \
     style=round \
     width=2.0 \
     hidpi=on \
-    active_color="glow(0x99fff5e0)" \
-    inactive_color="glow(0x33fff5e0)" \
-    order=below
+    active_color="glow(0xAAaed5ee)" \
+    inactive_color="0x10fff5e0" \
+    order=above \

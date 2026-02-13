@@ -17,3 +17,7 @@ fi
 for WID in $(/opt/homebrew/bin/aerospace list-windows --workspace "$WS" --format '%{window-id}'); do
   /opt/homebrew/bin/aerospace layout --window-id "$WID" "$TARGET" 2>/dev/null
 done
+
+# Flash HUD with new state
+LAYOUT=$( [ "$TARGET" = "floating" ] && echo "floating" || echo "tiled" )
+/opt/homebrew/bin/hs -c "WorkspaceHUD:show('$WS', '$LAYOUT')"

@@ -1,0 +1,28 @@
+#!/bin/bash
+# aerospace-small-float — Cycle floating window between two compact sizes
+# Hyper+Q binding — small (50%×55%) ↔ medium (65%×70%), centered
+
+LAYOUT=$(/opt/homebrew/bin/aerospace list-windows --focused --format '%{window-layout}')
+[ "$LAYOUT" != "floating" ] && exit 0
+
+# Detect actual size and cycle: not-small → small, small → medium
+/opt/homebrew/bin/hs -c '
+  local w = hs.window.focusedWindow()
+  if not w then return end
+  local prev = hs.window.animationDuration
+  hs.window.animationDuration = 0
+  local s = w:screen():frame()
+  local f = w:frame()
+
+  local smallW, smallH = s.w * 0.50, s.h * 0.55
+  local isSmall = math.abs(f.w - smallW) < 20 and math.abs(f.h - smallH) < 20
+
+  local fw, fh
+  if isSmall then
+    fw, fh = s.w * 0.65, s.h * 0.70
+  else
+    fw, fh = smallW, smallH
+  end
+  w:setFrame(hs.geometry.rect(s.x + (s.w - fw) / 2, s.y + (s.h - fh) / 2, fw, fh))
+  hs.window.animationDuration = prev
+'

@@ -1,5 +1,5 @@
 {
-  "generated": "2026-02-11T22:25:09.472557",
+  "generated": "2026-02-13T14:36:11.692380",
   "sourceFiles": {
     "karabiner": "/Users/n0id/Dev/dotfiles/.config/karabiner/karabiner.json",
     "aerospace": "/Users/n0id/Dev/dotfiles/.config/aerospace/aerospace.toml",
@@ -108,23 +108,23 @@
           "variants": [
             {
               "condition": "hyper=1",
-              "action": "Mon",
-              "type": "focus",
+              "action": "Hyper G \u2192 ",
+              "type": "system",
               "source": "karabiner",
               "desc": "Move window to next monitor",
-              "raw_command": "/opt/homebrew/bin/aerospace move-node-to-monitor --wrap-around next && /opt/homebrew/bin/aerospace focus-monitor --wrap-around next && open -g 'rectangle://execute-action?name=maximize' && sleep 0.15 && /opt/homebrew/bin/aerospace move-mouse window-lazy-center",
-              "icon": "focus",
-              "iconData": "\u25b8"
+              "raw_command": "/Users/n0id/.local/bin/hyper-g-action",
+              "icon": "sys",
+              "iconData": null
             }
           ],
-          "action": "Mon",
-          "type": "focus",
+          "action": "Hyper G \u2192 ",
+          "type": "system",
           "source": "karabiner",
           "desc": "Move window to next monitor",
-          "raw_command": "/opt/homebrew/bin/aerospace move-node-to-monitor --wrap-around next && /opt/homebrew/bin/aerospace focus-monitor --wrap-around next && open -g 'rectangle://execute-action?name=maximize' && sleep 0.15 && /opt/homebrew/bin/aerospace move-mouse window-lazy-center",
+          "raw_command": "/Users/n0id/.local/bin/hyper-g-action",
           "condition": "hyper=1",
-          "icon": "focus",
-          "iconData": "\u25b8"
+          "icon": "sys",
+          "iconData": null
         },
         "w": {
           "variants": [
@@ -284,23 +284,23 @@
           "variants": [
             {
               "condition": "hyper=1",
-              "action": "Rect",
-              "type": "position",
+              "action": "Hyper Q \u2192 ",
+              "type": "system",
               "source": "karabiner",
               "desc": "Cascade all windows",
-              "raw_command": "[ \"$(/opt/homebrew/bin/aerospace list-windows --focused --format '%{window-layout}')\" = floating ] && open -g 'rectangle://execute-action?name=cascade-all'",
-              "icon": "pos",
-              "iconData": "center"
+              "raw_command": "/Users/n0id/.local/bin/aerospace-small-float",
+              "icon": "sys",
+              "iconData": null
             }
           ],
-          "action": "Rect",
-          "type": "position",
+          "action": "Hyper Q \u2192 ",
+          "type": "system",
           "source": "karabiner",
           "desc": "Cascade all windows",
-          "raw_command": "[ \"$(/opt/homebrew/bin/aerospace list-windows --focused --format '%{window-layout}')\" = floating ] && open -g 'rectangle://execute-action?name=cascade-all'",
+          "raw_command": "/Users/n0id/.local/bin/aerospace-small-float",
           "condition": "hyper=1",
-          "icon": "pos",
-          "iconData": "center"
+          "icon": "sys",
+          "iconData": null
         },
         "z": {
           "variants": [

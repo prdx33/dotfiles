@@ -117,7 +117,7 @@
                                     }
                                 ],
                                 "from": { "key_code": "g" },
-                                "to": [{ "shell_command": "/opt/homebrew/bin/aerospace move-node-to-monitor --wrap-around next && /opt/homebrew/bin/aerospace focus-monitor --wrap-around next && open -g 'rectangle://execute-action?name=maximize' && sleep 0.15 && /opt/homebrew/bin/aerospace move-mouse window-lazy-center" }],
+                                "to": [{ "shell_command": "/Users/n0id/.local/bin/hyper-g-action" }],
                                 "type": "basic"
                             }
                         ]
@@ -242,7 +242,7 @@
                         ]
                     },
                     {
-                        "description": "Hyper Q → Rectangle Cascade All (floating only)",
+                        "description": "Hyper Q → Small float (800x600 centered)",
                         "manipulators": [
                             {
                                 "conditions": [
@@ -253,7 +253,7 @@
                                     }
                                 ],
                                 "from": { "key_code": "q" },
-                                "to": [{ "shell_command": "[ \"$(/opt/homebrew/bin/aerospace list-windows --focused --format '%{window-layout}')\" = floating ] && open -g 'rectangle://execute-action?name=cascade-all'" }],
+                                "to": [{ "shell_command": "/Users/n0id/.local/bin/aerospace-small-float" }],
                                 "type": "basic"
                             }
                         ]

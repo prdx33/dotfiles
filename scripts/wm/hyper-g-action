@@ -1,0 +1,24 @@
+#!/bin/bash
+# Hyper G: Move window to other monitor as floating at small (50%×55%) size
+
+# Ensure floating before moving
+/opt/homebrew/bin/aerospace layout floating
+
+# Move window and follow focus
+/opt/homebrew/bin/aerospace move-node-to-monitor --wrap-around next
+/opt/homebrew/bin/aerospace focus-monitor --wrap-around next
+
+# Resize to small centered
+/opt/homebrew/bin/hs -c '
+  local w = hs.window.focusedWindow()
+  if not w then return end
+  local prev = hs.window.animationDuration
+  hs.window.animationDuration = 0
+  local s = w:screen():frame()
+  local fw, fh = s.w * 0.50, s.h * 0.55
+  w:setFrame(hs.geometry.rect(s.x + (s.w - fw) / 2, s.y + (s.h - fh) / 2, fw, fh))
+  hs.window.animationDuration = prev
+'
+
+sleep 0.15
+/opt/homebrew/bin/aerospace move-mouse window-lazy-center

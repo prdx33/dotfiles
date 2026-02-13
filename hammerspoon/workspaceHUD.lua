@@ -14,10 +14,10 @@ WorkspaceHUD.__index = WorkspaceHUD
 ------------------------------------------------------------
 
 local style = {
-  bg      = { white = 0.1, alpha = 0.85 },
-  text    = { white = 1, alpha = 1 },
-  mint    = { red = 0.6, green = 1, blue = 0.8, alpha = 1 },
-  peach   = { red = 1, green = 0.7, blue = 0.55, alpha = 1 },
+  bg      = { red = 0.059, green = 0.075, blue = 0.102, alpha = 0.5 },
+  text    = { white = 1, alpha = 0.8 },
+  mint    = { red = 0.8, green = 1, blue = 0.9, alpha = 0.8 },
+  peach   = { red = 1, green = 0.85, blue = 0.8, alpha = 0.8 },
   dim     = { white = 0.5, alpha = 1 },
 }
 
@@ -97,7 +97,7 @@ end
 function WorkspaceHUD:_render(letter, layout)
   local scr = focusedScreen():fullFrame()
   local x = scr.x + (scr.w - SIZE) / 2
-  local y = scr.y + (scr.h * 0.1) - (SIZE / 2)
+  local y = scr.y + 40
 
   local c = hs.canvas.new({ x = x, y = y, w = SIZE, h = SIZE })
   if not c then return end
@@ -105,16 +105,16 @@ function WorkspaceHUD:_render(letter, layout)
   c:behavior(hs.canvas.windowBehaviors.canJoinAllSpaces)
   c:level(hs.canvas.windowLevels.cursor)
 
-  -- Resolve heading text and colour from layout
+  -- Resolve heading text and letter colour from layout
   local heading = "WORKSPACE"
-  local headingColor = style.dim
+  local letterColor = style.text
   if layout and layout ~= "" then
     if layout == "floating" then
       heading = "FLOATING"
-      headingColor = style.mint
+      letterColor = style.mint
     else
       heading = "TILED"
-      headingColor = style.peach
+      letterColor = style.peach
     end
   end
 
@@ -126,25 +126,25 @@ function WorkspaceHUD:_render(letter, layout)
     fillColor = style.bg,
   }
 
-  -- Heading: layout mode (colour-coded)
+  -- Heading: layout mode (white)
   c[2] = {
     type = "text",
     text = heading,
     textFont = FONT,
     textSize = 13,
-    textColor = headingColor,
-    frame = { x = 0, y = SIZE * 0.15, w = SIZE, h = 20 },
+    textColor = style.text,
+    frame = { x = 0, y = SIZE * 0.08, w = SIZE, h = 20 },
     textAlignment = "center",
   }
 
-  -- Large letter (fills remaining space)
+  -- Large letter (vertically centred, colour-coded)
   c[3] = {
     type = "text",
     text = string.upper(letter),
     textFont = FONT,
     textSize = 84,
-    textColor = style.text,
-    frame = { x = 0, y = SIZE * 0.26, w = SIZE, h = SIZE * 0.64 },
+    textColor = letterColor,
+    frame = { x = 0, y = SIZE * 0.22, w = SIZE, h = SIZE * 0.7 },
     textAlignment = "center",
   }
 
