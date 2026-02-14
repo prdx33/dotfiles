@@ -160,7 +160,8 @@ defaults write com.knollsoft.Rectangle screenEdgeGapBottom -int 10
 defaults write com.knollsoft.Rectangle screenEdgeGapLeft -int 10
 defaults write com.knollsoft.Rectangle screenEdgeGapRight -int 10
 defaults write com.knollsoft.Rectangle screenEdgeGapTop -int 10
-echo "  ✓ Rectangle gaps: 10px (matching AeroSpace)"
+defaults write com.knollsoft.Rectangle unsnapRestore -int 2
+echo "  ✓ Rectangle gaps: 10px (matching AeroSpace), restore-on-drag disabled"
 echo ""
 
 # ────────────────────────────────────────────────────────────────────────────

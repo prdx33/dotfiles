@@ -344,6 +344,105 @@
                         ]
                     },
                     {
+                        "description": "Hyper I → Top half (float)",
+                        "manipulators": [
+                            {
+                                "conditions": [{ "name": "hyper", "type": "variable_if", "value": 1 }],
+                                "from": { "key_code": "i" },
+                                "to": [{ "shell_command": "open -g 'rectangle://execute-action?name=top-half'" }],
+                                "type": "basic"
+                            }
+                        ]
+                    },
+                    {
+                        "description": "Hyper , → Bottom half (float)",
+                        "manipulators": [
+                            {
+                                "conditions": [{ "name": "hyper", "type": "variable_if", "value": 1 }],
+                                "from": { "key_code": "comma" },
+                                "to": [{ "shell_command": "open -g 'rectangle://execute-action?name=bottom-half'" }],
+                                "type": "basic"
+                            }
+                        ]
+                    },
+                    {
+                        "description": "Hyper U → Top-left quarter (float)",
+                        "manipulators": [
+                            {
+                                "conditions": [{ "name": "hyper", "type": "variable_if", "value": 1 }],
+                                "from": { "key_code": "u" },
+                                "to": [{ "shell_command": "open -g 'rectangle://execute-action?name=top-left'" }],
+                                "type": "basic"
+                            }
+                        ]
+                    },
+                    {
+                        "description": "Hyper O → Top-right quarter (float)",
+                        "manipulators": [
+                            {
+                                "conditions": [{ "name": "hyper", "type": "variable_if", "value": 1 }],
+                                "from": { "key_code": "o" },
+                                "to": [{ "shell_command": "open -g 'rectangle://execute-action?name=top-right'" }],
+                                "type": "basic"
+                            }
+                        ]
+                    },
+                    {
+                        "description": "Hyper M → Bottom-left quarter (float)",
+                        "manipulators": [
+                            {
+                                "conditions": [{ "name": "hyper", "type": "variable_if", "value": 1 }],
+                                "from": { "key_code": "m" },
+                                "to": [{ "shell_command": "open -g 'rectangle://execute-action?name=bottom-left'" }],
+                                "type": "basic"
+                            }
+                        ]
+                    },
+                    {
+                        "description": "Hyper . → Bottom-right quarter (float)",
+                        "manipulators": [
+                            {
+                                "conditions": [{ "name": "hyper", "type": "variable_if", "value": 1 }],
+                                "from": { "key_code": "period" },
+                                "to": [{ "shell_command": "open -g 'rectangle://execute-action?name=bottom-right'" }],
+                                "type": "basic"
+                            }
+                        ]
+                    },
+                    {
+                        "description": "Hyper J → Top third (float)",
+                        "manipulators": [
+                            {
+                                "conditions": [{ "name": "hyper", "type": "variable_if", "value": 1 }],
+                                "from": { "key_code": "j" },
+                                "to": [{ "shell_command": "/opt/homebrew/bin/hs -c 'WindowVThird(\"top\")'" }],
+                                "type": "basic"
+                            }
+                        ]
+                    },
+                    {
+                        "description": "Hyper K → Middle third (float)",
+                        "manipulators": [
+                            {
+                                "conditions": [{ "name": "hyper", "type": "variable_if", "value": 1 }],
+                                "from": { "key_code": "k" },
+                                "to": [{ "shell_command": "/opt/homebrew/bin/hs -c 'WindowVThird(\"middle\")'" }],
+                                "type": "basic"
+                            }
+                        ]
+                    },
+                    {
+                        "description": "Hyper L → Bottom third (float)",
+                        "manipulators": [
+                            {
+                                "conditions": [{ "name": "hyper", "type": "variable_if", "value": 1 }],
+                                "from": { "key_code": "l" },
+                                "to": [{ "shell_command": "/opt/homebrew/bin/hs -c 'WindowVThird(\"bottom\")'" }],
+                                "type": "basic"
+                            }
+                        ]
+                    },
+                    {
                         "description": "Mouse Button 5 → Meh (Ctrl+Alt+Shift)",
                         "manipulators": [
                             {

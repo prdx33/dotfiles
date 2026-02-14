@@ -181,6 +181,26 @@ local holdDispatcher = HoldToAction.createDispatcher({
 holdDispatcher:start()
 
 ------------------------------------------------------------
+-- Vertical Thirds — Position window as top/middle/bottom third
+-- Called via: hs -c 'WindowVThird("top")'
+------------------------------------------------------------
+function WindowVThird(pos)
+  local win = hs.window.focusedWindow()
+  if not win then return end
+  local sf = win:screen():frame()
+  local gap = 10  -- match Rectangle gapSize
+  local thirdH = sf.h / 3
+  local x = sf.x + gap
+  local w = sf.w - 2 * gap
+  local h = thirdH - 2 * gap
+  local y
+  if pos == "top" then y = sf.y + gap
+  elseif pos == "middle" then y = sf.y + thirdH + gap
+  elseif pos == "bottom" then y = sf.y + 2 * thirdH + gap end
+  win:setFrame(hs.geometry.rect(x, y, w, h))
+end
+
+------------------------------------------------------------
 -- Workspace HUD - Flash workspace letter on switch
 -- Called via: hs -c 'WorkspaceHUD:show("Q")'
 ------------------------------------------------------------
