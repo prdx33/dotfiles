@@ -209,6 +209,13 @@ WorkspaceHUD = require("workspaceHUD")
 WorkspaceHUD:init()
 
 ------------------------------------------------------------
+-- Scratchpad — Pull/push app windows via ⌃⌥⌘ (Scratch layer)
+------------------------------------------------------------
+package.loaded["scratchpad"] = nil
+local scratchpad = require("scratchpad")
+scratchpad.init()
+
+------------------------------------------------------------
 -- Bar Toggle - Alternate between SketchyBar and macOS menu bar
 -- Called via: hs -c 'BarToggle:toggle()'
 ------------------------------------------------------------

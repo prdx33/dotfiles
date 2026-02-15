@@ -1,0 +1,13 @@
+#!/bin/bash
+# scratchpad — open a fresh app window on current workspace
+# Usage: scratchpad "Firefox"
+
+export PATH="/opt/homebrew/bin:$PATH"
+
+APP_NAME="$1"
+if [ -z "$APP_NAME" ]; then
+    echo "Usage: scratchpad <AppName>" >&2
+    exit 1
+fi
+
+open -na "$APP_NAME" --args --new-window
