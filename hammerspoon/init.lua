@@ -222,3 +222,4 @@ scratchpad.init()
 package.loaded["barToggle"] = nil  -- force reload on config reload
 BarToggle = require("barToggle")   -- global for CLI access
 BarToggle:init()
+

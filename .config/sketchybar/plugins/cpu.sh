@@ -1,11 +1,10 @@
 #!/bin/bash
 
-# CPU plugin - outputs XX% with colour thresholds
-# Uses ps instead of top for ~24x faster execution
+# CPU plugin - 6-tier with generous baseline, sharp ramp at end
+# Thresholds: 0-40 idle, 40-60, 60-75, 75-87, 87-94, 94+
 
 source "$CONFIG_DIR/colours.sh" 2>/dev/null || exit 0
 
-# Sum all process CPU and normalise by core count
 cores=$(sysctl -n hw.ncpu)
 cpu=$(ps -A -o %cpu | awk -v c="$cores" '{s+=$1} END {printf "%.0f", s/c}')
 
@@ -13,14 +12,25 @@ cpu=$(ps -A -o %cpu | awk -v c="$cores" '{s+=$1} END {printf "%.0f", s/c}')
 [[ ! "$cpu" =~ ^[0-9]+$ ]] && cpu=0
 [[ $cpu -gt 99 ]] && cpu=99
 
-# Colour based on threshold (cpu: 70% warn, 85% crit)
-if [[ $cpu -ge 85 ]]; then
-    color=$STAT_CRIT
-elif [[ $cpu -ge 70 ]]; then
-    color=$STAT_WARN
-else
-    color=$STAT_NORMAL
-fi
+if [[ $cpu -ge 94 ]]; then color=$TIER_5
+elif [[ $cpu -ge 87 ]]; then color=$TIER_4
+elif [[ $cpu -ge 75 ]]; then color=$TIER_3
+elif [[ $cpu -ge 60 ]]; then color=$TIER_2
+elif [[ $cpu -ge 40 ]]; then color=$TIER_1
+else color=$TIER_0; fi
 
 label=$(printf "%3d%%" "$cpu")
-sketchybar --set "$NAME" label="$label" label.color="$color" 2>/dev/null
+
+# Respect idle fade — active stats dim to 70%, idle to 20%
+if [[ -f /tmp/sketchybar_bar_faded ]]; then
+    dim=$DIM_IDLE
+    [[ "$color" != "$TIER_0" ]] && dim=$DIM_ACTIVE
+    sketchybar --set "$NAME" label="$label" label.color=$dim \
+               --set cpu_label label.color=$dim 2>/dev/null
+elif [[ $cpu -ge 87 ]]; then
+    sketchybar --set "$NAME" label="$label" label.color="$color" \
+               --set cpu_label label.color="$color" 2>/dev/null
+else
+    sketchybar --set "$NAME" label="$label" label.color="$color" \
+               --set cpu_label label.color="$TIER_0" 2>/dev/null
+fi

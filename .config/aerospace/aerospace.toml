@@ -108,4 +108,5 @@ f = ['flatten-workspace-tree', 'mode main']
 # FLOATING RULES — Float all windows by default, almost-maximised
 # =============================================================================
 [[on-window-detected]]
-run = ['layout floating', 'exec-and-forget open -g "rectangle://execute-action?name=center"']
+if.during-aerospace-startup = false
+run = ['layout floating', 'exec-and-forget /Users/n0id/.local/bin/aerospace-center-window.sh']

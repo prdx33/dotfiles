@@ -50,6 +50,7 @@ sketchybar --add item app_icon left \
         width=14 \
         y_offset=0 \
         script="$PLUGIN_DIR/front_app_icon.sh" \
+        click_script="$PLUGIN_DIR/menus_click_toggle.sh" \
     --subscribe app_icon front_app_switched
 
 # === LEFT: App name ===
@@ -85,7 +86,7 @@ sketchybar --set menu.0 \
     script="$PLUGIN_DIR/menus.sh" \
     --subscribe menu.0 front_app_switched
 
-# === CENTER: App (M1) | Workspaces | App (M2) ===
+# === CENTER: Left group | divider | Right group (split workspace layout) ===
 source "$ITEM_DIR/spaces.sh"
 
 # === RIGHT: DateTime ===
@@ -93,5 +94,8 @@ source "$ITEM_DIR/datetime.sh"
 
 # === RIGHT: Stats (left of datetime) ===
 source "$ITEM_DIR/system.sh"
+
+# === RIGHT: Claude usage (left of system stats) ===
+source "$ITEM_DIR/claude.sh"
 
 sketchybar --update

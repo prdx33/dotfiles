@@ -23,7 +23,7 @@ eval "$(zoxide init zsh)"
 # ────────────────────────────────────────────────────────────────────────────
 # PATH
 # ────────────────────────────────────────────────────────────────────────────
-export PATH="$HOME/Dev/dotfiles/scripts:$HOME/.local/bin:$HOME/go/bin:$PATH"
+export PATH="$HOME/.bun/bin:$HOME/Dev/dotfiles/scripts:$HOME/.local/bin:$HOME/go/bin:$PATH"
 
 # NVM
 export NVM_DIR="$HOME/.nvm"

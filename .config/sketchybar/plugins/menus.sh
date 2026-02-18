@@ -46,15 +46,24 @@ fi
 TMPFILE="/tmp/sketchybar_menus_$$"
 echo "$MENU_LIST" | tr '|' '\n' > "$TMPFILE"
 
+# Respect hard toggle state
+MENUS_HIDDEN=0
+[[ -f "/tmp/sketchybar_menus_hidden" ]] && MENUS_HIDDEN=1
+
 i=0
 while read -r menu_name && [[ $i -lt $MAX_MENUS ]]; do
     menu_name=$(echo "$menu_name" | xargs)
     if [[ -n "$menu_name" ]]; then
         menu_upper=$(echo "$menu_name" | tr '[:lower:]' '[:upper:]')
+        if [[ $MENUS_HIDDEN -eq 1 ]]; then
+            drawing=off; w=0
+        else
+            drawing=on; w=dynamic
+        fi
         sketchybar --set "menu.$i" \
             label="$menu_upper" \
-            label.drawing=on \
-            width=dynamic \
+            label.drawing=$drawing \
+            width=$w \
             click_script="osascript -e 'tell application \"System Events\" to tell process \"$PROC_NAME\" to click menu bar item \"$menu_name\" of menu bar 1'" \
             2>/dev/null
     fi
@@ -63,7 +72,7 @@ done < "$TMPFILE"
 
 # Clear unused slots
 while [[ $i -lt $MAX_MENUS ]]; do
-    sketchybar --set "menu.$i" label="" label.drawing=on width=0 2>/dev/null
+    sketchybar --set "menu.$i" label="" label.drawing=off width=0 2>/dev/null
     i=$((i + 1))
 done
 

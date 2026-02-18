@@ -86,6 +86,10 @@ get_icon_name() {
         com.sindresorhus.Color-Picker) echo "colorpicker.png" ;;
         org.hammerspoon.Hammerspoon) echo "hammerspoon.png" ;;
         com.sindresorhus.Color-Picker) echo "colorpicker.png" ;;
+        com.google.Chrome) echo "google-chrome.png" ;;
+        pl.maketheweb.cleanshotx) echo "cleanshotx.png" ;;
+        com.dominiklevitsky.fontbase) echo "fontbase.png" ;;
+        ru.keepcoder.Telegram) echo "telegram.png" ;;
         *) echo "" ;;
     esac
 }

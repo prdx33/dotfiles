@@ -11,11 +11,11 @@ DATETIME_WIDTH=48
 sketchybar --add item date right \
     --set date \
         icon.drawing=off \
-        label.font="Iosevka Extended:Bold:9.0" \
+        label.font="Iosevka Extended:Bold:8.0" \
         label.color=$STAT_DATE \
         label.width=$DATETIME_WIDTH \
         padding_right=3 \
-        y_offset=7 \
+        y_offset=6 \
         width=0 \
         background.drawing=off
 
@@ -23,11 +23,11 @@ sketchybar --add item date right \
 sketchybar --add item time right \
     --set time \
         icon.drawing=off \
-        label.font="$MONO_FONT:Light:9.0" \
+        label.font="$MONO_FONT:Light:8.0" \
         label.color=$LABEL_COLOR \
         label.width=$DATETIME_WIDTH \
         padding_right=3 \
-        y_offset=-5 \
+        y_offset=-4 \
         background.drawing=off \
         update_freq=30 \
         script="$PLUGIN_DIR/datetime.sh" \

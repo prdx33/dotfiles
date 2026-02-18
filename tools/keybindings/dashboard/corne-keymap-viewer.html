@@ -23,8 +23,8 @@
       --layer-alpha: #4a9d9a;
       --layer-numnav: #7b9f5c;
       --layer-function: #c98a4b;
-      --layer-connect: #9a7bb8;
-      --layer-command: #c77da0;
+      --layer-meh: #e07b53;
+      --layer-scratch: #5ba3c9;
 
       /* Key type accents */
       --accent-mod-tap: #c98a4b;
@@ -179,8 +179,8 @@
     .layer-tab.active[data-layer="0"] { background: var(--layer-alpha); }
     .layer-tab.active[data-layer="1"] { background: var(--layer-numnav); }
     .layer-tab.active[data-layer="2"] { background: var(--layer-function); }
-    .layer-tab.active[data-layer="3"] { background: var(--layer-connect); }
-    .layer-tab.active[data-layer="4"] { background: var(--layer-command); }
+    .layer-tab.active[data-layer="3"] { background: var(--layer-meh); }
+    .layer-tab.active[data-layer="4"] { background: var(--layer-scratch); }
 
     /* Keyboard area */
     .keyboard-area {
@@ -499,6 +499,99 @@
       margin-top: 12px;
     }
 
+    /* MEH/SCRATCH layer app keys */
+    .key.meh-bound {
+      background: rgba(224, 123, 83, 0.15);
+      box-shadow: inset 0 0 0 1px var(--layer-meh);
+    }
+
+    .key.scratch-bound {
+      background: rgba(91, 163, 201, 0.15);
+      box-shadow: inset 0 0 0 1px var(--layer-scratch);
+    }
+
+    .key.meh-unbound {
+      background: var(--bg);
+      opacity: 0.3;
+    }
+
+    .key-app-icon {
+      width: 18px;
+      height: 18px;
+      image-rendering: auto;
+      margin-top: 2px;
+    }
+
+    .key-app {
+      font-size: 0.6rem;
+      font-weight: 400;
+      color: var(--text-muted);
+      margin-top: 1px;
+    }
+
+    /* Binding reference panel */
+    .binding-panel {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+      margin-bottom: 20px;
+    }
+
+    .binding-panel-header {
+      padding: 14px 20px;
+      border-radius: 9px 9px 0 0;
+      font-weight: 600;
+      font-size: 0.9rem;
+      color: var(--bg);
+    }
+
+    .binding-panel-header.meh { background: var(--layer-meh); }
+    .binding-panel-header.scratch { background: var(--layer-scratch); }
+
+    .binding-panel-header span {
+      font-weight: 300;
+      opacity: 0.7;
+    }
+
+    .binding-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+      gap: 0;
+    }
+
+    .binding-entry {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 16px;
+      border-right: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      font-size: 0.8rem;
+    }
+
+    .binding-key {
+      font-weight: 600;
+      color: var(--text);
+      background: var(--bg);
+      padding: 3px 8px;
+      border-radius: 5px;
+      min-width: 28px;
+      text-align: center;
+      font-size: 0.75rem;
+    }
+
+    .binding-app {
+      color: var(--text-muted);
+    }
+
+    .binding-unbound {
+      color: var(--text-dim);
+      font-size: 0.7rem;
+      padding: 12px 16px;
+      border-top: 1px solid var(--border);
+    }
+
     @media (max-width: 900px) {
       body { padding: 16px; }
       .keyboard { gap: 100px; }
@@ -557,12 +650,94 @@
     <div class="combo-categories" id="comboPanel"></div>
   </div>
 
+  <div class="binding-panel" id="bindingPanel" style="display: none;">
+    <div class="binding-panel-header" id="bindingPanelHeader">App Bindings</div>
+    <div class="binding-grid" id="bindingGrid"></div>
+    <div class="binding-unbound" id="bindingUnbound"></div>
+  </div>
+
   <div class="shortcuts-hint">Keys 1-5 switch layers</div>
 
   <script>
     // ============================================================
     // KEYMAP DATA (built-in)
     // ============================================================
+
+    // App icon data (base64 PNG from sketchybar tinyicon/24px)
+    const APP_ICONS = {
+      "1password": "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",
+      "whatsapp": "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAE0UlEQVRIx5WW+4tVVRTHP3ufc18zzlVzckqnKVN6EqlFYVkUM5WaWtEDCqqBgiiC6IeoPyIoCDKi6GEPkH4I6TFRifVDDx/YpJlo4TiZafOw+5q55+y99uqHuXfmjk1EC9Zhw9r7+93rtdcx/elzKAYAVYjjTE7RDiCGhqFlocwpCnigJt5NGmMaZ5TYi2CsxZqoaCz3hyAbgSVAtpXgX4BbzQ44ZawdQHknBBlTDcQAGrQjGHkBQ78BO9fpKQ+nVjM3nJNpHcpaVB8HRmMNAeBehX7mAA+NABZMnnbTRkxEPSRUmcCpw2DnIroH+N4Y83ws3mWMMRvOBNfGtzs6l7Xx1VwWr2C+6cBiSdVxUkfY5QbZ4/dT1Ym5aDYovBKHIO1A95ngMRG9uevZnOujphP8kP7EMTlBqinzbZFL4+Xcl93A9fFVvDv5Ib/K8Jkk5wIL4iCSBc23glssGwt9bMz1MVDfyUD9K/7S8qxUf87XLI97eKDtTp5se5iXqm/wix9qJckAGSvijYgYEUFE8N6xKr6M2/O9bKtt5/3qh1R8GSMBRKdVxHGofoQXS68xKmM81HY380IBL54mlohgg3iaKuLIa4ZNhT4GkwN8XP2CC+xSnp3/BKviy3E+ZWa/QFBG0hHeKm2jy3ayJrsaP2uPx4p3NNX7lGVRN0ujc/i0soPET9KbX8vVuSu5pXAjmWBp3S/egQR+qf/K3voga/JXkQ3xLLsNIjRVxLMs6qEkFY4mQ6gErDa7PIAEpHH7VnWSMjhxgK7obIq048VN26yIp6lBPAtskbKUqbkqIo5vqt9R14ShdJiqr06H0kmKiJs+N+bGiInIa5ZWzNk58J5UEmIikIBKYE9lH9tPf8K6jl5uaLu2cciwLD6PTIimSLwnUoOiOJmdg1jET5efqHA8+Z2+4k0UzbwpL4zjnZH36bDtPLX4cS7OraAeEjYvXM9PE4d45c/XGU5+47x4KTWZ4HQ6ThBBEQDiIH6mwTRwsHoQOmF125Vsn/wNayLKvsRLJ7Zw/KzjbD5rI13ZxQBckr+ITIjJa441867h4MTPjKfjgE6/0LF439J8yvDkMD/WDnBz8UYGRj8jkQQwVKTC1pPvseP0TlbPW8XZmU72VvdxpHaYOzo30ZPr5rU/3sD5BEs0jTjLA1CMicibHKeSU9RcBYMlELAYDIZjE8c4WjuKolhj6V14M/1dD7J95CMGy4OggdDS8XEQr9pIghLozC5ieeFCvvnrW+7uvItL2i9mb3kfu8u7KbkSilIwObrz3WzoXM+6RbfyxfiXvH1iK17SfzzisYh3QH0qyZ4VxQvpyi7mtkW3MJKOMO5O89jSR3l4yYOcTE6ShoT58QLOyXVRciVeHt7CwOgASUgwsx9kB6SxhlBVDb83k+zFsWXoZfZX9jM0eYyqr9JT6GFlcSXnF84nb3Mcdoc5VDvEYHmQ0XQMa6bCp4RWgj8wpmRW7VwJ8AjwKmAN4HWqxCwWYyCoooTp4dKM8ZR9rrkGwDOq+nxzom1TDdcB/aozfoZGLc+UQJg1m8+0N8UYPjDGvgk0ZrKGSgjyNMouYJOiS5q2/yECnDKYATVmq7WMGWMxK3degThpMBvEpXmM6WCO+fwfEoBqFGcmmz8HNor4GzTc/t72m9dCAAAAAElFTkSuQmCC",
+      "spark": "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAECElEQVRIx42WW29UVRTHf2uf6UyZGWYqVB1wOr0ALRcjUXjgARITSRABa5vU0PiCyoshJr7iB/DF8BWMYEL0QSLhwQcTEyR4BxUMICQakAIVB3qhtjNn77V8OFOotB1cycq5rcv/v9beex0B4MMpsBiiVpAW0KojakvhIgGgdhv8eHI/K+nlRssywEC9EW7HuJJhCuUWuDYJ+woIR2YSI9JA3Ie4fuAZkAKQSqKpYPaf+IgzEBrOAewucAaz45C6ClNAGuGjKfBpiNgDHALWsJgYjZhN5RfgbYxT+BTC4RkwXYukTmCsbua5PG0EhLH6I1IIZ7DQj8iII8qAygDKaqyBciFVeKs75vVOD9rELrHdhLID0jhGvo5QNqJJkAU1QG/eeGVFnVfLMZVs8q6pj9pGSoIjX0lhFFCjme6tKKVMoJKJGarAo+zxfhnvPuccmEMt1Qz9qpwx2AlBjTj2vNZjlJdYcxbet5DtFEdsEEyaoRmqGJWcEAdjpu7pKxiDj2QBuAj3AKnNV290Z42BLlAzghq1egwYwz2wsjWxme/biAk4QvOGDVSMjhx4VVSVWj2m7pW1ReivyCK+jUQiDQaLoK9kjZe7hKCGqqGqeB9QNUSEvT1CaTEWmjBxDzLykBp7OqCchzgE1AybTRICPhh9bbB7lsVCmpRotmZzGhSMp7LGrm4IQfFBMTMMS57jBguDoR54PDMH9VxFmF1F88qzs4G+7hO0GKgmfnHQBhOltwg7yyxQJiAIjhgIZrNlwRsrWpUXu4UQlKCKWbIkQgj3+wB2n8Vgj9CentuLRiwTUqiDQGIJEJTtHdCxFHwIjE1M8+2Fv1meT7O5Iqgqn5y6TiGfY+v6J1iazdD3mLC9bHx8EYgkOZACYEoK9UqwgCRlKGWVHT0RI7fvcfr8KF+eHeXynxNsqOTpGiox8Y/nyOkJrldHebp8i5c2PcnzG9oZWJXhi9+V6oxLjnQVz+glS3HttKd71zhOQKGQMj7/+S7fXKhyvVpDNYcrLOG3sTq/Xp1k3Fq5Kiuot0d8PxU4e7LO0fN/sW1tkWKUo+oNHBCocvScCocMRm4cpCX3HoCYYT4GC43ZoogGLK6xs2OcqSjPyZttiHOYNKaPJpuKKJVcwahP7qdY/kA4cAWm766j2HWcKL3mweiaM8VQMGOJ85g4ZvR+oHmTJunjzA/cuTxAOj8i5Epw7ya8cWYP+ZXvE7X2Lew8J+Fin83AT//E5LV32LblK/YLwuYDUJuEc4dh8Ng62lbtJl1cT9SSB3H8L7FAqE9QGzvHnUsnODj8By+0Q+nZBpbefrhyHN68APvWwVZxbBh2ZJYJ9vDvxMNVEZi+BRc/DXxmxrHv4MgWWLkZbvzIv/QHxkJvzOZRAAAAAElFTkSuQmCC",
+      "google-chrome": "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAGeklEQVRIx2WWe4yWxRXGf2fmfb/L3m+sLhddgeWO2EoAKZBQCxQNSlO0pCUo1hpbqdYo2iYlTf2vkKYXJa0t2Co01tbUS6Vo2gTbLiFeFnZZKLqW2+5CYZdld79vv+97bzPTP3blEs/k/Dfnec6c88ycEa4yay3GGHoW30x27T1IZxve4fdwD20uU5f6G4iiSgCndM5U1w2w4xdFM/82uGUBhT+/THNHF1prlFKXMeVq8MEDrZxYuoymO76I94c/KrXl0TnKJXcqTy9TnmoGKrEOm5i8DePTNrH/sqL3yi9/fTRc91Xbvb+VWf98l9qlyy6TyKfgF156Ee+++yncNBHvC4sn6pHh7yotG1RKjxffQ7Qe3W0dLklwUYId9XPGsMdWVj+b/PtAb9WFfuJdL3DdA5tQSiGe5zHw8ccweTIXRfBXr7xVlQo/V1qWqJRGPA/xFCh1hcBYXGJwsblCZFyrLav4XrR/f1uTc9gTJ6mfMR2J4xh/rc9ruUnMl5Z5tjD0otIyTzyN+BrRCtEK1Fg1ncMZB1eTxAYbJzgrHba65r6kvaPjRHGYL8Uxsmz3Ypb311NR2dCw4jeH9tTmk1X4GvHUteAyCo4DHDgzehISg0vGyIzDae8dN3H6BsKzF9Wjbeh9z73Nva8/RvWiKQ/HQfHbU44XRNtPg8cCoxjlpVA1tUg2i1MlrBTAT0Y9ZZCMRcosqtxM0fW5C5f+0XawcVsbsuHtr1Odqh7fE/fsKxsOb9644xzTTkdoPaaCdIr0itsJVt7BcP14RAs1nKU89xp28C1EApQGpS1aW5S2qIw+Yhumrya+eE6ru6DSq1gVuvDhsEzrKC1M7cjjWdCeh79xI4fvfpC/FepoH/Y4mvM4VhyHblpK842ObOYg6bqQdG1MqibBqzKorK1z1r7vhyf/o9rv7SSy0UKH85VzHJ9XwdHZZQRBCLd+jsNL7ubVzhzd50cYygUM5QLO9OV55YMc7+e/gVezAK1jRK70B+d8seFCfy+oNw69njbWTBlVCEQZzYEVtfRVKgoLbuPvPYaBXEghiMgVRr1QihnIBew7ZsnpLyMoPmPWTPnf+t1p71ThtG+Nq0CNXjtlHWdbymhfWs+i6gbODJQYCWLiRKHGpGqtIzKW0xeLDEZN1EgKXHwF3AnOUqHjTt+r0lUWS+IsyFgiTgnty2tpySbY4Zh8GBMkCiVjBM4RG0tFxsOjAJhrkndOsMZLDI1WbZq1KVRGn3fG4dzYA+XgUoOm6/qzTK2DXHGEfFAkH5Que65YYMZ1Qr36AHdV9s4JNtEkJn0+3/hEqOT7Ynznd7oEsFeyEBHaw8PMbRlgRr0mNzzE4PAgQ8OD5HKDzBzns27WSbLRPrjcA8FZTRL7mKS8c8KbYryF8xZRLbWtI9FIv9VunBJBFAjCUDzEQfUX1ixbzez/1tJ1tgQizJhQxvTmS9TZnyLmAm6MwFpFEnnEUaY/oqk1vP4U+unHn2JR46LBjv6OOYlL5ooClCAySpI3ebrNR1Q3DjJtcsSESQNc9A6hwz+xvPoIWgQQrNWY2CMupQmimjfChid32nRLIs455EnhwfkPLekNul+hzI1XGUF5AgpEwI0tgCR0VIQBz0w6zszyEYwbK0vkEQcpSsXyc6Ga+bX4k72tzY84VG9vL/vWv8Nv1z9/sMJVbzMjLjAFhw0dLnE4Myo7cQpxCqywuu4i07JFEuNhIp+olCYsZCjmy4IgbtomK986qJb+lfO9vYgxBq01G3c+wD1z1pXtOvLClpzNPaWzlOm0IL4gelTCxgmTGGHruC7G6QiTaJLYIwp8wmK6GLnGba756e2lU7uKc9e9iTEGT2tNEARkMhl6tp0t/uj2H2579sNfnRvMXdqS+EmLTgnKF0QLyllWVl2iKlAUknKSWBMHHlGc+SRRTdvVtK178m2PlT7/zXaCIEBrfWVkBkFANpvlkd8/zo77fyabdz8x9+TQ6Q0lW7jTirnJKrLzUiU21/STxZEYXTLGP2Wkaq8rn76nee2uzq5XN7lb1v2OUqlEJpMZHZlXD/04jkmlUnR3d3PjM9NxO0veD17+8cTTQ2dmj8SFaWsyg/VLMyWMpAecruySiqnHqu7a3tuzVZJJ3+rmhhsmEUURvu9f87O4xowx9PX14Zyj7dghVv3kK7Dm01vqxDknLwHvfgfee34ZJz/6EOscfX19GGM+g/d/uox5iTa8veAAAAAASUVORK5CYII=",
+      "spotify": "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAMAAADXqc3KAAAB6VBMVEUAAAAe12AEGgwe12Ae12Ae12Ae12Ae12Ae12Ae12Ae12Ae12Ae12Ae12Ae12Ae12Ae12Ae12Ae12Ae12Ae12Ae12Ae12Ae12Ae12Ae12Ae12Ae12Ae12Ae12Ae12Ae12Ae12Ae12Ae12Ae12Ae12Ae12Ae12Ae12Ae12Ae12Ae12Ae12Ae12Ae12Ae12Ae12Ae12Ae12Ae12Ae12Ae12Ae12Ae12Ae12Ae12Ae12Ae12Ae12Ae12Ae12Ae12Ae12Ae12Ae12Ae12Ae12Ae12Ae12Ae12Ae12Ae12Ae12Ae12Ae12Ae12Ae12Ae12Ae12Ae12Ae12Ae12Ae12Ae12Ae12Ae12Ae12Ae12Ae12Ae12Ae12Ae12Ae12Ae12Ae12Ae12Ae12Ae12Ae12Ae12Ae12Ae12Ae12Ae12Ae12Ae12Ae12Ae12Ae12Ae12Ae12Ae12Ae12Ae12Ae12Ae12Ae12Ae12Ae12Ae12Ae12Ae12Ae12Ae12Ae12Ae12Ae12Ae12Ae12Ae12Ae12Ae12Ae12Ae12Ae12Ae12Ae12Ae12Ae12Ae12Ae12Ae12Ae12Ae12Ae12Ae12Ae12Ae12Ae12Ae12Ae12Ae12Ae12Ae12Ae12Ae12Ae12Ae12Ae12Ae12Ae12Ae12CX+U6iAAAAonRSTlMAAAAKSpvZ+PfXmEcJPq7w76o6CHTr6G4Gh/r5gXNsPOrmNqvy1r2onJmercPd86QHFgILHT3j7D+XxhEDEiAqLSgOAQQnccn7jdW8s9Hk7eDLe0ETes324r+7wtLnzoD+tTsbBSFDdbagvhkxTV5jWw30/e5QLuW3hX+JwMxrS8iQUSQmIhBahkD8utrUsXc0OaKsk99mX3hyZOHeMJ0sxIKAVKIfAAABmUlEQVQoz2WS5VdCQRDFd62nPANFEFsEAxQ7EQXxqdioKHZ3i9jdHdgd85e6+4yDeD9s3N/ZOXPuLEIIE7m6uXswAJ5eAtabXBEV9X18/eBbQv8AzCMXjEWBYnCQJEhKAfGDQ+CPQsMowTjcyQdgIiiIjIJ/kkVj5C0HUMTExsUrVQmJ6qRvkpyCWCGo2VQR7SQtPSMzIiGLguwclAugydPmF+j0hRmGIoy54pJSI0AZKiddVFRWVdcIxaZaeV29GWNzAwONyEJfejY1Nre0trUbgeno1GN9FPihLuJ39/Sm92mlhv6BwaEakA2PdIGRB4LRsfGJySlWN425sWATrRGCrLSSSUEvM7YO5Ww+nvMgZxuqotb8gmBxaVm1IoGZ1bV1NXE20CZZrVuG0e2d3dS97X1fBfDtHKDDbICjleMTmaT69Oz8wtDTzCdsR9JLx5BsV+w13d05hC+y/uRnIYOEmzka+63FOVzrHT8P7t6JJD1ov0bIPT45+s8TvM9/hpdXye+MlG8/34SiPvuiRsww4vePaO2X/wkUntbbH/RCyQAAAABJRU5ErkJggg==",
+      "obsidian": "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAE2ElEQVRIx42WXYhdVxmGn+9b37fWOmcmk2SmMWbaJpESSQz+IWi9iiBeFAJFCdpqlVxZaSlSUQv+0IIKVq1KFErxRlsQbQPGmCK1VxZjf4REqGJMtU1sGslkZjL/0zNn7728OCcnMyYT3bDY7Iv9Pu/7rm8vtnCd60d3n2f73iGaCrodsmjzYCl8vu7y4uS56jNNzetzUzXnf7WVR5Frauh64k98a45b3juMqgBs8Fy+GVzuD0YLKR/qLDVfP3e62xKFnXdOrGvymoBfH5pj240gPVNbPHHIonzBnGQumAulcHDTFr3nX5NnQYTvH7z4/wGe+t4lxsahrgHYYZGfBOegOWIuhCjUVaEU3JJ8ZdfNO/cHKyxNRX782cn/Ddj+9szygkBhT3B+Zs7tFnuugwshwMJMgyiYMxpcHraoe0e2raAOD3+5XB8wM1FRrRCD85A5+1aLW4Rup7A022BR+ot3BOM75jJWCuTFb1wfELOQ2rLZXN4VomAOFsEcggnz0w2lgF8GuGDObRrYr6GwsHDHGj1b/XDkaME6i1C4QVTGREH7FkrpuX9zseklMpAgiIAIAmwrRbh1z671Exx+4HnMBU9yY3A2rOm+Nzk0NVfq8X4SFyzKcDA4151cH+AhUnVrlherncEkW+xNTb8GVEFDvy4f7EG/Qhn/xIExYonXBnxq9BgUePDOE3bksbP7/vbSJVQvO+z1b0nwJKvEB+6xKLuPPTs7oqFw7EszVwPiTaMghR27h94zO9n5yB+OXuDl41ME67nVADEJeUh7MGe1OGbs1cD71Aqdrf+V4NMfe47SwOjmHaDNJyU0W6qq4vnfXuDcPxbwKGjoOR/apISBOIMUIcpIMO5W0UyBw9+dvgJIZxNqwqX5f+4SbT6qoUG94c2lFU78/iKlFMx6zkfGAikrHnVtAgcN3C5aDmgQ6qa6MqalESQUpMgBhJ2iBZHehp5/dYGTx99gbm6B6YlFOks11JG3bBtl/OYxPDmlFJpagJKrhq/VdXkpaDw9AGhoKEXHJZQ7NID255sC3ZWap3/+F6ampigNIBCCklJkxy1buXXfbka3bKTqNj2jWt4qhRuA04OKRAqivFuVPWbgUYlJ8aRYVEQUEcGjkXMi54yZ88aZaZ773V+ZnZnHTBEFDfKLUsuf+sd8H6CgWl4LxpkQe8IxG6llxNx70cyIMZJzHqz2UJuF2RVO/vEMnU4XVTmlyiNpiG4pq6bIM7Q32Kngep+7vh6TkVtGbjspB4RCSj3nl+8DSLvN9MQSZ1+Z7KjKt0Msr1gxqrLqLKorUG1otf0ZDdwTU3gsZR9XFZaXa5rSEGMcLDMjhEAIoX9OFV77++Qzm8eGn2wa2LhpmI9/ceOVBI8e/yDBhGBCbvuxlP3e3PYLQxsyVb1C00CMkZTSIEGr1VqdpBbCL0/9eWJ56/hG9t87cvWX/INn30/KRkrOyKahI+2hfF9MYWJ2dp6gAXfH3a8C9WubzKl1otTC0cMvrH/YPfTkO4k5EILyuUduemp2dv6uxfnlH5rZE2b2GzN/wd3Pxxi7q/chxvSqu//bY+LQ0x9eA7jmv8ZPv3qRdjszMzPDyydPEfOwVCuVp5jbKcftOacPpJRuc/d9pRS63e79ueWPL81XPPD429Zo/Qf9do9600XOsQAAAABJRU5ErkJggg==",
+      "firefox": "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",
+      "ghostty": "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAMAAADXqc3KAAACmlBMVEUAAAA1Ue81UfQ2UvU1UvU3UPYwUPA1UvQyT/Q0VPc2UvY3Uvc1UvY3UPA2Tu81UfM0U/81UfI0UPM2UfUcGe81UfUeNLI3U/o3VPw1UvUyTeYvSds1UvU3VPw3VPs1UvY3VPozTekkOK0zTeg3U/o1UvU2U/c2U/cqQcQqQMM2U/c2Uvc2UvY2Uvc2UvY3U/opQMI3VPo2VPsyTec3VPs3VPwjN6o3VPw2VPw1UfQ1UfM3VPs3Vf4xTOQxS+M3VP44Vf8uR9cuR9Y4Vf8tRtQtRdM4Vf83VPwzTuozTuo3VP02U/k2U/k2UvY1UfMlOa4lOrIkOaw1UfM2Uvc2Uvc2U/kzTukwSt81UvQ3VPw0UO8vSNk1UfQzTuk2U/k2UvcVIWgTGkMYHTkSG1IuMDZ5eXaysq/KysiysrB6eXcvMDYSG1ElOrEVGTF5eHbk5OP///95eXclOrCYmJb+/v6ZmZcVGTASG097e3h8fHkxMjjm5uXm5uYyMzgjN6kUIGN/fnzBwcGnp6fx8fGAf3wUH2IUGkC4uLZsbGwBAQFHR0e6urr7+/v5+fn4+Pj9/f25ubYUGj8bHzjR0M9+fn4ODg4MDAx9fX2vr69ERERCQkJAQEB3d3f6+vrS0tAbHzcdIDfU1NPu7u6NjY0REREFBQVxcXE0NDQzMzMwMDBpaWnW1tQdITccIDcAAAA4ODirq6v29vbz8/Py8vLV1dS1tbWWlpbq6urV1NMaHjfPz87Q0M8aHjYSG02OjYr39/fo6Ofn5+f39vaQj4wSG0wlOq8cHy2Pj4y6ubdWVlYqKzJ0dHLJycd1dHIpKjFVVVbR0c+RkY4dIC0lOa0SGksVGjoYJngUH18YHDcUH14YJ3oVGjsSGkouR9Z9JWVXAAAAYHRSTlMAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAB5vver8vnAeB2DP/NBgBw6Q+fmRDweSCGP5ZBzUHWf+aASsrQQV1NQVIePjI+TkIhDJyhB2eBKn/v7+qhMViOb3u4LT/LrnixboAAz+AAABk0lEQVQoz2NgYGBgZGJiFpeQlJKWlpKRlWNhYmJlAAM2dhZ5BUWlhMSkpMQEJWUVVSYmDrAEE4uaukZySmpaenpGZla2ppY2CxNInIVJRysnNy+/AAzyC3OLdPXYmYESnFz6mrnFJQVQUFJaZmDIws3AwMNkZFxeARcHylSWG5sw8TLw8ZuaVVUXIIGa2jpzfgEGFgvL+oaCxqZmhExLq5U1MwO7jW1be0FHZ1d3T0FBb19fX3/BhIl29kwMTA6OkyYX1EyZOm16yYyZs2bNnjN33nwnByYGfmeXBQsLFi1esnRZSdPyFStWrupbvcbVmZ+B381l7cKCZevWb9hY0L9p8+bm3oIta1zdYBJbt21HWI4sgQLoKOHssmYHhgTQH0Cf79yFKrF7jyPQ50zuHnv3AXn7D/QXFPQfPARkHj7i6cXCwCLoffTY8cknTp46febM2XPnT1y4eOmyj5AwAw+/r5//lT1XrwVcv3HjZsCt23vuBAYFMzEziPCzhISG3Q2PiIyKjo6KjAm/GxsXL8ovBgA9Rd+JJ/U1xwAAAABJRU5ErkJggg==",
+      "karabiner": "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",
+      "claude": "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAMAAADXqc3KAAACHFBMVEUAAADZd1fZd1fZd1fZd1fZd1fZd1fZd1fZd1fZd1fZd1fZd1fZd1fZd1fZd1fZd1fZd1fZd1fZd1fZd1fZd1fZd1fZd1fZd1fZd1fZd1fZd1fZd1fZd1fZd1fZd1fZd1fZd1fZd1fZd1fZd1fZd1fZd1fZd1fZd1fZd1fZd1fZd1fZd1fZd1fZd1fZd1fZd1fZd1fZd1fZd1fZd1fZd1fZd1fZd1fZd1fZd1fZd1fZd1fZd1fZd1fZd1fZd1fZd1fZd1fZd1fZd1fZd1fZd1fZd1fZd1fZd1fZd1fZd1fZd1fZd1fZd1fZd1fZd1fZd1fZd1fZd1fZd1fZd1fZd1fZd1fZd1fZd1fZd1fZd1fZd1fZd1fZd1fZd1fZd1fZd1fZd1fZd1fZd1fZd1fZd1fZd1fZd1fZd1fZd1fZd1fZd1fZd1fZd1fZd1fZd1fZd1fZd1fZd1fZd1fZd1fZd1fZd1fZd1fZd1fZd1fZd1fZd1fZd1fZd1fZd1fZd1fZd1fZd1fZd1fZd1fZd1fZd1fZd1fZd1fZd1fZd1fZd1fZd1fZd1fZd1fZd1fZd1fZd1fZd1fZd1fZd1fZd1fZd1fZd1fZd1fZd1fZd1fZd1fZd1fZd1fZd1fZd1fZd1fZd1fZd1fZd1fZd1fZd1fZd1fZd1fZd1fZd1fZd1fZd1fZd1fZd1fZd1fZd1fZd1fZd1fZd1fZd1fZd1fZd1e5kIVfAAAAs3RSTlMAACzZ3DEBWGkFZYoc2OAfOOwiOfXVFhpOFwKNdEr9uAe6/o5cXQ0j0FuRFLCcJ+mkIGtycAOU3zUOpco/EcDUiPg++fNaEHvt6PR2oOGGRcT7q9LP3rWE7vr34jI2WX1gCwZB/MnDtse5m35mbK+CT5+st7/LzeXIhVEvCQgTVNHX2tvFTSuW7+PwVbyqgOrOIW5J3WN35MFxBKEoQHjxc1BEZKYKD5VLzFY9KRkqf4EmR2FR3UsAAAHiSURBVCjPRZLpW1JREMbPFKGCRJZ2BZTwapRbBnWzIDck49IGaCSpGYWFmmZmZRZmZiktRllZttm+b77/YHdBfD+c5zzzm+fMzHmHMcaIVq3WrCEibVZ2DrEVEekAvQRyDWuNpEqOSlqXB816og35BRuJuEJTBpgtQBFRsXWTjYwlfKlWBrayzXbaYsBWjspRQZVVQLUCttVYtzvIacUO2gmdsAuo3a08tccFuPfW1aOBa2zyOJvh3Zcu3rLfB9FZ5seBg4d0InBYUNqSjyMBBEOtaAv4jgLhOsoAMh1rRxCR4wA6OgWu60T3SRaNnjJL6HR9DIp6GsMaP/gz7Gy8N9Rn6T830Ia0vAWD54ccLPvC8MWR+KXL7itKNDJ6deya6bpSw5yTiEbHbzSo6RM3J2+1Tg3fVovTnemZZK0M7nbf099PxmBQPovrT1ofzD5M+WPgxXJKPCp+7JHiwlwPnjztMow+m3fxHc9nXiyk5xjzRl6+agn7Xr/RdMZ5S8Xb2YQKPNVZNrMluKh1Tdjf5YvvF2tK7cuT04fmj58+p0YSC19QUvn12/dlp36IAQf9zAsJ5EjBScZfRKrnevdvokJ+WsqZm/+TNl0GXK50LcJf2eV/40SZLVG0NDlEmR1h/wGPso5Mb6H02wAAAABJRU5ErkJggg==",
+      "vscode": "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAEYklEQVRIx5WVW4iWVRSGn7X398/8//zOOOOMzowiOSrlIYTyIpKCgkC8qW68qkDsIjqYooiZUaR2sAOJ2Jkgsa6SIurCq1DwAAYhSAZFamqpOI3anP//2+vtYg7O6AjjgveDb2++993fWu9a27jNmLPtKM2xHwd6BpU11RXWlJtaVjXMmPWTY58/uqL+5I/7u+npr1LIIvG2yLcfZXrsQxi5Qm0500bDX8XT7LrGlvtilq34/Y9Ku8SF/d8dubxoSQc2WfK524/QEvpwjESYEvHXAloLFLLaItM7FhELNQhAnHP5Pnd9MSmBu944RIN6cYvIQnNEbxl6GgggspoS04YFkAADhMSxbOEHJ0BgZkgCg8HBCqdeWgrAgm0Hqa90Uc1KgM2M8p0yrdSIusAlXGAaeh9+ILgzA0N4ybDZQmdMVimVSsx78xg1qZfO2nYKPgCy+ZG022E5GvN7EubCJUxi7J5Awd2nhRDethAOhBB3uDRDElmpjAtm9J7CCUtMaY9cy93FWCSJJC46YSAJbkSIMe4GWyOpHVgXY/xasNTkBM+RhWWmtFfSsiGycZCL77Mp055TyLpckLgOF2RA83BVRuIR4BvMXnH5tSDfmWD+BLXvMbNd1UplR+useS2e8nHpGYnM3Z8R9g6wcsx6B/CZilOr3n+1EffrRxBg9idmW6pW3NcyZ37Kq9VWM27yvIBM2Jnk/ixYN2arhqwHQJmaKWAR+q5CqgBgZvshbI6pcrxgkdqm1qEC38LimWNg4V+Htbi6BWuwURHISlDOoP9q1ar9u01sD6SuaqmZkA8MWZth+08k0HfhFBaMYCQsDFqxXpSmMi4nlkFdswSDFmKep0Rz71muFNtGiW/BT3AAi43JeddTWp96r8bU00XyRC6NATUuNuV52oN84aW6O/CQ4cNumRgiyMKsPM93ufvzyZUlF6nvP1J314C7d7vDCJJjLh532b4gf6y5VLDu7m4msO9IfxDw9InkTw21+yjOa7DnBblWu3R2gg8XJfHlxd58y4Vzf5VDiMl1/SCjGO6DyrikmR0yC5tSXj1iEmbqcvGhYMH47FqjodepKS3u7Oz8qqGxSaNzbkxRYv0DTx4ENQBzzGxviNmLSvnJmlKZWCwzmDgd4FiS3SsxUxpyzDDMsbvzlB4slac0y6wwMu+G+QeC5JcsZustxIdDLKyT+9+eVwmxgAsaskTCfjb8KZcO3Dhr3EXuml1NKvlEswgMpF7QCckHzIy6aW2c3foQ/7x8DwM5dF0pkpzfAlol6Qd3kUaH3XXHpBtclIRN6sLpeP9Xzl+rUIwQ8NYke0/YEyMZz7KMGe0zCTEbXyV0PExG4PSGxbQVBsllOOFSZloT0EeGEjd1skC6hPxTpbR60ncyQMfWw1z2OoKJAl5XUdjsYkNWKJSmt7UTYzyP9C3yPYWBK8fzuha/LQGAudsO0+lFApApr62Gmo3Fcv2qhsamAxF9bKeP/pI67lf0KrLA/z4R6J/4S+dOAAAAAElFTkSuQmCC",
+      "bloom": "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"
+    };
+
+    // App binding map shared by MEH and SCRATCH layers
+    const MEH_BINDINGS = {
+      1:  { key: "Q", app: "1Pass", icon: "1password" },
+      2:  { key: "W", app: "WApp", icon: "whatsapp" },
+      4:  { key: "R", app: "Spark", icon: "spark" },
+      7:  { key: "U", app: "App", icon: null },
+      9:  { key: "O", app: "Chrome", icon: "google-chrome" },
+      14: { key: "S", app: "Spot", icon: "spotify" },
+      15: { key: "D", app: "Obsdn", icon: "obsidian" },
+      16: { key: "F", app: "Fox", icon: "firefox" },
+      17: { key: "G", app: "Ghost", icon: "ghostty" },
+      18: { key: "H", app: "Haze", icon: null },
+      20: { key: "K", app: "Kara", icon: "karabiner" },
+      21: { key: "L", app: "Snitch", icon: null },
+      27: { key: "C", app: "Claude", icon: "claude" },
+      28: { key: "V", app: "Code", icon: "vscode" },
+      29: { key: "B", app: "Bloom", icon: "bloom" },
+      31: { key: "M", app: "App", icon: null }
+    };
+
+    // Full app names for the reference panel
+    const MEH_FULL_NAMES = {
+      1:  "1Password",
+      2:  "WhatsApp",
+      4:  "Spark",
+      7:  "App",
+      9:  "Google Chrome",
+      14: "Spotify",
+      15: "Obsidian",
+      16: "Firefox",
+      17: "Ghostty",
+      18: "HazeOver",
+      20: "Karabiner",
+      21: "Little Snitch",
+      27: "Claude",
+      28: "VS Code",
+      29: "Bloom",
+      31: "App"
+    };
+
+    // Alpha key labels by position (for dimmed letters on unbound keys)
+    const ALPHA_LABELS = {
+      0:"Esc",1:"Q",2:"W",3:"E",4:"R",5:"T",6:"Y",7:"U",8:"I",9:"O",10:"P",11:"\u232b",
+      12:"Tab",13:"A",14:"S",15:"D",16:"F",17:"G",18:"H",19:"J",20:"K",21:"L",22:";",23:"'",
+      24:"Shift",25:"Z",26:"X",27:"C",28:"V",29:"B",30:"N",31:"M",32:",",33:".",34:"/",35:"\\",
+      36:"Alt",37:"GUI",38:"Space",39:"Enter",40:"TD",41:"Meh"
+    };
+
+    function buildAppLayerKeys() {
+      const keys = [];
+      for (let i = 0; i < 42; i++) {
+        if (MEH_BINDINGS[i]) {
+          keys.push({ tap: MEH_BINDINGS[i].app, type: "normal", appBound: true, alphaKey: ALPHA_LABELS[i] });
+        } else {
+          keys.push({ tap: ALPHA_LABELS[i] || "\u25bd", type: "transparent", appBound: false });
+        }
+      }
+      return keys;
+    }
 
     const KEYMAP_DATA = {
       layers: [
@@ -584,7 +759,7 @@
             { tap: "O", type: "normal" },
             { tap: "P", type: "normal" },
             { tap: "\u232b", type: "normal" },
-            { tap: "Tab", hold: "Hyper", type: "mod-tap", timing: 175, feel: "Your hyper key lives here." },
+            { tap: "Tab", type: "normal" },
             { tap: "A", type: "normal" },
             { tap: "S", type: "normal" },
             { tap: "D", type: "normal" },
@@ -608,19 +783,19 @@
             { tap: ".", type: "normal" },
             { tap: "/", type: "normal" },
             { tap: "\\", type: "normal" },
-            { tap: "Alt", type: "tap-dance", timing: 350, tdStates: ["Alt", "Meh"], feel: "Double-tap for Meh (Ctrl+Alt+Shift)" },
-            { tap: "GUI", type: "tap-dance", timing: 350, tdStates: ["GUI", "L1", "L4"], feel: "Single: Cmd, Double: NUMNAV, Triple: COMMAND" },
-            { tap: "Space", type: "normal" },
+            { tap: "Alt", type: "normal" },
+            { tap: "GUI", type: "normal" },
+            { tap: "Space", hold: "L1", type: "layer-tap", timing: 200, feel: "Hold for NUMNAV layer" },
             { tap: "Enter", type: "normal" },
-            { tap: "L1", type: "momentary", hold: "NUMNAV" },
-            { tap: "L2", type: "tap-dance", timing: 350, tdStates: ["L2", "L3"], feel: "Single: FUNCTION, Double: CONNECT" }
+            { tap: "L1/L2", type: "tap-dance", timing: 350, tdStates: ["L1", "L2"], feel: "Single: NUMNAV momentary, Double: FUNCTION momentary" },
+            { tap: "\u2303\u2325\u2318", hold: "Meh", type: "mod-tap", timing: 175, feel: "Tap: Scratch modifier (\u2303\u2325\u2318). Hold: Meh (\u2303\u2325\u21e7) for app launching." }
           ]
         },
         {
           name: "NUMNAV",
           purpose: "Numbers / Arrows / Media",
-          access: ["hold L1", "double-tap GUI"],
-          activatorPositions: [37, 40],
+          access: ["hold Space", "tap-dance TD"],
+          activatorPositions: [38, 40],
           keys: [
             { tap: "\u25bd", type: "transparent" },
             { tap: "1", type: "normal" },
@@ -668,9 +843,9 @@
         },
         {
           name: "FUNCTION",
-          purpose: "F-Keys",
-          access: ["tap-dance L2"],
-          activatorPositions: [41],
+          purpose: "F-Keys + Bluetooth",
+          access: ["double-tap TD"],
+          activatorPositions: [40],
           keys: [
             { tap: "\u25bd", type: "transparent" },
             { tap: "F1", type: "normal" },
@@ -678,18 +853,6 @@
             { tap: "F3", type: "normal" },
             { tap: "F4", type: "normal" },
             { tap: "F5", type: "normal" },
-            { tap: "F1", type: "normal" },
-            { tap: "F2", type: "normal" },
-            { tap: "F3", type: "normal" },
-            { tap: "F4", type: "normal" },
-            { tap: "F5", type: "normal" },
-            { tap: "\u25bd", type: "transparent" },
-            { tap: "\u25bd", type: "transparent" },
-            { tap: "F6", type: "normal" },
-            { tap: "F7", type: "normal" },
-            { tap: "F8", type: "normal" },
-            { tap: "F9", type: "normal" },
-            { tap: "F10", type: "normal" },
             { tap: "F6", type: "normal" },
             { tap: "F7", type: "normal" },
             { tap: "F8", type: "normal" },
@@ -702,38 +865,11 @@
             { tap: "F13", type: "normal" },
             { tap: "F14", type: "normal" },
             { tap: "F15", type: "normal" },
-            { tap: "F11", type: "normal" },
-            { tap: "F12", type: "normal" },
-            { tap: "F13", type: "normal" },
-            { tap: "F14", type: "normal" },
-            { tap: "F15", type: "normal" },
-            { tap: "\u25bd", type: "transparent" },
-            { tap: "\u25bd", type: "transparent" },
-            { tap: "\u25bd", type: "transparent" },
-            { tap: "\u25bd", type: "transparent" },
-            { tap: "\u25bd", type: "transparent" },
-            { tap: "\u25bd", type: "transparent" },
-            { tap: "\u25bd", type: "transparent" }
-          ]
-        },
-        {
-          name: "CONNECT",
-          purpose: "Bluetooth",
-          access: ["double-tap L2"],
-          activatorPositions: [41],
-          keys: [
-            { tap: "\u25bd", type: "transparent" },
-            { tap: "\u25bd", type: "transparent" },
-            { tap: "\u25bd", type: "transparent" },
-            { tap: "\u25bd", type: "transparent" },
-            { tap: "\u25bd", type: "transparent" },
-            { tap: "\u25bd", type: "transparent" },
-            { tap: "\u25bd", type: "transparent" },
-            { tap: "Disc0", type: "normal", feel: "Disconnect BT profile 0" },
-            { tap: "Disc1", type: "normal", feel: "Disconnect BT profile 1" },
-            { tap: "Disc2", type: "normal", feel: "Disconnect BT profile 2" },
-            { tap: "\u25bd", type: "transparent" },
-            { tap: "Studio", type: "normal", feel: "ZMK Studio unlock" },
+            { tap: "F16", type: "normal" },
+            { tap: "F17", type: "normal" },
+            { tap: "F18", type: "normal" },
+            { tap: "F19", type: "normal" },
+            { tap: "F20", type: "normal" },
             { tap: "\u25bd", type: "transparent" },
             { tap: "\u25bd", type: "transparent" },
             { tap: "\u25bd", type: "transparent" },
@@ -744,18 +880,7 @@
             { tap: "BT0", type: "normal", feel: "Bluetooth profile 0" },
             { tap: "BT1", type: "normal", feel: "Bluetooth profile 1" },
             { tap: "BT2", type: "normal", feel: "Bluetooth profile 2" },
-            { tap: "\u25bd", type: "transparent" },
-            { tap: "\u25bd", type: "transparent" },
-            { tap: "\u25bd", type: "transparent" },
-            { tap: "\u25bd", type: "transparent" },
-            { tap: "\u25bd", type: "transparent" },
-            { tap: "\u25bd", type: "transparent" },
-            { tap: "\u25bd", type: "transparent" },
-            { tap: "\u25bd", type: "transparent" },
-            { tap: "\u25bd", type: "transparent" },
-            { tap: "\u25bd", type: "transparent" },
-            { tap: "\u25bd", type: "transparent" },
-            { tap: "\u25bd", type: "transparent" },
+            { tap: "CLR", type: "normal", feel: "Clear bluetooth bonds" },
             { tap: "\u25bd", type: "transparent" },
             { tap: "\u25bd", type: "transparent" },
             { tap: "\u25bd", type: "transparent" },
@@ -767,54 +892,22 @@
           ]
         },
         {
-          name: "COMMAND",
-          purpose: "GUI shortcuts",
-          access: ["triple-tap GUI"],
-          activatorPositions: [37],
-          keys: [
-            { tap: "\u25bd", type: "transparent" },
-            { tap: "\u23181", type: "normal" },
-            { tap: "\u23182", type: "normal" },
-            { tap: "\u23183", type: "normal" },
-            { tap: "\u23184", type: "normal" },
-            { tap: "\u23185", type: "normal" },
-            { tap: "\u23186", type: "normal" },
-            { tap: "\u23187", type: "normal" },
-            { tap: "\u23188", type: "normal" },
-            { tap: "\u23189", type: "normal" },
-            { tap: "\u23180", type: "normal" },
-            { tap: "\u25bd", type: "transparent" },
-            { tap: "\u25bd", type: "transparent" },
-            { tap: "\u25bd", type: "transparent" },
-            { tap: "\u25bd", type: "transparent" },
-            { tap: "\u25bd", type: "transparent" },
-            { tap: "\u25bd", type: "transparent" },
-            { tap: "\u25bd", type: "transparent" },
-            { tap: "\u25bd", type: "transparent" },
-            { tap: "\u25bd", type: "transparent" },
-            { tap: "\u25bd", type: "transparent" },
-            { tap: "\u25bd", type: "transparent" },
-            { tap: "\u25bd", type: "transparent" },
-            { tap: "\u25bd", type: "transparent" },
-            { tap: "\u25bd", type: "transparent" },
-            { tap: "\u25bd", type: "transparent" },
-            { tap: "\u25bd", type: "transparent" },
-            { tap: "\u25bd", type: "transparent" },
-            { tap: "\u25bd", type: "transparent" },
-            { tap: "\u25bd", type: "transparent" },
-            { tap: "\u25bd", type: "transparent" },
-            { tap: "\u25bd", type: "transparent" },
-            { tap: "\u25bd", type: "transparent" },
-            { tap: "\u25bd", type: "transparent" },
-            { tap: "\u25bd", type: "transparent" },
-            { tap: "\u25bd", type: "transparent" },
-            { tap: "\u25bd", type: "transparent" },
-            { tap: "\u25bd", type: "transparent" },
-            { tap: "\u25bd", type: "transparent" },
-            { tap: "\u25bd", type: "transparent" },
-            { tap: "\u25bd", type: "transparent" },
-            { tap: "\u25bd", type: "transparent" }
-          ]
+          name: "MEH",
+          purpose: "App Launch (\u2303\u2325\u21e7 + key via Raycast)",
+          access: ["hold right thumb 3"],
+          activatorPositions: [41],
+          isAppLayer: true,
+          appLayerType: "meh",
+          keys: buildAppLayerKeys()
+        },
+        {
+          name: "SCRATCH",
+          purpose: "Scratchpad (\u2303\u2325\u2318 + key)",
+          access: ["tap right thumb 3 + key"],
+          activatorPositions: [41],
+          isAppLayer: true,
+          appLayerType: "scratch",
+          keys: buildAppLayerKeys()
         }
       ],
       combos: [
@@ -827,8 +920,8 @@
         { id: "home", positions: [15, 16, 26], result: "Home", category: "Navigation", keys: "D+F+X" },
         { id: "end", positions: [26, 27, 28], result: "End", category: "Navigation", keys: "X+C+V" },
         { id: "f20", positions: [15, 16], result: "F20", category: "Left Ops", keys: "D+F" },
-        { id: "grave", positions: [15, 28], result: "`", category: "Left Ops", keys: "D+V" },
-        { id: "tilde", positions: [15, 26], result: "~", category: "Left Ops", keys: "D+X" },
+        { id: "grave", positions: [15, 26], result: "`", category: "Left Ops", keys: "D+X" },
+        { id: "tilde", positions: [15, 28], result: "~", category: "Left Ops", keys: "D+V" },
         { id: "left_paren", positions: [20, 31], result: "(", category: "Right Ops", keys: "K+M" },
         { id: "right_paren", positions: [20, 33], result: ")", category: "Right Ops", keys: "K+." },
         { id: "left_bracket", positions: [31, 32], result: "[", category: "Right Ops", keys: "M+," },
@@ -837,13 +930,14 @@
         { id: "underscore", positions: [8, 19], result: "_", category: "Right Ops", keys: "I+J" },
         { id: "equal", positions: [20, 21], result: "=", category: "Right Ops", keys: "K+L" },
         { id: "zero", positions: [22, 23], result: "0", category: "Right Ops", keys: ";+'" },
-        { id: "rgui", positions: [40, 41], result: "RGUI", category: "Modifiers", keys: "L1+L2" },
+        { id: "rgui", positions: [40, 41], result: "RGUI", category: "Modifiers", keys: "TD+Meh" },
         { id: "ralt", positions: [32, 33], result: "RAlt", category: "Modifiers", keys: ",+." },
         { id: "rctrl", positions: [34, 35], result: "RCtrl", category: "Modifiers", keys: "/+\\" },
         { id: "settings", positions: [27, 28], result: "\u2318,", category: "System", keys: "C+V" },
         { id: "toggone", positions: [0, 37], result: "Tog L1", category: "System", keys: "Esc+GUI" },
         { id: "toggtwo", positions: [0, 36], result: "Tog L2", category: "System", keys: "Esc+Alt" },
-        { id: "softoff", positions: [0, 11], result: "Soft Off", category: "System", keys: "Esc+\u232b" }
+        { id: "softoff", positions: [0, 11], result: "Soft Off", category: "System", keys: "Esc+\u232b" },
+        { id: "bootloader", positions: [24, 35], result: "Boot", category: "System", keys: "Z+\\" }
       ]
     };
 
@@ -882,14 +976,24 @@
       container.querySelectorAll('.layer-tab').forEach(tab => {
         tab.addEventListener('click', () => {
           currentLayer = parseInt(tab.dataset.layer);
-          renderLayerTabs();
-          renderKeyboard();
+          renderAll();
         });
       });
     }
 
     function getKeyClasses(key, index) {
       const classes = ['key'];
+      const layer = KEYMAP_DATA.layers[currentLayer];
+
+      // App layer special styling
+      if (layer.isAppLayer) {
+        if (key.appBound) {
+          classes.push(layer.appLayerType + '-bound');
+        } else {
+          classes.push('meh-unbound');
+        }
+        return classes.join(' ');
+      }
 
       if (key.type === 'transparent') classes.push('transparent');
 
@@ -899,7 +1003,6 @@
         else classes.push('timing-deliberate');
       }
 
-      const layer = KEYMAP_DATA.layers[currentLayer];
       if (currentLayer > 0 && layer.activatorPositions && layer.activatorPositions.includes(index)) {
         classes.push('layer-activator');
       }
@@ -944,9 +1047,23 @@
         if (!key) return '<div class="key" data-index="' + idx + '"><span class="key-tap">?</span></div>';
 
         const classes = getKeyClasses(key, idx);
-        const comboInd = getComboIndicator(idx);
+        const comboInd = layer.isAppLayer ? '' : getComboIndicator(idx);
         const tdInd = getTdDepthIndicator(key);
         const holdClass = getHoldClass(key);
+
+        // App layer: show alpha key label + icon (or text fallback) for bound keys
+        if (layer.isAppLayer && key.appBound) {
+          const binding = MEH_BINDINGS[idx];
+          const iconKey = binding && binding.icon;
+          const iconData = iconKey && APP_ICONS[iconKey];
+          const appHtml = iconData
+            ? '<img class="key-app-icon" src="data:image/png;base64,' + iconData + '" alt="' + key.tap + '">'
+            : '<span class="key-app">' + key.tap + '</span>';
+          return '<div class="' + classes + '" data-index="' + idx + '">' +
+            '<span class="key-tap">' + key.alphaKey + '</span>' +
+            appHtml +
+            '</div>';
+        }
 
         return '<div class="' + classes + '" data-index="' + idx + '">' +
           tdInd +
@@ -971,12 +1088,12 @@
 
         keyEl.addEventListener('mouseenter', () => {
           updateTooltipPanel(layer.keys[idx], idx);
-          highlightCombos(idx);
+          if (!layer.isAppLayer) highlightCombos(idx);
         });
 
         keyEl.addEventListener('mouseleave', () => {
           clearTooltipPanel();
-          clearComboHighlights();
+          if (!layer.isAppLayer) clearComboHighlights();
         });
       });
     }
@@ -985,7 +1102,20 @@
       if (!key) return;
 
       const panel = document.getElementById('tooltipPanel');
+      const layer = KEYMAP_DATA.layers[currentLayer];
       const combos = combosByPosition[index] || [];
+
+      // App layer tooltip
+      if (layer.isAppLayer && key.appBound) {
+        const fullName = MEH_FULL_NAMES[index] || key.tap;
+        const modifier = layer.appLayerType === 'meh' ? '\u2303\u2325\u21e7' : '\u2303\u2325\u2318';
+        const action = layer.appLayerType === 'meh' ? 'Launch / Focus' : 'Toggle Scratchpad';
+        panel.innerHTML =
+          '<div class="tooltip-title">' + fullName + '</div>' +
+          '<div class="tooltip-row"><span class="tooltip-label">Key</span><span class="tooltip-value">' + modifier + '+' + key.alphaKey + '</span></div>' +
+          '<div class="tooltip-row"><span class="tooltip-label">Action</span><span class="tooltip-value">' + action + '</span></div>';
+        return;
+      }
 
       let timingHtml = '';
       if (key.timing) {
@@ -1167,10 +1297,54 @@
       });
     }
 
+    function renderBindingPanel() {
+      const layer = KEYMAP_DATA.layers[currentLayer];
+      const panel = document.getElementById('bindingPanel');
+      const header = document.getElementById('bindingPanelHeader');
+      const grid = document.getElementById('bindingGrid');
+      const unbound = document.getElementById('bindingUnbound');
+
+      // Only show for app layers
+      if (!layer.isAppLayer) {
+        panel.style.display = 'none';
+        return;
+      }
+
+      panel.style.display = 'block';
+
+      const modifier = layer.appLayerType === 'meh' ? '\u2303\u2325\u21e7' : '\u2303\u2325\u2318';
+      const action = layer.appLayerType === 'meh' ? 'App Launch' : 'Scratchpad';
+      const cssClass = layer.appLayerType;
+
+      header.className = 'binding-panel-header ' + cssClass;
+      header.innerHTML = action + ' Bindings <span>(' + modifier + ' + key)</span>';
+
+      // Build sorted bound entries
+      const bound = Object.entries(MEH_BINDINGS)
+        .sort((a, b) => a[1].key.localeCompare(b[1].key))
+        .map(([pos, binding]) => {
+          const fullName = MEH_FULL_NAMES[pos] || binding.app;
+          return '<div class="binding-entry">' +
+            '<span class="binding-key">' + binding.key + '</span>' +
+            '<span class="binding-app">' + fullName + '</span>' +
+            '</div>';
+        }).join('');
+
+      grid.innerHTML = bound;
+
+      // Build unbound letters list
+      const allLetters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+      const boundKeys = new Set(Object.values(MEH_BINDINGS).map(b => b.key));
+      const unboundLetters = allLetters.filter(l => !boundKeys.has(l));
+
+      unbound.textContent = 'Available: ' + unboundLetters.join(', ');
+    }
+
     function renderAll() {
       renderLayerTabs();
       renderKeyboard();
       renderComboPanel();
+      renderBindingPanel();
     }
 
     // ============================================================
@@ -1181,8 +1355,7 @@
       const num = parseInt(e.key);
       if (num >= 1 && num <= KEYMAP_DATA.layers.length) {
         currentLayer = num - 1;
-        renderLayerTabs();
-        renderKeyboard();
+        renderAll();
       }
     });
 

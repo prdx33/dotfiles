@@ -1,14 +1,14 @@
 #!/bin/bash
 
-# Network plugin using netstat cumulative bytes + cache delta
-# Instant (~2ms) instead of ifstat blocking (~108ms)
+# Network plugin - colour-only U/D, generous thresholds, sharp ramp
+# Upload (U): 0/>0-1/1-10/10-50/50-80/80+ MB/s
+# Download (D): 0/>0-5/5-20/20-80/80-150/150+ MB/s
 
 source "$CONFIG_DIR/colours.sh" 2>/dev/null || exit 0
 
 CACHE="/tmp/sketchybar_net"
 
-# Get cumulative bytes from netstat (instant, no sampling delay)
-STATS=$(netstat -ibn | awk '/en0.*Link/{print $7, $10}')
+STATS=$(netstat -ibn | awk '/Link/ && !/lo0/ {in+=$7; out+=$10} END {print in, out}')
 IN_BYTES=$(echo "$STATS" | awk '{print $1}')
 OUT_BYTES=$(echo "$STATS" | awk '{print $2}')
 
@@ -16,6 +16,28 @@ OUT_BYTES=$(echo "$STATS" | awk '{print $2}')
 [[ -z "$OUT_BYTES" || ! "$OUT_BYTES" =~ ^[0-9]+$ ]] && OUT_BYTES=0
 
 NOW=$(date +%s 2>/dev/null) || NOW=0
+
+# Upload tier (h = hundredths of MB/s)
+up_tier() {
+    local h=$1
+    if [[ $h -ge 8000 ]]; then echo "$TIER_5"
+    elif [[ $h -ge 5000 ]]; then echo "$TIER_4"
+    elif [[ $h -ge 1000 ]]; then echo "$TIER_3"
+    elif [[ $h -ge 100 ]]; then echo "$TIER_2"
+    elif [[ $h -ge 1 ]]; then echo "$TIER_1"
+    else echo "$TIER_0"; fi
+}
+
+# Download tier (h = hundredths of MB/s)
+down_tier() {
+    local h=$1
+    if [[ $h -ge 15000 ]]; then echo "$TIER_5"
+    elif [[ $h -ge 8000 ]]; then echo "$TIER_4"
+    elif [[ $h -ge 2000 ]]; then echo "$TIER_3"
+    elif [[ $h -ge 500 ]]; then echo "$TIER_2"
+    elif [[ $h -ge 1 ]]; then echo "$TIER_1"
+    else echo "$TIER_0"; fi
+}
 
 if [[ -f "$CACHE" ]]; then
     read PREV_IN PREV_OUT PREV_TIME < "$CACHE" 2>/dev/null
@@ -32,18 +54,27 @@ if [[ -f "$CACHE" ]]; then
     [[ $DOWN_RATE -lt 0 ]] && DOWN_RATE=0
     [[ $UP_RATE -lt 0 ]] && UP_RATE=0
 
-    # Convert bytes/s to MB/s using integer math (no bc)
     DOWN_H=$((DOWN_RATE * 100 / 1048576))
     UP_H=$((UP_RATE * 100 / 1048576))
 
-    DOWN_FMT=$(printf "%2d.%02dMB" $((DOWN_H / 100)) $((DOWN_H % 100)))
-    UP_FMT=$(printf "%2d.%02dMB" $((UP_H / 100)) $((UP_H % 100)))
+    down_color=$(down_tier $DOWN_H)
+    up_color=$(up_tier $UP_H)
 
-    sketchybar --set net_down label="$DOWN_FMT" \
-               --set net_up label="$UP_FMT" 2>/dev/null
+    # Active stats dim to 70%, idle to 20% (per-direction)
+    if [[ -f /tmp/sketchybar_bar_faded ]]; then
+        down_dim=$DIM_IDLE
+        [[ "$down_color" != "$TIER_0" ]] && down_dim=$DIM_ACTIVE
+        up_dim=$DIM_IDLE
+        [[ "$up_color" != "$TIER_0" ]] && up_dim=$DIM_ACTIVE
+        sketchybar --set net_down icon.color=$down_dim \
+                   --set net_up icon.color=$up_dim 2>/dev/null
+    else
+        sketchybar --set net_down icon.color="$down_color" \
+                   --set net_up icon.color="$up_color" 2>/dev/null
+    fi
 else
-    sketchybar --set net_down label=" 0.00MB" \
-               --set net_up label=" 0.00MB" 2>/dev/null
+    sketchybar --set net_down icon.color="$TIER_0" \
+               --set net_up icon.color="$TIER_0" 2>/dev/null
 fi
 
 echo "$IN_BYTES $OUT_BYTES $NOW" > "$CACHE" 2>/dev/null

@@ -6,4 +6,5 @@ borders \
     hidpi=on \
     active_color="glow(0xAAaed5ee)" \
     inactive_color="0x10fff5e0" \
-    order=above \
+    order=below \
+    blacklist="Obsidian" \

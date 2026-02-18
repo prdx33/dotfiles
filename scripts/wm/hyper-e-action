@@ -22,7 +22,8 @@ fi
   local isAlmost = math.abs(f.w - almostW) < 20 and math.abs(f.h - almostH) < 20
 
   if isAlmost then
-    w:setFrame(s)
+    local p = 5
+    w:setFrame(hs.geometry.rect(s.x + p, s.y + p, s.w - 2*p, s.h - 2*p))
   else
     local fw, fh = almostW, almostH
     w:setFrame(hs.geometry.rect(s.x + (s.w - fw) / 2, s.y + (s.h - fh) / 2, fw, fh))

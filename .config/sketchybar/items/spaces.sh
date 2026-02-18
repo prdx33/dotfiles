@@ -1,20 +1,20 @@
 #!/bin/bash
 
-# Workspaces centered - numbers only
-# Clean arctic white theme
+# Workspaces - split layout with centre divider
+# All items center-positioned. Balance spacer compensates for asymmetric content.
+# Left group (mirrored): [icons][letter], M1 innermost at divider
+# Right group (normal):  [letter][icons], M2 innermost at divider
 
 source "$CONFIG_DIR/colours.sh"
 
 MAX_ICONS=4
 FONT_SIZE=10.0
-WORKSPACE_GAP=14
+WORKSPACE_GAP=11
 MONO_FONT="Iosevka Extended"
 
-# All letter workspaces (QWERTY layout)
 WORKSPACES="Q W E R T Y U I O P A S D F G H J K L Z X C V B N M"
 
 for sid in $WORKSPACES; do
-    # Workspace letter (hidden by default, shown after refresh)
     sketchybar --add item space.$sid center \
         --set space.$sid \
             icon="$sid" \
@@ -27,7 +27,6 @@ for sid in $WORKSPACES; do
             background.drawing=off \
             click_script="aerospace workspace $sid"
 
-    # App icon slots - tight grouping
     for i in $(seq 0 $((MAX_ICONS - 1))); do
         sketchybar --add item space.$sid.icon.$i center \
             --set space.$sid.icon.$i \
@@ -44,33 +43,21 @@ for sid in $WORKSPACES; do
     done
 done
 
-# Corne split spacer (left shield / right shield)
-# Pure empty space between shields
+# Centre divider — invisible spacer between left and right groups
 sketchybar --add item space_div center \
     --set space_div \
         icon.drawing=off \
         label.drawing=off \
         background.drawing=off \
-        width=0
+        width=10
 
-# M2 arrow is now a suffix on the workspace letter (e.g. "G▸")
-# Kept as hidden placeholder for bracket compatibility
-sketchybar --add item space_m2_arrow center \
-    --set space_m2_arrow \
-        drawing=off
-
-# Right spacer to balance left padding
-sketchybar --add item spaces_spacer center \
-    --set spaces_spacer \
+# Balance spacer — sits at end of right group, width set dynamically
+sketchybar --add item space_balance center \
+    --set space_balance \
         icon.drawing=off \
         label.drawing=off \
-        width=$WORKSPACE_GAP \
-        background.drawing=off
-
-# Bracket around workspaces (no pill)
-sketchybar --add bracket spaces '/space\..*/' spaces_spacer \
-    --set spaces \
-        background.drawing=off
+        background.drawing=off \
+        width=0
 
 # Workspace change events
 sketchybar --add event aerospace_workspace_change
