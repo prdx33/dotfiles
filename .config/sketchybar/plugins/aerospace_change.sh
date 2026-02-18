@@ -36,8 +36,13 @@ FONT_SIZE=10.0
 ICON_SCALE=0.38
 CELL=20
 WORKSPACE_GAP=20
-M1_TEXT_SHIFT=-10
+DIVIDER_WIDTH=12
+ACTIVE_NARROW=6
+DIVIDER_WIDTH=1
 MONO_FONT="Iosevka Extended"
+WORKSPACES="Q W E R T Y U I O P A S D F G H J K L Z X C V B N M"
+LEFT_KEYS=" Q W E R T A S D F G Z X C V B "
+BALANCE_CACHE="/tmp/sketchybar_balance_cache"
 
 m1_ws=$(aerospace list-workspaces --monitor 1 --visible 2>/dev/null | xargs)
 m2_ws=$(aerospace list-workspaces --monitor 2 --visible 2>/dev/null | xargs)
@@ -79,24 +84,22 @@ for ws in $TOUCHED_WS $m1_ws $m2_ws $PREV_HIGHLIGHTED; do
         icon_state="unfocused"
     fi
 
-    # Width-based grid: all gaps baked into width, padding only for text offset
-    if [[ "$ws" == "$m1_ws" ]]; then
-        # M1 active (mirrored): shift text left toward icons
-        letter_icon_pad=$M1_TEXT_SHIFT
-        letter_width=$CELL
-    elif [[ "$ws" == "$m2_ws" ]]; then
-        # M2 active (normal): text left-aligned, near divider
+    # Width-based grid: all gaps baked into width
+    # Active letters: widened by ACTIVE_NARROW (taken from icon.0), text toward icon
+    if [[ "$ws" == "$m1_ws" || "$ws" == "$m2_ws" ]]; then
         letter_icon_pad=0
-        letter_width=$CELL
+        letter_align="center"
+        letter_width=$((CELL + ACTIVE_NARROW))
     else
         letter_icon_pad=$WORKSPACE_GAP
+        letter_align="left"
         letter_width=$((CELL + WORKSPACE_GAP))
     fi
 
     if [[ $num_apps -eq 0 && "$ws" != "$focused_ws" && "$ws" != "$m1_ws" && "$ws" != "$m2_ws" ]]; then
         BATCH_CMD="$BATCH_CMD --set space.$ws icon.drawing=off icon.padding_left=0 icon.padding_right=0 padding_left=0 padding_right=0 width=0"
     else
-        BATCH_CMD="$BATCH_CMD --set space.$ws icon='${icon_prefix}${ws}${icon_suffix}' icon.drawing=on icon.font='$icon_font' icon.color=$icon_color icon.padding_left=$letter_icon_pad icon.padding_right=0 padding_left=0 padding_right=0 width=$letter_width"
+        BATCH_CMD="$BATCH_CMD --set space.$ws icon='${icon_prefix}${ws}${icon_suffix}' icon.drawing=on icon.font='$icon_font' icon.color=$icon_color icon.align=$letter_align icon.padding_left=$letter_icon_pad icon.padding_right=0 padding_left=0 padding_right=0 width=$letter_width"
     fi
 
     for i in 0 1 2 3; do
@@ -104,6 +107,9 @@ for ws in $TOUCHED_WS $m1_ws $m2_ws $PREV_HIGHLIGHTED; do
         if [[ $i -lt $num_apps ]]; then
             bundle="${BUNDLES[$i]}"
             icon_w=$CELL
+            if [[ $i -eq 0 && ("$ws" == "$m1_ws" || "$ws" == "$m2_ws") ]]; then
+                icon_w=$((CELL - ACTIVE_NARROW))
+            fi
             if [[ "$ws" == "$m1_ws" && $num_apps -eq $MAX_ICONS && $i -eq $((MAX_ICONS - 1)) ]]; then
                 icon_w=$((CELL + WORKSPACE_GAP))
             fi
@@ -123,11 +129,75 @@ for ws in $TOUCHED_WS $m1_ws $m2_ws $PREV_HIGHLIGHTED; do
     done
 done
 
+# === Balance: recalculate for new left/right distribution ===
+# Must scan ALL workspaces since monitors may have changed.
+w_left=0
+w_right=0
+for ws in $WORKSPACES; do
+    local_bundles=$(get_cached_workspace_apps "$ws")
+    IFS=' ' read -ra WS_BUNDLES <<< "$local_bundles"
+    ws_apps=${#WS_BUNDLES[@]}
+
+    # Calculate this workspace's total width
+    ws_w=0
+    if [[ $ws_apps -eq 0 && "$ws" != "$focused_ws" && "$ws" != "$m1_ws" && "$ws" != "$m2_ws" ]]; then
+        ws_w=0  # hidden
+    else
+        # Letter width
+        if [[ "$ws" == "$m1_ws" || "$ws" == "$m2_ws" ]]; then
+            ws_w=$((CELL + ACTIVE_NARROW))
+        else
+            ws_w=$((CELL + WORKSPACE_GAP))
+        fi
+        # Icon widths
+        for i in 0 1 2 3; do
+            if [[ $i -lt $ws_apps ]]; then
+                if [[ $i -eq 0 && ("$ws" == "$m1_ws" || "$ws" == "$m2_ws") ]]; then
+                    ws_w=$((ws_w + CELL - ACTIVE_NARROW))
+                elif [[ "$ws" == "$m1_ws" && $ws_apps -eq $MAX_ICONS && $i -eq $((MAX_ICONS - 1)) ]]; then
+                    ws_w=$((ws_w + CELL + WORKSPACE_GAP))
+                else
+                    ws_w=$((ws_w + CELL))
+                fi
+            elif [[ "$ws" == "$m1_ws" && $i -eq $((MAX_ICONS - 1)) ]]; then
+                ws_w=$((ws_w + WORKSPACE_GAP))
+            fi
+        done
+    fi
+
+    # Accumulate to correct side
+    if [[ "$ws" == "$m1_ws" ]]; then
+        w_left=$((w_left + ws_w))
+    elif [[ "$ws" == "$m2_ws" ]]; then
+        w_right=$((w_right + ws_w))
+    elif [[ $LEFT_KEYS == *" $ws "* ]]; then
+        w_left=$((w_left + ws_w))
+    else
+        w_right=$((w_right + ws_w))
+    fi
+done
+
+algebraic_raw=$((w_left - w_right))
+cached_correction=$(cat "$BALANCE_CACHE" 2>/dev/null)
+[[ -z "$cached_correction" || ! "$cached_correction" =~ ^-?[0-9]+$ ]] && cached_correction=0
+balance_raw=$((algebraic_raw + cached_correction))
+
+if [[ $balance_raw -ge 0 ]]; then
+    balance=$balance_raw
+    balance_side="right"
+else
+    balance=$(( -balance_raw ))
+    balance_side="left"
+fi
+BATCH_CMD="$BATCH_CMD --set space_balance width=$balance"
+
 echo "$focused_ws $m1_ws $m2_ws" > "$PREV_STATE"
 eval "$BATCH_CMD"
 
 # === Reorder: all non-active [letter][icons], M1 mirrored [icons][letter] ===
+# Balance spacer placed on the shorter side.
 REORDER=""
+[[ "$balance_side" == "left" ]] && REORDER="$REORDER space_balance"
 for ws in Q W E R T A S D F G Z X C V B; do
     [[ "$ws" == "$m1_ws" || "$ws" == "$m2_ws" ]] && continue
     REORDER="$REORDER space.$ws space.$ws.icon.0 space.$ws.icon.1 space.$ws.icon.2 space.$ws.icon.3"
@@ -143,5 +213,5 @@ for ws in Y U I O P H J K L N M; do
     [[ "$ws" == "$m1_ws" || "$ws" == "$m2_ws" ]] && continue
     REORDER="$REORDER space.$ws space.$ws.icon.0 space.$ws.icon.1 space.$ws.icon.2 space.$ws.icon.3"
 done
-REORDER="$REORDER space_balance"
+[[ "$balance_side" == "right" ]] && REORDER="$REORDER space_balance"
 sketchybar --reorder $REORDER
