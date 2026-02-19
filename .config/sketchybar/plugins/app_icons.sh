@@ -2,6 +2,7 @@
 
 CUSTOM_ICONS="$HOME/.config/sketchybar/icons/tinyicon/24px"
 CUSTOM_ICONS_DIM="$HOME/.config/sketchybar/icons/tinyicon/24px/dim25"
+CUSTOM_ICONS_16="$HOME/.config/sketchybar/icons/tinyicon/16px"
 # Auto-generated macOS icons (fallback when no manual icon exists)
 MACOS_ICONS="$CUSTOM_ICONS/macos"
 MACOS_ICONS_DIM="$CUSTOM_ICONS/macos/dim25"
@@ -124,11 +125,11 @@ get_custom_icon_dimmed() {
     esac
 }
 
-# Legacy function for compatibility
+# Icon for front app display (24px at 0.5 scale)
 get_custom_icon() {
     local bundle="$1"
     local icon_name=$(get_icon_name "$bundle")
-    [[ -n "$icon_name" ]] && echo "$CUSTOM_ICONS/$icon_name" || echo ""
+    [[ -n "$icon_name" && -f "$CUSTOM_ICONS/$icon_name" ]] && echo "$CUSTOM_ICONS/$icon_name" || echo ""
 }
 
 # Get list of apps on a workspace (unique, space-separated bundle IDs)

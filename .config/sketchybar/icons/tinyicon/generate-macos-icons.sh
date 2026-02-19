@@ -103,11 +103,11 @@ echo "$APPS" | while IFS='|' read -r bundle_id name; do
         continue
     fi
 
-    # Step 2: magick resizes to 24px
-    magick "$TMP/${name}_512.png" -resize 24x24 -strip "$DEST/$name.png" 2>/dev/null
+    # Step 2: magick resizes to 20px, pads to 24x24 (2px transparent border)
+    magick "$TMP/${name}_512.png" -resize 20x20 -gravity center -background none -extent 24x24 -strip "$DEST/$name.png" 2>/dev/null
 
     # Step 3: magick creates 25% opacity dim version
-    magick "$TMP/${name}_512.png" -resize 24x24 -strip \
+    magick "$DEST/$name.png" \
         -channel A -evaluate Multiply 0.25 +channel "$DIM/$name.png" 2>/dev/null
 
     if [[ -f "$DEST/$name.png" && -f "$DIM/$name.png" ]]; then

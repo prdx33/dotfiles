@@ -5,7 +5,7 @@
 
 source "$HOME/.config/sketchybar/plugins/app_icons.sh"
 
-ICON_SCALE=0.75
+ICON_SCALE=0.5
 ICON_WIDTH=20
 
 # Get bundle ID of frontmost app (aerospace: ~22ms vs osascript: ~141ms)

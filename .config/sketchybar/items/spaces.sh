@@ -27,12 +27,20 @@ for sid in $WORKSPACES; do
             background.drawing=off \
             click_script="aerospace workspace $sid"
 
+    # Gap right — before letter (leading spacer)
+    sketchybar --add item space.$sid.gr center \
+        --set space.$sid.gr \
+            icon.drawing=off \
+            label.drawing=off \
+            background.drawing=off \
+            width=0
+
     for i in $(seq 0 $((MAX_ICONS - 1))); do
         sketchybar --add item space.$sid.icon.$i center \
             --set space.$sid.icon.$i \
                 icon.drawing=off \
                 label.drawing=off \
-                background.image.scale=0.38 \
+                background.image.scale=0.5 \
                 background.image.drawing=off \
                 background.color=0x00000000 \
                 padding_left=0 \
@@ -41,7 +49,40 @@ for sid in $WORKSPACES; do
                 y_offset=1 \
                 click_script="aerospace workspace $sid"
     done
+
+    # Gap left — after last icon (trailing spacer)
+    sketchybar --add item space.$sid.gl center \
+        --set space.$sid.gl \
+            icon.drawing=off \
+            label.drawing=off \
+            background.drawing=off \
+            width=0
 done
+
+# Arrow indicators for active workspaces (M1=◂, M2=▸) — 6px each
+sketchybar --add item space_arrow_m1 center \
+    --set space_arrow_m1 \
+        icon="«" \
+        icon.font="$MONO_FONT:Regular:$FONT_SIZE" \
+        icon.color=$WS_FOCUSED \
+        icon.drawing=off \
+        icon.padding_left=0 \
+        icon.padding_right=0 \
+        label.drawing=off \
+        background.drawing=off \
+        width=0
+
+sketchybar --add item space_arrow_m2 center \
+    --set space_arrow_m2 \
+        icon="»" \
+        icon.font="$MONO_FONT:Regular:$FONT_SIZE" \
+        icon.color=$WS_FOCUSED \
+        icon.drawing=off \
+        icon.padding_left=0 \
+        icon.padding_right=0 \
+        label.drawing=off \
+        background.drawing=off \
+        width=0
 
 # Centre divider — invisible spacer between left and right groups
 sketchybar --add item space_div center \
